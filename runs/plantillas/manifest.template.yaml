@@ -1,0 +1,45 @@
+# Manifest de corrida — completar secciones 1-4 ANTES de iniciar; sección 5 al cierre.
+
+# 1. Identidad de la corrida
+run_id: ""                 # a-sin-rag | a-con-rag | b-sin-rag | b-con-rag | piloto-NN
+celda:
+  modelo: ""               # A (Claude) | B (GPT)
+  rag: false               # true | false
+oficial: true              # false para pilotos
+
+# 2. Insumos pinneados (deben ser idénticos entre las 4 corridas oficiales)
+spec:
+  tag: "spec-v1.0"
+  commit: ""               # hash del commit taggeado
+corpus:                    # sólo celdas con RAG; null en sin-RAG
+  commit: ""               # commit de corpus/ usado para indexar
+protocolo:
+  adr: ""                  # ADR que congela el protocolo experimental
+
+# 3. Configuración del pipeline
+pipeline_commit: ""        # commit de pipeline/ con el que se ejecutó
+modelo:
+  proveedor: ""            # anthropic | openai
+  model_id: ""             # ID exacto pinneado, p. ej. claude-x-y-fecha
+  parametros: {}           # temperatura, max_tokens, etc., si se fijan
+harness:
+  sdk: ""                  # claude-agent-sdk | openai-agents-sdk
+  version: ""
+presupuesto:
+  tokens_max: null
+  costo_max_usd: null
+  tiempo_max_horas: null
+
+# 4. Repo de la implementación generada
+repo:
+  url: ""
+  commit_inicial: ""       # estado al entregar la spec al agente
+
+# 5. Cierre de la corrida
+inicio: ""                 # timestamp ISO-8601
+fin: ""
+repo_commit_final: ""
+costo_total_usd: null
+tokens_totales: null
+intervenciones_total: null # detalle en intervenciones.md
+notas: ""

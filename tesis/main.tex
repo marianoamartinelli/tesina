@@ -1,0 +1,42 @@
+% Tesina de Licenciatura — Facultad de Informática, UNLP
+% Compilar: latexmk -pdf -output-directory=build main.tex
+\documentclass[12pt,a4paper,oneside]{book}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[left=3cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage[hidelinks]{hyperref}
+\usepackage{csquotes}
+
+\title{Modelo vs.\ contexto: estudio comparativo del impacto del LLM y del
+  conocimiento de dominio en la generación de código por agentes de IA}
+\author{Mariano Alex Martinelli}
+\date{\today}
+
+\begin{document}
+
+\frontmatter
+\maketitle
+% \input{capitulos/00-agradecimientos}
+\tableofcontents
+
+\mainmatter
+\input{capitulos/01-introduccion}
+\input{capitulos/02-estado-del-arte}
+\input{capitulos/03-caso-de-estudio}
+\input{capitulos/04-diseno-experimental}
+\input{capitulos/05-infraestructura}
+\input{capitulos/06-resultados}
+\input{capitulos/07-analisis-y-discusion}
+\input{capitulos/08-conclusiones}
+
+\backmatter
+\bibliographystyle{apalike}
+\bibliography{bibliografia}
+% Apéndices previstos: catálogo de AT-ids, manifests de corridas, protocolo experimental.
+
+\end{document}
