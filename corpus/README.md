@@ -1,15 +1,17 @@
 # Corpus de conocimiento de dominio (condiciones con RAG)
 
 Corpus curado de BIPs y EIPs que se indexa como base de conocimiento en las celdas
-`*-con-rag`. **Congelado antes de las corridas oficiales** (hito H3): el commit usado
-para indexar queda registrado en el manifest de cada corrida.
+`*-con-rag`. **Congelado** (hito H3, 2026-07-05): el commit usado para indexar queda
+registrado en el manifest de cada corrida.
 
-## Alcance previsto
+## Contenido (9 documentos — ver `manifest.md` para fuente, versión y hash)
 
-- **Núcleo (aplican directamente a la spec):** BIP-32, BIP-39, BIP-44, EIP-155,
-  EIP-20 (ERC-20), EIP-55.
-- **Soporte (a evaluar en la curaduría):** documentación de gas/fees (EIP-1559),
-  JSON-RPC de Ethereum, según qué necesiten realmente las épicas 06–08.
+- **Núcleo:** BIP-32, BIP-39 (+ wordlist inglés, normativa por HU-06-01 RN-2), BIP-44,
+  EIP-155, ERC-20 (EIP-20), ERC-55 (EIP-55).
+- **Soporte:** ERC-681 (EIP-681, URI/QR de depósito en mobile), JSON-RPC de Ethereum
+  (métodos `eth_*` citados por las épicas 07–08).
+- **Excluido deliberadamente:** EIP-1559 — la spec fija `TX_TYPE = legacy` (Type-0) y
+  declara EIP-1559 fuera de alcance; incluirlo induciría a contradecir la convención.
 
 ## Reglas de curaduría
 
