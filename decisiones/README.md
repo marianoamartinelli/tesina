@@ -21,3 +21,4 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-001](ADR-001-implementaciones-en-repos-separados.md) | Implementaciones generadas en repos separados por corrida | Aceptado |
 | [ADR-002](ADR-002-tesis-en-latex.md) | Documento de tesina en LaTeX versionado en el repo | Aceptado |
 | [ADR-003](ADR-003-registro-exhaustivo-para-metaanalisis.md) | Registro exhaustivo: journal por sesión + ADRs + manifests | Aceptado |
+| [ADR-004](ADR-004-protocolo-experimental-preregistrado.md) | Protocolo experimental pre-registrado y congelado antes de las corridas | Aceptado |
