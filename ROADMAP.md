@@ -7,15 +7,18 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
 
 - [x] **H0 — Infraestructura del repo.** Estructura de versionado, ADRs, journal,
   plantillas de manifest, roadmap. *(2026-07-04)*
-- [ ] **H1 — Spec freeze.** Auditoría final de la spec (consistencia de AT-ids,
+- [x] **H1 — Spec freeze.** Auditoría final de la spec (consistencia de AT-ids,
   referencias cruzadas, precedencia de errores, invariantes) y tag `spec-v1.0`.
   A partir del tag, la spec es **inmutable** para el experimento: las 4 corridas
-  reciben exactamente ese commit.
-- [ ] **H2 — Protocolo experimental pre-registrado.** Documento que fija, antes de
+  reciben exactamente ese commit. *(2026-07-05 — tag `spec-v1.0`; 57 HUs,
+  693 AT-ids; ~50 correcciones de consistencia, ver journal.)*
+- [x] **H2 — Protocolo experimental pre-registrado.** Documento que fija, antes de
   cualquier corrida: criterios de intervención humana (cuándo intervenir, cómo se
   clasifica según las 8 causas raíz de la propuesta), orden de construcción
   (backend → web → mobile), presupuestos por corrida (tokens/costo/tiempo), qué se
   registra y cómo. Se congela como ADR + documento en `evaluacion/`.
+  *(2026-07-05 — `evaluacion/protocolo.md` v1.0 + ADR-004; presupuestos
+  provisionales hasta la piloto.)*
 - [ ] **H3 — Corpus RAG.** Curaduría de BIPs 32/39/44, EIP-155 y estándares de soporte
   (ERC-20/EIP-20, EIP-55, gas/JSON-RPC según se decida). Manifest con fuente, versión
   y hash de cada documento. Congelado antes de las corridas.
