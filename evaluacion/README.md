@@ -3,11 +3,15 @@
 Artefactos del hito H5 (construidos **antes** de las corridas para eliminar sesgo del
 evaluador) y del hito H2 (protocolo experimental pre-registrado).
 
-## Contenido previsto
+## Contenido
 
-- **`protocolo.md`** — protocolo experimental pre-registrado: criterios de intervención
-  humana y su clasificación (8 causas raíz), orden de construcción, presupuestos,
-  procedimiento de corrida paso a paso. Congelado por ADR antes de la piloto.
+- **`protocolo.md`** — protocolo experimental pre-registrado (v1.0, **existente**):
+  criterios de intervención humana y su clasificación (8 causas raíz), orden de
+  construcción, presupuestos, procedimiento de corrida paso a paso. Congelado por
+  [ADR-004](../decisiones/ADR-004-protocolo-experimental-preregistrado.md); única
+  ventana de ajuste: la corrida piloto (H6).
+
+## Contenido previsto (H5)
 - **`suite-at/`** — suite de tests de aceptación **black-box** contra el contrato
   HTTP/WebSocket de la épica 09. Se escribe una sola vez y corre idéntica contra las
   4 implementaciones; reporta por **AT-id** (pasa/falla). Cubre backend (épicas 01–09).
