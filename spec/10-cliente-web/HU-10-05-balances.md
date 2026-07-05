@@ -24,7 +24,7 @@ Cubre la vista de balances del cliente React para los dos activos del proyecto (
    - **consumir por fill** (al liquidar): cambia el total por activo;
    - **acreditar depósito**: `disponible ↑`;
    - **retiro confirmado**: `bloqueado ↓` (el monto retenido sale del balance interno; el total por activo baja, coherente con INV-1);
-   - **depósito revertido por reorg** (RNE-10): el servidor informa el nuevo balance a la baja; el cliente lo aplica **sin** tratarlo como inconsistencia ni resincronizar.
+   - **depósito descartado por reorg/reversión** (RNE-10): un depósito `PENDIENTE` que pasa a `DESCARTADO` (épica 07; `discardReason ∈ {REORG, REVERTED}`) **no** genera ningún update de balance: el monto nunca se había acreditado (un `ACREDITADO` es terminal y no se revierte, HU-07-04 RN-10), por lo que **no existe retroceso de saldo** ni evento de reversión que aplicar.
 
    En el modelo disponible/bloqueado de la épica 02, un **retiro solicitado** retiene el monto (`disponible ↓ = monto`, `bloqueado ↑ = monto`, total constante) hasta su confirmación on-chain; al confirmarse, el `bloqueado` se consume y el total baja. El `total` mostrado se recalcula en cada update (RN-3).
 7. **RN-7 (snapshot inicial + resync).** Al montar, obtiene un snapshot REST; ante desconexión/gap del WebSocket, muestra estado "desactualizado", reintenta con **backoff según RNE-9** y resincroniza con un snapshot fresco antes de volver a "en vivo" (RNE-5).

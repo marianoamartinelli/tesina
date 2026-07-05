@@ -35,7 +35,8 @@ las órdenes ya pasaron validación y self-trade ya fue bloqueado **antes** del 
    - `tradeId` / `sequence` — **identidad estable del fill y clave de idempotencia**,
      asignada por el matching en orden de producción (ver HU-05-03 RN-2/RN-3). `tradeId` es
      el **mismo** a través de redelivery/reintentos del evento.
-   - `buyerAccountId`, `sellerAccountId` — cuentas contraparte (distintas, RN-12).
+   - `buyerAccountId`, `sellerAccountId` — cuentas contraparte (distintas, RN-12), derivadas
+     de `makerAccountId`/`takerAccountId` + `takerSide` según define HU-03-05 RN-2.
    - `makerOrderId`, `takerOrderId` — órdenes cruzadas.
    - `takerSide` ∈ {`BUY`, `SELL`} — lado de la orden taker; `makerSide` es el opuesto.
    - `takerOrderType` ∈ {`LIMIT`, `MARKET`} — tipo de la orden taker; determina el

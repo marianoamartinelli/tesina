@@ -197,10 +197,9 @@ evaluables de forma reproducible.
 |----------------------------|------|--------------------------------------------------------------------------------|
 | `DEPOSIT_NOT_CONFIRMED`    | 409  | Se intenta acreditar/usar un depósito con `confirmaciones < 12`.               |
 | `DEPOSIT_ALREADY_CREDITED` | 409  | Se intenta acreditar un `(txHash, logIndex)` ya acreditado (idempotencia).      |
-| `NOT_FOUND`                | 404  | Consulta de un depósito inexistente por su identidad.                           |
+| `NOT_FOUND`                | 404  | Consulta de un depósito inexistente por su identidad, **o de un depósito de otra cuenta** (no se revela su existencia; nunca `UNAUTHORIZED`). |
 | `VALIDATION_ERROR`         | 422  | Parámetros de consulta mal formados (p. ej. `txHash`/`logIndex` inválidos).     |
 | `UNAUTHENTICATED`          | 401  | Consulta de depósitos sin credencial válida.                                    |
-| `UNAUTHORIZED`             | 403  | Consulta de depósitos de otra cuenta.                                           |
 | `CHAIN_ID_MISMATCH`        | 422  | El nodo RPC configurado no es Sepolia (`eth_chainId() ≠ 11155111`); el servicio no acredita. |
 
 ---
@@ -214,8 +213,10 @@ ejerza errores de consulta se rige por esta tabla:
 1. **`UNAUTHENTICATED`** (401) — falta credencial o token inválido/expirado.
 2. **`VALIDATION_ERROR`** (422) — parámetros mal formados (p. ej. `txHash` que no matchea
    `^0x[0-9a-fA-F]{64}$`, o `logIndex` no entero `≥ 0`).
-3. **`NOT_FOUND`** (404) — no existe ningún depósito con esa identidad en el sistema.
-4. **`UNAUTHORIZED`** (403) — el depósito existe pero pertenece a otra cuenta.
+3. **`NOT_FOUND`** (404) — no existe ningún depósito con esa identidad **para la cuenta
+   autenticada**. Incluye el caso de un depósito que pertenece a otra cuenta: la respuesta
+   es indistinguible de la de un depósito inexistente (no se revela la existencia de
+   recursos ajenos; nunca `UNAUTHORIZED`).
 
 El contrato de la consulta (endpoint, esquema del recurso depósito) está en HU-07-03
 (RN-11/RN-12) y el envelope HTTP en la épica 09 (HU-09-01).

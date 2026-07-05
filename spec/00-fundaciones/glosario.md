@@ -15,8 +15,13 @@ definición.
 
 - **Par de trading (trading pair):** las dos monedas que se intercambian. En este
   proyecto, el par único es **ETH/USDC-mock**. La primera moneda es la **base**, la
-  segunda es la **quote**. En la API, el campo `pair` toma el string canónico **`ETH/USDC`**
-  (donde `USDC` denota el activo subyacente USDC-mock).
+  segunda es la **quote**. Identificadores canónicos del par (ambos denotan el único par
+  del sistema; `USDC` denota el activo subyacente USDC-mock):
+  - En el **registro interno de trades y los eventos del motor** (épicas 03/05), el campo
+    `pair` toma el string **`ETH/USDC`**.
+  - En la **superficie de la API HTTP/WebSocket** (épica 09), el par se identifica con el
+    campo `symbol` y el string **`ETH-USDC`**.
+  - En la **UI** (épicas 10/11), se muestra el texto `ETH/USDC`.
 
 - **Base (base asset):** activo que se compra o vende. Aquí: **ETH**. Las cantidades de
   una orden (`quantity`) se expresan en la base.
@@ -88,8 +93,10 @@ definición.
 
 - **Estado de orden (order status):** situación en el ciclo de vida. Conjunto de estados
   de referencia: `OPEN` (abierta, sin ejecutar), `PARTIALLY_FILLED` (con fills
-  parciales), `FILLED` (ejecutada totalmente), `CANCELLED` (cancelada), `REJECTED`
-  (rechazada en validación, nunca llegó al libro).
+  parciales; para `LIMIT` es un estado **abierto**), `FILLED` (ejecutada totalmente),
+  `CANCELLED` (cancelada por el usuario, o remanente `MARKET` descartado por liquidez o
+  presupuesto agotados — estado terminal de una `MARKET` con fill parcial), `REJECTED`
+  (rechazada en validación o por el matching, nunca ingresó al libro).
 
 - **Self-trade:** situación en la que la misma cuenta sería simultáneamente maker y taker
   de un mismo fill. Está **bloqueada** (ver `SELF_TRADE_BLOCKED`).
@@ -204,9 +211,13 @@ definición.
 
 - **tradeId:** identificador único e inmutable de un fill liquidado (un fill ⇒ un trade).
   Sirve como **clave de idempotencia** del settlement. Formato: string `"T-" + sequence`,
-  donde `sequence` es un entero global estrictamente creciente (desde 1) asignado en orden de
-  producción de fills por el motor de matching; se persiste junto al ledger (reconstruible
-  tras reinicio) y **nunca** se reutiliza. Ver `05-settlement-y-fees`.
+  donde `sequence` es el **número de trade**: un entero global estrictamente creciente
+  (desde 1) asignado en orden de producción de fills por el motor de matching
+  (`05-settlement-y-fees`, HU-05-03 RN-3). Es un contador **propio de los trades**,
+  independiente de la numeración de eventos del motor (HU-03-05) y de las secuencias por
+  canal de la API (épica 09, RG-API-7). Bajo operación normal es contiguo; puede quedar un
+  hueco si el settlement de un fill se revierte. Se persiste junto al ledger
+  (reconstruible tras reinicio) y **nunca** se reutiliza.
 
 - **AT-id:** identificador de un test de aceptación (`AT-<epica>-<huSeq>-<NN>`), unidad de
   trazabilidad de la evaluación. Ver `README.md`.

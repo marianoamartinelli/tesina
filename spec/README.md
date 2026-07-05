@@ -99,9 +99,22 @@ AT-<epica>-<huSeq>-<NN>
 
 - `<epica>`: número de épica con dos dígitos.
 - `<huSeq>`: secuencia de la HU dentro de la épica (la misma que en el ID de la HU).
-- `<NN>`: número del criterio/test de aceptación dentro de la HU, dos dígitos.
+- `<NN>`: número del criterio/test de aceptación dentro de la HU, dos dígitos,
+  opcionalmente seguido de un **sufijo de una letra minúscula** para variantes
+  estrechamente relacionadas del mismo caso (p. ej. `AT-01-01-04a`..`AT-01-01-04e`,
+  cinco variantes de "formato de email inválido").
 
 Ejemplo: `AT-03-02-01` es el primer criterio de aceptación de la HU `HU-03-02`.
+
+Reglas del sufijo (consecuencia de la estabilidad de los AT-id):
+
+- Cuando un caso nace dividido en variantes, éstas usan sufijos contiguos desde `a`
+  (`04a`, `04b`, …) y **no existe** el id base sin sufijo (`04`).
+- Cuando a un AT base ya existente se le agrega después una variante, el id base **se
+  conserva** (no se renombra a `a`) y la variante nueva toma el sufijo `b` (p. ej.
+  `AT-08-01-12` y `AT-08-01-12b`): el base cuenta como primera variante.
+- Un AT sufijado es un test independiente a todos los efectos (se reporta por su id
+  completo).
 
 > Los **AT-id son la unidad de trazabilidad** del experimento. Cada test del holdout se
 > referencia por su AT-id; los reportes de evaluación de cada corrida indican qué AT-id

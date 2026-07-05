@@ -79,14 +79,14 @@ Cada `code` tiene un status HTTP asociado (sección 3). Convención general:
 | Code                  | HTTP | Cuándo se produce                                                                 | details esperado          |
 |-----------------------|------|----------------------------------------------------------------------------------|---------------------------|
 | `UNAUTHENTICATED`     | 401  | Falta credencial, o token/clave inválido o expirado.                              | —                         |
-| `UNAUTHORIZED`        | 403  | Credencial válida pero sin permiso para el recurso/acción (p. ej. operar sobre una orden de otra cuenta). | `{ resource }`            |
+| `UNAUTHORIZED`        | 403  | Credencial válida pero sin permiso para la acción: operaciones que actúan explícitamente **a nombre de** otra cuenta (p. ej. crear un retiro para otra cuenta). Los recursos ajenos **referenciados por id** responden 404, ver la nota de §3.4. | `{ resource }`            |
 | `RATE_LIMITED`        | 429  | Se superó el límite de solicitudes permitido.                                     | `{ retryAfterSeconds }`   |
 
 ### 3.2 Validación general
 
 | Code                | HTTP | Cuándo se produce                                                                   | details esperado            |
 |---------------------|------|-------------------------------------------------------------------------------------|-----------------------------|
-| `VALIDATION_ERROR`  | 422  | El payload no cumple el esquema: tipo incorrecto, campo faltante, monto que no matchea `^(0\|[1-9][0-9]*)$`, enum inválido. | `{ issues: [...] }`         |
+| `VALIDATION_ERROR`  | 422  | El payload no cumple el esquema: tipo incorrecto, campo faltante, monto que no matchea `^(0\|[1-9][0-9]*)$`, enum inválido **sin código propio** (los enums de `side` y `type` tienen códigos específicos — `INVALID_SIDE` / `INVALID_ORDER_TYPE` — y se evalúan en el paso 3 de §4). | `{ issues: [...] }`         |
 | `NOT_FOUND`         | 404  | Recurso genérico inexistente (cuando no aplica un código más específico).            | `{ resource, id }`          |
 | `METHOD_NOT_ALLOWED`| 405  | Método HTTP no permitido sobre una **ruta existente** (la ruta existe pero no soporta ese verbo). | `{ method, allowed }`       |
 
@@ -109,7 +109,7 @@ Cada `code` tiene un status HTTP asociado (sección 3). Convención general:
 | `INSUFFICIENT_FUNDS`     | 422  | Balance **disponible** insuficiente para bloquear lo requerido por la orden o el retiro.    | `{ asset, required, available }`     |
 | `ORDER_NOT_FOUND`        | 404  | La orden referenciada no existe o no pertenece a la cuenta.                                 | `{ orderId }`                        |
 | `ORDER_NOT_CANCELLABLE`  | 409  | Se intenta cancelar una orden que ya está `FILLED`, `CANCELLED` o `REJECTED`.               | `{ orderId, status }`                |
-| `SELF_TRADE_BLOCKED`     | 422  | La orden entrante cruzaría contra una orden propia (misma cuenta como maker y taker).       | `{ restingOrderId }`                 |
+| `SELF_TRADE_BLOCKED`     | 422  | El **rango consumible** de la orden entrante (HU-03-06 RN-2: lo que ejecutaría según prioridad precio-tiempo hasta completar su cantidad o presupuesto) contiene al menos una orden **propia** (misma cuenta como maker y taker). La entrante se rechaza **íntegra**, sin aplicar ningún fill (HU-03-06 RN-3). | `{ restingOrderId }`                 |
 | `MARKET_NO_LIQUIDITY`    | 422  | Orden `MARKET` que no encuentra liquidez (lado opuesto vacío) y no puede ejecutarse.        | —                                    |
 | `MARKET_BUDGET_INSUFFICIENT` | 422 | `MARKET BUY` cuyo presupuesto reservado **no alcanza para ejecutar ni 1 lot** del mejor maker disponible (lado opuesto **no** vacío, `filledWei = 0`). Se distingue de `MARKET_NO_LIQUIDITY`: aquí **sí** hay liquidez, pero el presupuesto no cubre el costo mínimo. | `{ budgetMin, requiredMin }`        |
 | `DUPLICATE_CLIENT_ORDER_ID` | 409 | Se reutiliza un `clientOrderId` ya usado por la cuenta (idempotencia de alta de orden).   | `{ clientOrderId }`                  |
@@ -126,6 +126,13 @@ Cada `code` tiene un status HTTP asociado (sección 3). Convención general:
 | `CHAIN_ID_MISMATCH`        | 422  | Una transacción, firma o **solicitud de API** referencia un `chainId`/red distinto de `11155111` (Sepolia). | `{ expected, got }`             |
 | `NONCE_CONFLICT`           | 409  | Conflicto de nonce al construir/broadcastear un retiro (nonce ya usado o fuera de secuencia).   | `{ address, nonce }`            |
 | `BROADCAST_FAILED`         | 502  | El nodo rechazó el broadcast de la transacción de retiro.                                       | `{ reason }`                    |
+
+> **Recursos ajenos referenciados por id:** referenciar por id un recurso de otra cuenta
+> (orden, retiro, depósito) responde el error *not found* correspondiente
+> (`ORDER_NOT_FOUND`, o `NOT_FOUND` con `details.resource`; HTTP 404), **no**
+> `UNAUTHORIZED`, para no revelar la existencia del recurso (*resource enumeration*).
+> `UNAUTHORIZED` (403) queda reservado para operaciones que actúan explícitamente **a
+> nombre de** otra cuenta (p. ej. un `accountId` ajeno como parámetro de una escritura).
 
 > **Tipos en `details` de `DEPOSIT_NOT_CONFIRMED`:** `confirmations` y `required` son
 > **enteros JSON** (números), **no** strings, porque son **conteos** y no montos monetarios.
@@ -163,11 +170,13 @@ Cuando una operación puede fallar por varias razones, el orden de evaluación d
    `BELOW_MIN_NOTIONAL`).
 5. Idempotencia (`DUPLICATE_CLIENT_ORDER_ID`).
 6. Fondos (`INSUFFICIENT_FUNDS`).
-7. Reglas de matching, en este orden: `SELF_TRADE_BLOCKED` (tiene precedencia: se evalúa
-   apenas el lado opuesto contiene alguna orden que la entrante cruzaría, aunque toda esa
-   liquidez sea propia) → `MARKET_NO_LIQUIDITY` (lado opuesto completamente vacío) →
-   `MARKET_BUDGET_INSUFFICIENT` (`MARKET BUY` con liquidez de terceros pero presupuesto
-   insuficiente para ni 1 lot).
+7. Reglas de matching, en este orden: `SELF_TRADE_BLOCKED` (se evalúa sobre el **rango
+   consumible** de la entrante — HU-03-06 RN-2 —: si contiene al menos una orden propia,
+   la entrante se rechaza íntegra, aunque **toda** la liquidez cruzable sea propia) →
+   `MARKET_NO_LIQUIDITY` (lado opuesto completamente vacío; solo `MARKET`) →
+   `MARKET_BUDGET_INSUFFICIENT` (`MARKET BUY` con lado opuesto **no** vacío cuyo
+   presupuesto no alcanza para ejecutar ni 1 lot del mejor maker disponible; en ese caso
+   el rango consumible resulta vacío, por lo que no hay STP que evaluar).
 
 Cada épica que defina una operación debe declarar (o heredar) su orden de precedencia para
 que los tests de aceptación sean reproducibles.

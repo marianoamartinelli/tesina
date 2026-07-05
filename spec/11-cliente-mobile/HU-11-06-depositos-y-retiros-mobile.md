@@ -48,13 +48,15 @@ mnemonic**: sólo consume la API. La validación on-chain autoritativa la hace e
    QR (EIP-681):** para que las wallets externas no envíen el activo o la red equivocados, el
    QR se genera como URI EIP-681: para **ETH nativo** `ethereum:<depositAddress>@11155111`;
    para **USDC-mock** `ethereum:<USDC_CONTRACT_ADDRESS>@11155111/transfer?address=<depositAddress>`
-   (la dirección del contrato USDC-mock se obtiene de la API junto a la dirección de
-   depósito; es configuración por entorno, no un literal). Siempre se muestra **además** el
+   (donde `<USDC_CONTRACT_ADDRESS>` es el campo **`tokenAddress`** devuelto por
+   `GET /deposit-address?asset=USDC`, épica 09 HU-09-01 RN-10 / HU-06-04 RN-6; es
+   configuración por entorno, no un literal de la spec). Siempre se muestra **además** el
    address en texto con checksum EIP-55 como respaldo para wallets que no soporten EIP-681.
 3. **RN-3 (seguimiento y confirmaciones, INV-5):** un depósito entrante muestra
    confirmaciones actuales vs. requeridas (**12**). El backend acredita **sólo** tras 12
    confirmaciones; hasta entonces figura **pendiente** (no acreditado). El cliente refleja el
-   estado provisto (incluido `DEPOSIT_NOT_CONFIRMED`); **no** acredita por su cuenta.
+   estado provisto por la API (`status = "PENDIENTE"` con sus `confirmations`, enum de la
+   épica 07); **no** acredita por su cuenta.
    **Mecanismo de actualización en tiempo real:** la **acreditación** del depósito (aumento
    de `disponible`) llega por el canal WebSocket **`balances`** de la épica 09 (HU-09-04
    RN-6), sin acción del usuario. El **progreso de confirmaciones** `X/12` proviene de la
@@ -76,14 +78,18 @@ mnemonic**: sólo consume la API. La validación on-chain autoritativa la hace e
    **`MIN_WITHDRAWAL_ETH = 1000000000000000` wei (0.001 ETH)** y
    **`MIN_WITHDRAWAL_USDC = 1000000` USDC-min (1 USDC)**. Debe haber `disponible` suficiente;
    si no ⇒ `INSUFFICIENT_FUNDS` (422). La conversión humano→unidad mínima es exacta, **sin
-   floats**. El cliente conoce los mínimos para feedback temprano cargándolos de un endpoint
-   de configuración de la épica 09 si existe; si no, usa estos valores constantes (la
-   validación autoritativa la hace el backend).
+   floats**. No existe un endpoint de configuración de activos/retiros: el cliente usa estos
+   valores constantes para el feedback temprano (paridad con HU-10-06 RN-6; la validación
+   autoritativa la hace el backend).
 7. **RN-7 (el retiro on-chain lo ejecuta el backend, INV-6):** la épica 08 firma con
    **EIP-155** y `chainId = 11155111`, usa un **nonce único y secuencial** por dirección
-   emisora y hace el broadcast. El cliente **no** firma ni arma la transacción. Códigos del
-   backend a manejar además de los de validación: `CHAIN_ID_MISMATCH` (422), `NONCE_CONFLICT`
-   (409), `BROADCAST_FAILED` (502).
+   emisora y hace el broadcast. El cliente **no** firma ni arma la transacción. Código del
+   backend a manejar además de los de validación: `CHAIN_ID_MISMATCH` (422). Los fallos de
+   firma/broadcast/nonce (`NONCE_CONFLICT`, `BROADCAST_FAILED`) son pasos **internos del
+   backend con reintentos** (HU-08-03): `POST /withdrawals` es **asíncrono (202)** y esos
+   errores **no** llegan como respuesta HTTP del alta; el cliente los observa como
+   `status = "FAILED"` con la causa en `failureReason` (canal privado `withdrawals` o
+   `GET /withdrawals/{withdrawalId}`, RN-8).
 8. **RN-8 (seguimiento del retiro):** la UI muestra el estado del retiro usando el **enum
    canónico** de la épica 08 (HU-08-04) / contrato REST de la épica 09 (HU-09-01 RN-11):
    **`PENDING` → `BROADCAST` → `CONFIRMED`**, con la rama terminal **`FAILED`**. La UI mapea
@@ -162,9 +168,9 @@ mnemonic**: sólo consume la API. La validación on-chain autoritativa la hace e
 
 ### Escenario 3 (borde): Depósito sin confirmaciones suficientes [AT-11-06-03]
 - Dado un depósito con menos de 12 confirmaciones
-- Cuando el cliente consulta su estado
-- Entonces el backend lo reporta como no acreditado (`DEPOSIT_NOT_CONFIRMED` o estado
-  pendiente equivalente)
+- Cuando el cliente consulta su estado por `GET /deposits`
+- Entonces el depósito figura con `status = "PENDIENTE"` y `confirmations < 12`
+  (`confirmations` y `required = 12` como **enteros JSON**, enum de la épica 07)
 - Y la UI no suma ese monto al balance disponible
 
 ### Escenario 4 (idempotencia): Mismo depósito no se cuenta dos veces [AT-11-06-04]
@@ -216,17 +222,27 @@ mnemonic**: sólo consume la API. La validación on-chain autoritativa la hace e
 - Entonces la UI lo informa con el `code` devuelto (el cliente no firma ni arma la tx)
 
 ### Escenario 11 (error): Conflicto de nonce [AT-11-06-11]
-- Dado que el **backend** detecta un conflicto de nonce al construir/broadcastear el retiro
-  (nonce ya usado o fuera de secuencia, RN-7) y responde `NONCE_CONFLICT` (409) con
-  `details {address, nonce}`
-- Cuando el **cliente recibe** esa respuesta
-- Entonces la UI lo informa con el `code` devuelto (el cliente no gestiona nonces)
+- Dado un retiro aceptado (`POST /withdrawals` respondió **202**) en cuyo procesamiento el
+  **backend** detecta un conflicto de nonce al construir/broadcastear (nonce ya usado o
+  fuera de secuencia, HU-08-03 RN-4) — paso **interno con reintentos** que **no** llega como
+  respuesta HTTP al cliente (RN-7)
+- Cuando el cliente observa el estado del retiro por el canal privado `withdrawals` o
+  `GET /withdrawals/{withdrawalId}`
+- Entonces ve `PENDING`/`BROADCAST` si el backend lo resuelve, o `FAILED` con la causa en
+  `failureReason` si el broadcast resulta definitivamente imposible
+- Y ante `FAILED` la UI informa la causa (el cliente no gestiona nonces) y ofrece crear un
+  retiro **nuevo** con un `clientWithdrawalId` distinto (RN-8/RN-13)
 
 ### Escenario 12 (error): Broadcast fallido [AT-11-06-12]
-- Dado un retiro cuya transacción es rechazada por el nodo al broadcastear
-- Cuando ocurre el fallo
-- Entonces el backend responde `BROADCAST_FAILED` (502) con `details {reason}`
-- Y la UI lo informa como reintentable (sin duplicar el retiro)
+- Dado un retiro aceptado (**202**) cuya transacción es rechazada por el nodo al
+  broadcastear de forma **definitiva** (agotados los reintentos internos
+  `MAX_BROADCAST_RETRIES`, HU-08-03 RN-8; el error del nodo **no** llega como respuesta
+  HTTP del alta, RN-7)
+- Cuando el cliente observa el retiro con `status = "FAILED"` y la causa en `failureReason`
+  (canal privado `withdrawals` o `GET /withdrawals/{withdrawalId}`)
+- Entonces la UI informa que el envío on-chain falló mostrando la causa
+- Y, por ser `FAILED` terminal, ofrece crear un retiro **nuevo** con un `clientWithdrawalId`
+  distinto (sin duplicar el retiro original; RN-8/RN-13)
 
 ### Escenario 13: Escanear QR rellena el destino [AT-11-06-13]
 - Dado el formulario de retiro y permiso de cámara concedido
@@ -321,11 +337,12 @@ mnemonic**: sólo consume la API. La validación on-chain autoritativa la hace e
   para no duplicar el retiro
 
 ### Escenario 26 (depósito): QR EIP-681 de USDC-mock [AT-11-06-26]
-- Dado la pantalla de depósito para **USDC-mock** con la dirección y la dirección del
-  contrato USDC obtenidas de la API
+- Dado la pantalla de depósito para **USDC-mock** con la dirección de depósito y el campo
+  **`tokenAddress`** (dirección del contrato USDC-mock) obtenidos de
+  `GET /deposit-address?asset=USDC` (RN-2, épica 09 HU-09-01 RN-10)
 - Cuando se genera el QR
 - Entonces el QR codifica el URI EIP-681
-  `ethereum:<USDC_CONTRACT_ADDRESS>@11155111/transfer?address=<depositAddress>` (RN-2)
+  `ethereum:<tokenAddress>@11155111/transfer?address=<depositAddress>` (RN-2)
 - Y se muestra **además** el address en texto con checksum EIP-55 como respaldo
 
 ## Definicion de Done (checklist transversal)

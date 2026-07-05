@@ -48,7 +48,7 @@ HU-09-03 pero exige token.
    cantidad acumulada ejecutada; `feeWei`/`feeUsdcMin` acumulan la fee cobrada por los fills
    hasta el momento (BUY acumula `feeWei`, SELL `feeUsdcMin`; el otro es `"0"`; ver HU-09-01
    RN-2). Para una orden `MARKET` parcialmente ejecutada y sin remanente, el último evento
-   lleva `status: "PARTIALLY_FILLED"` (estado terminal de MARKET, HU-09-01 RN-5).
+   lleva `status: "CANCELLED"` (estado terminal de MARKET, HU-09-01 RN-5, HU-03-04 RN-9).
 5. **RN-5 (transiciones de orden):** se emite un evento ante cada transición observable:
    alta aceptada (`OPEN`), fill parcial (`PARTIALLY_FILLED` con `filledWei` creciente), fill
    total (`FILLED`), cancelación (`CANCELLED`). **No** existe evento WS `REJECTED`: toda orden
@@ -63,7 +63,9 @@ HU-09-03 pero exige token.
    con enum acotado: `{ ORDER_PLACED, ORDER_CANCELLED, ORDER_FILLED, DEPOSIT_CREDITED,
    WITHDRAWAL_INITIATED, WITHDRAWAL_CONFIRMED, WITHDRAWAL_FAILED }`. `refId` correlaciona con
    el recurso origen (`orderId` para causas de orden, `withdrawalId` para causas de retiro,
-   `depositId` para `DEPOSIT_CREDITED`) o `null` si no aplica.
+   `depositId` para `DEPOSIT_CREDITED`) o `null` si no aplica. La liberación del remanente
+   o presupuesto no consumido de una `MARKET` que termina `CANCELLED` (HU-09-01 RN-5) usa
+   `reason: "ORDER_CANCELLED"` con `refId = orderId`.
 7. **RN-7 (consistencia con conservación):** los eventos reflejan, no alteran, el estado.
    La secuencia de eventos de balance es coherente con INV-1 (un fill solo redistribuye:
    bloqueado→consumido y crédito en el otro activo; la suma global no cambia). La fee
@@ -72,7 +74,10 @@ HU-09-03 pero exige token.
    creciente y contiguo, **independiente por canal** (`orders`, `balances`, `withdrawals`
    cada uno la suya) por conexión/suscripción (RG-API-7, HU-09-03 RN-13). Un hueco se detecta
    **solo dentro del mismo canal** y obliga a re-sincronizar (vía reconsulta REST o
-   re-suscripción); un mensaje de otro canal con `sequence` distinta no es un hueco.
+   re-suscripción); un mensaje de otro canal con `sequence` distinta no es un hueco. La
+   numeración es **por conexión**: tras una reconexión, el cliente re-sincroniza su estado
+   por REST y trata la numeración del canal como **nueva** (las `sequence` de la conexión
+   anterior **no** son comparables con las de la nueva).
 9. **RN-9 (orden de eventos en un fill):** ante un fill, los eventos `order` y `balance`
    asociados reflejan el resultado **después** del settlement atómico (INV-4): no se observa
    un estado parcial (p. ej. balance debitado pero orden sin actualizar).
@@ -92,11 +97,15 @@ HU-09-03 pero exige token.
 14. **RN-14 (canal de retiros):** la suscripción `withdrawals` entrega, en cada transición de
     estado de un retiro propio, el evento
     `{ "type": "withdrawal", "withdrawalId", "asset", "amountMinUnit", "address",
-    "status", "txHash"|null, "confirmations", "sequence", "timestamp" }`.
+    "status", "txHash"|null, "confirmations", "failureReason", "sequence", "timestamp" }`.
     `status ∈ {PENDING, BROADCAST, CONFIRMED, FAILED}` (HU-08-04); `txHash` es `null` hasta el
-    broadcast. Esto permite conocer de forma reactiva el resultado on-chain (incluido el fallo
-    `FAILED`, p. ej. tras `BROADCAST_FAILED`) sin polling de `GET /withdrawals/{withdrawalId}`.
-    El aislamiento por cuenta (RN-3) aplica igual que a `orders`/`balances`.
+    broadcast; `confirmations` es **entero JSON** (conteo, no monto; convenciones §5);
+    `failureReason` es el **código de causa** cuando `status = FAILED` y `null` en cualquier
+    otro estado (enum de HU-09-01 RN-18: `BROADCAST_FAILED`, `TX_DROPPED`, `TX_REVERTED`,
+    `USER_CANCELLED`; HU-08-03/HU-08-04). Esto permite conocer de forma reactiva el
+    resultado on-chain (incluido el fallo `FAILED` y su causa) sin polling de
+    `GET /withdrawals/{withdrawalId}`. El aislamiento por cuenta (RN-3) aplica igual que a
+    `orders`/`balances`.
 15. **RN-15 (heartbeat):** el canal privado usa el mismo mecanismo ping/pong de HU-09-03
     RN-14 (ping del servidor cada ~30 s; cierre si no hay `pong` en ~10 s).
 
@@ -174,9 +183,13 @@ HU-09-03 pero exige token.
 
 ### Escenario 10 (idempotencia de cliente): Reaplicar evento [AT-09-04-10]
 - Dado A recibió un evento `order` con `orderId: X`, `status: "FILLED"`, `sequence: s`
-- Cuando, por reconexión, recibe nuevamente un evento con `sequence ≤ s` para `X`
+- Cuando, por una retransmisión **dentro de la misma conexión**, recibe de nuevo un evento
+  con `sequence ≤ s` para `X`
 - Entonces aplicar el estado es idempotente: la copia local de la orden X no se corrompe ni
-  retrocede de estado
+  retrocede de estado (RN-11)
+- Y tras una **reconexión** la numeración del canal es **nueva** (no comparable con la de
+  la conexión anterior): el cliente re-sincroniza por REST y no compara `sequence` entre
+  conexiones (RN-8)
 
 ### Escenario 11 (seguridad): Expiración de token en sesión activa [AT-09-04-11]
 - Dado A autenticada en el canal privado con un token de TTL corto
@@ -190,7 +203,9 @@ HU-09-03 pero exige token.
 - Cuando A solicita un retiro (`POST /withdrawals`, HU-09-01) y este avanza on-chain
 - Entonces A recibe un evento `withdrawal` en cada transición: `PENDING` (al aceptar),
   `BROADCAST` (con `txHash` no nulo), y finalmente `CONFIRMED` o `FAILED`, con
-  `amountMinUnit`/`confirmations` como strings (RN-14)
+  `amountMinUnit` como string y `confirmations` como **entero JSON** (RN-14)
+- Y `failureReason` es no nulo (enum de HU-09-01 RN-18) **solo** en el evento con
+  `status: "FAILED"`; en cualquier otro estado es `null` (RN-14)
 - Y A **no** recibe eventos de retiros de otra cuenta (aislamiento, RN-3)
 
 ## Definicion de Done (checklist transversal)

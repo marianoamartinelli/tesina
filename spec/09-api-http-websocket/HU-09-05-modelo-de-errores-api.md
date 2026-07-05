@@ -58,6 +58,7 @@ aquí no se inventan códigos nuevos, solo se especifica cómo se **exponen** en
    | `INSUFFICIENT_FUNDS`        | 422  |
    | `SELF_TRADE_BLOCKED`        | 422  |
    | `MARKET_NO_LIQUIDITY`       | 422  |
+   | `MARKET_BUDGET_INSUFFICIENT`| 422  |
    | `INVALID_ADDRESS`           | 422  |
    | `WITHDRAWAL_BELOW_MIN`      | 422  |
    | `WITHDRAWAL_AMOUNT_INVALID` | 422  |

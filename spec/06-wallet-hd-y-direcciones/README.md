@@ -72,8 +72,9 @@ mismo seed).
   (`modelo-de-errores.md`), invariantes globales (`invariantes-globales.md`) y
   convenciones de serialización (`convenciones-monetarias.md`).
 - **09 — API HTTP/WebSocket:** el contrato REST del endpoint de consulta
-  (`GET /api/v1/deposit-address`) lo fija HU-09-01 RN-10 (respuesta `{ asset, address }`,
-  **HTTP 200**, identidad por token).
+  (`GET /api/v1/deposit-address`) lo fija HU-09-01 RN-10 (respuesta `{ asset, address }`
+  —más `tokenAddress` cuando `asset = USDC`, HU-06-04 RN-6—, **HTTP 200**, identidad por
+  token).
 
 **Dependientes de esta épica:**
 

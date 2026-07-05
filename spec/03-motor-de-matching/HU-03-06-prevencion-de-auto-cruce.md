@@ -54,8 +54,10 @@ intentar cruzar.
      distribuida en varios niveles de precio), el error es `SELF_TRADE_BLOCKED`.
    - `MARKET_NO_LIQUIDITY` solo aplica si el lado opuesto está **completamente vacío** antes
      de evaluar STP (no hay ninguna orden que cruzar).
-   - `MARKET_BUDGET_INSUFFICIENT` (HU-03-04 RN-9) se evalúa **después** de descartar STP: hay
-     liquidez de terceros pero el presupuesto no cubre ni 1 lot.
+   - `MARKET_BUDGET_INSUFFICIENT` (HU-03-04 RN-9) aplica cuando el lado opuesto **no** está
+     vacío pero el presupuesto no cubre ni 1 lot del mejor maker disponible, **sea de quien
+     sea** esa liquidez: con `max_lots = 0` desde el inicio, el rango consumible (RN-2) es
+     **vacío**, no hay STP que evaluar y el error es `MARKET_BUDGET_INSUFFICIENT`.
 
    Un solo error por respuesta.
 5. **RN-5 (estado de la orden entrante).** La orden rechazada por STP queda en estado

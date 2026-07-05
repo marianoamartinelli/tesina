@@ -30,7 +30,10 @@ genera evento de `trade` (puede generar un `book-update` para market data).
    orden maker se emite **un** evento `trade`. Un taker que consume N makers genera **N**
    eventos `trade`, en el orden de prioridad en que se ejecutaron (HU-03-03 RN-2).
 2. **RN-2 (campos del evento `trade`).** El evento `trade` contiene, como mínimo:
-   - `tradeId`: identificador único y estable del trade (no se reutiliza).
+   - `tradeId`: identificador único y estable del trade (no se reutiliza), con formato
+     `"T-" + <número de trade>`, donde el número de trade es el contador **propio de los
+     trades** (HU-05-03 RN-2/RN-3). El evento **transporta** el `tradeId`; **no** lo deriva
+     de su propia `sequence` de eventos (contadores independientes, README RT-2).
    - `sequence`: número de **secuencia global** del motor, entero estrictamente monótono
      creciente, sin huecos ni repeticiones, que ordena todos los eventos.
    - `pair`: `"ETH/USDC"`.
@@ -39,7 +42,16 @@ genera evento de `trade` (puede generar un `book-update` para market data).
    - `quoteAmountMin`: `floor(quantityWei × priceMin / 10^18)` (string entero, USDC-min).
    - `makerOrderId`, `takerOrderId`.
    - `makerSide`, `takerSide` ∈ `{BUY, SELL}` (opuestos entre sí).
-   - `makerAccountId`, `takerAccountId` (exposición externa la regula la épica 09).
+   - `takerOrderType` ∈ `{LIMIT, MARKET}`: tipo de la orden taker (insumo del settlement,
+     HU-05-01 RN-1/RN-6).
+   - `price_limit_taker`: precio límite de la orden taker (string entero, USDC-min/ETH);
+     presente con valor **solo si** `takerSide = BUY` y `takerOrderType = LIMIT`; `null` en
+     cualquier otro caso (taker `MARKET` o taker `SELL`) (HU-05-01 RN-1).
+   - `makerAccountId`, `takerAccountId` (exposición externa la regula la épica 09). Los
+     `buyerAccountId`/`sellerAccountId` que consume el settlement (HU-05-01 RN-1) se
+     **derivan** de estos campos y de los lados: si `takerSide = BUY`, `buyerAccountId =
+     takerAccountId` y `sellerAccountId = makerAccountId`; si `takerSide = SELL`, la
+     inversa. La derivación se define **aquí**; HU-05-01 la consume sin redefinirla.
    - `timestamp`: instante del fill (no se usa para aritmética monetaria).
 3. **RN-3 (serialización entera).** Todo monto/precio/cantidad del evento se serializa como
    **string de entero** de unidad mínima, patrón `^(0|[1-9][0-9]*)$`
@@ -113,7 +125,7 @@ genera evento de `trade` (puede generar un `book-update` para market data).
 13. **RN-13 (`order-update` para rechazos de matching).** Cuando el motor **rechaza** una
     orden en la fase de matching (`SELF_TRADE_BLOCKED`, `MARKET_NO_LIQUIDITY`,
     `MARKET_BUDGET_INSUFFICIENT`), emite un `order-update` con `status = "REJECTED"`,
-    `filledWei = 0`, `cumulativeFilledWei = "0"`, `remainingWei = quantityWei` original,
+    `cumulativeFilledWei = "0"`, `remainingWei = quantityWei` original,
     `reason` = el `code` del rechazo, `sequence` y `timestamp`; **sin** `tradeId` y **sin**
     `trade` asociado. Este evento cierra el ciclo de vida de la orden para los consumidores
     (settlement, UI), evitando que la vean "pendiente" indefinidamente. Es el único caso en

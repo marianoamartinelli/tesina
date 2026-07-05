@@ -25,11 +25,11 @@ NO redefine la idempotencia ni el manejo de reorgs (HU-07-04), pero **coopera** 
 8. **RN-8 (no acreditar antes de confirmar):** cualquier intento de acreditar/usar un depósito con `confirmaciones < 12` se rechaza con `DEPOSIT_NOT_CONFIRMED` (HTTP 409), con `details = { txHash, confirmations, required }`. **`confirmations` y `required` son enteros JSON (números), no strings**, porque son **conteos** y no montos monetarios (la serialización como string aplica solo a montos/precios; ver `convenciones-monetarias.md` §5). `required` es siempre `12`. No altera balances.
 9. **RN-9 (acreditación única):** un depósito se acredita a lo sumo una vez (INV-5). Reintentar acreditar un depósito ya acreditado se gobierna en HU-07-04 (`DEPOSIT_ALREADY_CREDITED`); no produce doble suma.
 10. **RN-10 (no-negatividad):** la acreditación nunca puede dejar balances negativos (INV-2); solo suma montos positivos.
-11. **RN-11 (consulta de estado):** un Trader autenticado puede consultar el estado de sus depósitos (`PENDIENTE` / `ACREDITADO` / `DESCARTADO`, según la máquina de estados del README) y las confirmaciones actuales. La consulta de una identidad inexistente da `NOT_FOUND` (404); la de un depósito de otra cuenta da `UNAUTHORIZED` (403); sin credencial da `UNAUTHENTICATED` (401). El **orden de precedencia** de estos errores es el de la tabla del README ("Precedencia de validación en consultas de depósitos").
+11. **RN-11 (consulta de estado):** un Trader autenticado puede consultar el estado de sus depósitos (`PENDIENTE` / `ACREDITADO` / `DESCARTADO`, según la máquina de estados del README) y las confirmaciones actuales. La consulta de una identidad inexistente da `NOT_FOUND` (404); la de un depósito de **otra cuenta** da **también `NOT_FOUND` (404)** con `details = { resource: "deposit", id }` (política de **no revelar la existencia** de recursos ajenos; nunca `UNAUTHORIZED`); sin credencial da `UNAUTHENTICATED` (401). El **orden de precedencia** de estos errores es el de la tabla del README ("Precedencia de validación en consultas de depósitos").
 12. **RN-12 (contrato de consulta y formato de `txHash`):** el contrato mínimo del endpoint de consulta es (el envelope HTTP y el registro de rutas los fija la épica 09 — HU-09-01):
     - **Listado:** `GET /api/v1/deposits` → `{ items: [<deposito>...], nextCursor: string|null }`, con filtros opcionales `asset ∈ {ETH, USDC}` y `status ∈ {PENDIENTE, ACREDITADO, DESCARTADO}`, y paginación `limit`/`cursor` (convención de HU-09-01 RN-8). Devuelve **solo** depósitos de la cuenta del token.
     - **Por identidad:** `GET /api/v1/deposits/{depositId}` con `depositId = "<txHash>:<logIndex>"` → el objeto `<deposito>`.
-    - **Esquema del objeto `<deposito>`:** `{ depositId, txHash, logIndex, asset, amount, status, confirmations, required, blockNumber, creditedAt?, discardReason? }`, donde: `amount` es **string de entero** en unidad mínima del activo (`amountWei` para ETH / `amountUsdcMin` para USDC; nombre exacto por épica 09); `status ∈ {PENDIENTE, ACREDITADO, DESCARTADO}`; `confirmations`, `required` (= 12), `logIndex` y `blockNumber` son **enteros JSON**; `creditedAt` está presente solo si `ACREDITADO`; `discardReason ∈ {REORG, REVERTED}` solo si `DESCARTADO`.
+    - **Esquema del objeto `<deposito>`:** `{ depositId, txHash, logIndex, asset, amount, status, confirmations, required, blockNumber, creditedAt?, discardReason? }`, donde: `amount` es **string de entero** en unidad mínima del activo (nombre exacto del campo fijado por la épica 09: **`amountMinUnit`**, único para ambos activos); `status ∈ {PENDIENTE, ACREDITADO, DESCARTADO}`; `confirmations`, `required` (= 12), `logIndex` y `blockNumber` son **enteros JSON**; `creditedAt` está presente solo si `ACREDITADO`; `discardReason ∈ {REORG, REVERTED}` solo si `DESCARTADO`.
     - **Formato de `txHash`:** patrón `^0x[0-9a-fA-F]{64}$` (case-insensitive; se normaliza a minúsculas). `logIndex` es entero `≥ 0`. Un `txHash` o `logIndex` mal formado en la consulta se rechaza con `VALIDATION_ERROR` (HTTP 422) con `details.issues`.
 
 ## Criterios de aceptación (DoD)
@@ -81,11 +81,14 @@ NO redefine la idempotencia ni el manejo de reorgs (HU-07-04), pero **coopera** 
 - Entonces ve el depósito como `status = "PENDIENTE"` con `confirmations = 8` y `required = 12` (**enteros JSON**, RN-8/RN-12), y los campos del esquema de RN-12 (`depositId`, `txHash`, `logIndex`, `asset`, `amount`, `blockNumber`)
 - Y al alcanzar 12 confirmaciones y acreditarse, lo ve como `status = "ACREDITADO"` (con `creditedAt` presente)
 
-### Escenario 8 (error de autorización: depósito de otra cuenta) [AT-07-03-08]
+### Escenario 8 (aislamiento: depósito de otra cuenta no se revela) [AT-07-03-08]
 - Dado un Trader autenticado dueño de `acc-1`
 - Y que existe un depósito perteneciente a `acc-2` con identidad `(txHash, logIndex)`
 - Cuando hace `GET /api/v1/deposits/{depositId}` de ese depósito de `acc-2`
-- Entonces se rechaza con `UNAUTHORIZED` (HTTP 403)
+- Entonces se rechaza con `NOT_FOUND` (HTTP 404) y
+  `details = { resource: "deposit", id: "<txHash>:<logIndex>" }` — la misma respuesta que
+  para un depósito inexistente, de modo que no se revela la existencia del recurso ajeno
+  (RN-11)
 - Y ningún dato del depósito de `acc-2` se filtra fuera del envelope de error
 
 ### Escenario 9 (error de autenticación: sin credencial) [AT-07-03-09]
@@ -101,12 +104,12 @@ NO redefine la idempotencia ni el manejo de reorgs (HU-07-04), pero **coopera** 
 ### Escenario 11 (error: `txHash` mal formado) [AT-07-03-11]
 - Dado un Trader autenticado
 - Cuando consulta un depósito con un `txHash` que **no** matchea `^0x[0-9a-fA-F]{64}$` (p. ej. longitud incorrecta) o un `logIndex` no entero
-- Entonces se rechaza con `VALIDATION_ERROR` (HTTP 422) con `details.issues` (RN-12), por precedencia antes que `NOT_FOUND`/`UNAUTHORIZED`
+- Entonces se rechaza con `VALIDATION_ERROR` (HTTP 422) con `details.issues` (RN-12), por precedencia antes que `NOT_FOUND`
 
 ## Definicion de Done (checklist transversal)
 - [ ] Todos los escenarios de aceptación (AT-07-03-01..11) pasan
 - [ ] Reglas de negocio RN-1..RN-12 verificadas (en especial el cómputo de confirmaciones y el umbral 12)
-- [ ] Manejo de errores conforme a 00-fundaciones/modelo-de-errores.md (`DEPOSIT_NOT_CONFIRMED`, `NOT_FOUND`, `VALIDATION_ERROR`, `UNAUTHORIZED`, `UNAUTHENTICATED`) y a la precedencia del README
+- [ ] Manejo de errores conforme a 00-fundaciones/modelo-de-errores.md (`DEPOSIT_NOT_CONFIRMED`, `NOT_FOUND`, `VALIDATION_ERROR`, `UNAUTHENTICATED`; recursos ajenos ⇒ `NOT_FOUND`, nunca `UNAUTHORIZED`) y a la precedencia del README
 - [ ] Precision/redondeo conforme a 00-fundaciones/convenciones-monetarias.md (acreditación de monto íntegro, sin fee, sin floats)
 - [ ] Sin violacion de invariantes globales (00-fundaciones/invariantes-globales.md): INV-1, INV-2, INV-3, INV-5, INV-8
 - [ ] Adherencia verificada al estándar on-chain citado (Sepolia chainId 11155111; `CONFIRMACIONES_REQUERIDAS = 12`)

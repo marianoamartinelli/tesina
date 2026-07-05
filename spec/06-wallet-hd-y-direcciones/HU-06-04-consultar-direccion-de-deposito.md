@@ -47,8 +47,10 @@ según RN-6.
    es **estructuralmente imposible**: cualquier identificador de cuenta que un cliente
    intente inyectar (query/body) se **ignora** y la respuesta es siempre la dirección del
    dueño del token. Si una variante futura del contrato expusiera un selector de recurso
-   ajeno, el acceso a la dirección de otra cuenta se rechaza con `UNAUTHORIZED` (HTTP 403) y
-   `details.resource`. En ningún caso se revela la dirección de terceros.
+   ajeno, el acceso al recurso de otra cuenta se rechazaría con `NOT_FOUND` (HTTP 404) sin
+   revelar su existencia, conforme a la política de recursos ajenos de
+   `00-fundaciones/modelo-de-errores.md` (`UNAUTHORIZED` queda reservado para actuar "a
+   nombre de" otra cuenta). En ningún caso se revela la dirección de terceros.
 3. **RN-3 (activos soportados):** los activos válidos son `ETH` y `USDC`. Para **ambos**,
    la respuesta contiene **la misma** dirección (misma red, misma EOA). Un activo fuera de
    `{ETH, USDC}` se rechaza con `VALIDATION_ERROR` (HTTP 422) y `details.issues`.
@@ -68,10 +70,12 @@ según RN-6.
    tiene uno.
 6. **RN-6 (contrato de respuesta):** la respuesta exitosa incluye, como mínimo (épica 09
    HU-09-01 RN-10): la `address` (string `0x` + 40 hex con **checksum EIP-55**) y el `asset`
-   consultado (`"ETH"` o `"USDC"`). Esta HU añade, como campos **informativos**, la red
-   (`network = "sepolia"`) y el `chainId` (string `"11155111"`); opcionalmente el
-   `derivationPath` (dato no secreto). **Nunca** incluye claves privadas ni el seed (custodia,
-   HU-06-01/02).
+   consultado (`"ETH"` o `"USDC"`). Para `asset = USDC` la respuesta incluye **además** el
+   campo `tokenAddress`: la dirección del contrato USDC-mock del entorno (string `0x` + 40
+   hex con checksum EIP-55), coherente con HU-09-01 RN-10. Esta HU añade, como campos
+   **informativos**, la red (`network = "sepolia"`) y el `chainId` (string `"11155111"`);
+   opcionalmente el `derivationPath` (dato no secreto). **Nunca** incluye claves privadas ni
+   el seed (custodia, HU-06-01/02).
 7. **RN-7 (consistencia / idempotencia de lectura):** múltiples consultas de la misma
    cuenta (para el mismo o distinto activo) devuelven **siempre la misma** dirección; la
    consulta no muta el índice asignado.

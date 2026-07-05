@@ -61,14 +61,14 @@ perspectiva correcta.
      LIMIT N`); las siguientes usan `cursor = sequence_del_último_trade_devuelto` con
      `WHERE sequence < cursor ORDER BY sequence DESC LIMIT N`.
    - **Tamaño de página:** por defecto `N = 50`, máximo `N = 200`. La épica 09 fija el
-     contrato de wire exacto **dentro de estos límites**; el mecanismo cursor-based y la
-     garantía de estabilidad son **normativos de esta épica**.
+     contrato de wire exacto **dentro de estos límites** (HU-09-01 RN-20); el mecanismo
+     cursor-based y la garantía de estabilidad son **normativos de esta épica**.
    - **Estabilidad real:** dos páginas consecutivas **no omiten ni duplican** entradas aunque
      se inserten nuevos trades entre páginas (los nuevos trades tienen `sequence` mayores y
      solo aparecerían "antes" del cursor, nunca desplazando los ya paginados).
 7. **RN-7 (filtros mínimos).** Se admiten, al menos, filtros por rango temporal
-   (`from`/`to`, en epoch ms) y por `orderId` **propio** (todos los fills de una orden del
-   usuario). Filtrar por un `orderId` que **no pertenece** a la cuenta autenticada (sea
+   (`from`/`to`, timestamps **ISO-8601 UTC** — HU-09-01 RN-15/RN-20) y por `orderId`
+   **propio** (todos los fills de una orden del usuario). Filtrar por un `orderId` que **no pertenece** a la cuenta autenticada (sea
    inexistente o de otra cuenta) devuelve una **lista vacía** — la **misma** respuesta que
    cualquier filtro sin coincidencias y que el historial vacío (RN-11) —, **nunca** un
    `ORDER_NOT_FOUND` ni la exposición de fills ajenos. (Responder `404` solo para órdenes
@@ -151,13 +151,13 @@ perspectiva correcta.
 
 ### Escenario 7 (error): intento de ver trades de otra cuenta [AT-05-04-07]
 - Dado un trader autenticado como cuenta A
-- Cuando solicita explícitamente el historial de la cuenta B ajena (p. ej.
-  `GET /accounts/{accountId_B}/trades` con credencial de A, si el contrato de la épica 09
-  expone un endpoint con `accountId` en la ruta)
-- Entonces se rechaza con `UNAUTHORIZED` (403) y no se filtra ninguna entrada de B (RN-2)
-- Y si el contrato de la épica 09 **solo** expone `/me/trades` (sin posibilidad de indicar
-  otra cuenta), el aislamiento es **por diseño**: el usuario siempre accede a su propia pata
-  y el escenario se satisface por construcción (no hay forma de pedir la cuenta B)
+- Cuando consulta el historial por el endpoint del contrato de la épica 09
+  (`GET /api/v1/trades`, HU-09-01 RN-20), que **no** admite indicar otra cuenta en la ruta
+- Entonces el aislamiento es **por diseño**: la respuesta contiene solo la pata propia de A
+  (RN-2) y no existe forma de solicitar el historial de la cuenta B
+- Y si una implementación expusiera además un endpoint con `accountId` en la ruta (fuera
+  del contrato), pedir la cuenta B ajena con credencial de A se rechaza con `UNAUTHORIZED`
+  (403) sin filtrar ninguna entrada de B (RN-2)
 
 ### Escenario 8 (filtro): `orderId` ajeno o inexistente devuelve lista vacía [AT-05-04-08]
 - Dado un trader autenticado como cuenta A y un `orderId` que **no** pertenece a A (de la

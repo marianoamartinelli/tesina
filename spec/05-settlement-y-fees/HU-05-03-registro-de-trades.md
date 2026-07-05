@@ -45,12 +45,16 @@ registro se almacenan y serializan como **enteros de unidad mínima** (string en
      matching en **orden de producción de fills**. Bajo operación normal es **contiguo** (sin
      huecos); si el settlement de un fill se revierte (AT-05-01-06) puede quedar un hueco,
      pero el siguiente trade exitoso siempre tiene un `sequence` **estrictamente mayor** que
-     el anterior. Es el insumo del `tradeId` (RN-2) y la clave de ordenamiento canónica. (Con
-     par único, "global" y "por par" coinciden; se fija **global** para eliminar ambigüedad.)
-   - `timestamp`: **entero de epoch UNIX en milisegundos (ms), UTC**, serializado como
-     **string de entero** en la API. La fuente de reloj es el reloj del sistema en el momento
-     en que **comienza** la transacción de settlement. **No** se garantizan timestamps únicos
-     por trade; el desempate de orden es **siempre por `sequence`** (HU-05-04 RN-5).
+     el anterior. Es el insumo del `tradeId` (RN-2) y la clave de ordenamiento canónica. Es
+     un contador **propio de los trades**, independiente de la numeración de eventos del
+     motor (HU-03-05 RN-7, README 03 RT-2) y de las secuencias por canal WebSocket
+     (RG-API-7). (Con par único, "global" y "por par" coinciden; se fija **global** para
+     eliminar ambigüedad.)
+   - `timestamp`: instante en que **comienza** la transacción de settlement (fuente: reloj
+     del sistema, UTC). La representación **interna** es libre (p. ej. epoch ms); **en la
+     API** se serializa como string **ISO-8601 UTC** (HU-09-01 RN-15). **No** se garantizan
+     timestamps únicos por trade; el desempate de orden es **siempre por `sequence`**
+     (HU-05-04 RN-5).
    - Ambos permiten ordenar los trades de forma determinista y reproducible tras reinicio
      (INV-8).
 4. **RN-4 (campos obligatorios del registro).** Cada trade contiene, como mínimo:

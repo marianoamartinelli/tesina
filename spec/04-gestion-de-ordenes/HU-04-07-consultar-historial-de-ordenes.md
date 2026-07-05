@@ -52,14 +52,15 @@ aquí se fija la **semántica**.
     - `executedQty` (base, wei) y `remainingQty` (porción **no** ejecutada): `FILLED` ⇒
       `remainingQty="0"`; `CANCELLED` ⇒ `remainingQty = quantityWei − executedQty` (la porción
       descartada/cancelada); `REJECTED` ⇒ `remainingQty = quantityWei` (para órdenes por
-      cantidad; para market por `quoteOrderQty`, `remainingQty` no aplica y es `"0"`/`null`).
+      cantidad; para market por `quoteOrderQty`, `remainingQty` no aplica y es **`null`** —
+      serialización única; nunca `"0"`).
     - `executedQuoteQty` (quote gastado/recibido) y `avgExecutionPrice`
-      (`floor(executedQuoteQty × 10^18 / executedQty)`, o `null` si `executedQty="0"`), con la
-      misma definición que HU-04-06 RN-10.
+      (`floor(executedQuoteQty × 10^18 / executedQty)`, o **`null`** si `executedQty="0"` —
+      serialización única, nunca `"0"`), con la misma definición que HU-04-06 RN-10.
 12. **RN-12 (qué REJECTED aparecen).** Solo las órdenes rechazadas por la **capa de matching**
-    (`MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED`) se persisten y aparecen como `REJECTED`; los
-    rechazos de validación/idempotencia/fondos **no** aparecen (no se persisten como órdenes)
-    (HU-04-05 RN-5, RE-12).
+    (`MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED`, `MARKET_BUDGET_INSUFFICIENT`) se persisten y
+    aparecen como `REJECTED`; los rechazos de validación/idempotencia/fondos **no** aparecen
+    (no se persisten como órdenes) (HU-04-05 RN-5, RE-12).
 
 ## Criterios de aceptación (DoD)
 

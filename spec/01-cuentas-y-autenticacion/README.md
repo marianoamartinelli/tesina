@@ -103,8 +103,11 @@ Estas reglas son transversales a las HUs de la épica y se evalúan como criteri
   configurable). Un token expirado o invalidado (logout) no autentica: las llamadas
   protegidas se rechazan con `UNAUTHENTICATED` (401).
 - **RNE-5 — Aislamiento por cuenta.** Una credencial válida solo autoriza el acceso a los
-  recursos de su **propia** cuenta. Intentar operar sobre recursos de otra cuenta se
-  rechaza con `UNAUTHORIZED` (403).
+  recursos de su **propia** cuenta. Referenciar por id un recurso de otra cuenta (una orden,
+  un retiro, una dirección, etc.) se responde con el error **not-found específico del
+  recurso** (404, p. ej. `ORDER_NOT_FOUND`), sin filtrar su existencia. `UNAUTHORIZED` (403)
+  queda reservado para intentar **actuar a nombre de** otra cuenta (p. ej. invocar una vía
+  que reciba un `accountId` explícito con el `accountId` de un tercero).
 - **RNE-6 — Estado inicial determinista.** Una cuenta recién creada nace en estado
   `ACTIVE`, con un `accountId` estable e inmutable, y con balances disponible = `"0"` y
   bloqueado = `"0"` para ETH y USDC (consistente con `INV-1`: sin depósitos confirmados, la

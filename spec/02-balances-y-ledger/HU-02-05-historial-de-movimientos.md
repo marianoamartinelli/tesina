@@ -29,14 +29,16 @@ HU-02-02/03. El contrato exacto de paginación lo fija la épica 09; aquí se fi
 2. **RN-2 (contenido del ítem):** cada ítem incluye al menos: `entryId` (serializado como
    string; orden total global, ver HU-02-03 RN-2), `type` (del enum de HU-02-03),
    `timestamp` (ISO-8601 UTC con milisegundos), `reference` (origen:
-   `orderId` / `withdrawalId` / `tradeId` / `{txHash, logIndex}`) y los **postings propios**
+   `orderId` / `withdrawalId` / `tradeId` / `{txHash, logIndex}` /
+   `{reversedEntryId}` para `REVERSAL`) y los **postings propios**
    del usuario `{ asset, bucket, direction, amount, kind }` con `amount` como string entero
    positivo `^[1-9][0-9]*$`.
 3. **RN-3 (filtro por activo):** filtro opcional `asset ∈ {ETH, USDC}`. Si se indica, solo
    se devuelven ítems con al menos un posting propio en ese activo. Valor fuera de
    `{ETH, USDC}` ⇒ `VALIDATION_ERROR`.
-4. **RN-4 (filtro por tipo):** filtro opcional `type` (uno o varios del enum de HU-02-03).
-   Para **varios** tipos, la convención es **parámetros repetidos** en el query string
+4. **RN-4 (filtro por tipo):** filtro opcional `type` (uno o varios del enum de HU-02-03
+   RN-2, incluido `REVERSAL`). Para **varios** tipos, la convención es **parámetros
+   repetidos** en el query string
    (`?type=DEPOSIT&type=ORDER_LOCK`); se combinan con **OR** entre sí (un ítem se incluye si
    su `type` coincide con **alguno** de los solicitados) y con **AND** respecto de los demás
    filtros (RN-8). Cualquier valor fuera del enum ⇒ `VALIDATION_ERROR`. (El nombre/forma

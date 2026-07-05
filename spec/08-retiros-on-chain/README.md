@@ -272,7 +272,7 @@ internos exactamente en el principal transferido más el gas consumido por el ex
 | Code                        | HTTP | Uso en esta épica                                                                                  |
 |-----------------------------|------|----------------------------------------------------------------------------------------------------|
 | `UNAUTHENTICATED`           | 401  | Solicitud/consulta de retiro sin credencial válida.                                                |
-| `UNAUTHORIZED`              | 403  | Operar sobre un retiro de otra cuenta.                                                              |
+| `UNAUTHORIZED`              | 403  | Intentar **crear** un retiro a nombre de otra cuenta (`details = { resource: "account", id }`, HU-08-01 RN-1). |
 | `VALIDATION_ERROR`          | 422  | Payload mal formado: monto que no matchea `^(0\|[1-9][0-9]*)$`, `asset` fuera de `{ETH, USDC}`, campos faltantes. |
 | `INVALID_ADDRESS`           | 422  | Dirección destino no es `0x`+40 hex o checksum EIP-55 incorrecto.                                  |
 | `WITHDRAWAL_AMOUNT_INVALID` | 422  | Monto de retiro no positivo (p. ej. `"0"`) o que no respeta la unidad mínima del activo.            |
@@ -282,5 +282,5 @@ internos exactamente en el principal transferido más el gas consumido por el ex
 | `NONCE_CONFLICT`            | 409  | Nonce ya usado o fuera de secuencia al construir/broadcastear.                                      |
 | `BROADCAST_FAILED`          | 502  | El nodo rechazó el broadcast de la transacción.                                                     |
 | `CONFLICT`                  | 409  | Reuso de clave de idempotencia con parámetros distintos; transición de estado inválida.            |
-| `NOT_FOUND`                 | 404  | Consulta de un retiro inexistente.                                                                  |
+| `NOT_FOUND`                 | 404  | Consulta/cancelación de un retiro inexistente **o de otra cuenta** (no se revela su existencia; nunca `UNAUTHORIZED`). |
 | `INTERNAL_ERROR`            | 500  | Falla interna no clasificada (no filtra detalles sensibles).                                        |

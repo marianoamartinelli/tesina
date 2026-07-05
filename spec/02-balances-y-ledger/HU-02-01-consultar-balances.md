@@ -82,12 +82,13 @@ para presentación.
 - Entonces la operación se rechaza con `code = UNAUTHENTICATED` y HTTP 401
 - Y no se devuelve ningún balance
 
-### Escenario 6 (error): Acceso a balances ajenos [AT-02-01-06]
+### Escenario 6 (error, condicional): Acceso a balances ajenos [AT-02-01-06]
 - Dado un trader autenticado como cuenta `A`
-- Cuando intenta consultar los balances de otra cuenta `B` forzando su identificador (ruta/endpoint administrativo que reciba `accountId = B`)
-- Entonces la operación se rechaza con `code = UNAUTHORIZED` y HTTP 403 (capa de autorización, épica 01)
+- **Si** la implementación expone alguna vía que reciba un `accountId` explícito (ruta con identificador, endpoint administrativo, etc.)
+- Cuando `A` la invoca con `accountId = B` (ajeno)
+- Entonces la operación se rechaza con `code = UNAUTHORIZED` y HTTP 403 (actuar a nombre de otra cuenta, capa de autorización, épica 01)
 - Y no se filtra ningún dato de la cuenta `B`
-- Nota: el endpoint estándar de balances no acepta `accountId` ajena (RN-2); la cuenta se infiere de la credencial. Este escenario verifica la **negación** de cualquier vía que intente seleccionar otra cuenta.
+- Y **si** la implementación no expone ninguna vía que reciba un `accountId` explícito (el endpoint estándar infiere la cuenta de la credencial, RN-2), este AT se considera **satisfecho** (patrón condicional de HU-01-04 RN-3)
 
 ### Escenario 7 (consistencia): Coincide con la reconstrucción del ledger [AT-02-01-07]
 - Dado un trader autenticado `A` con esta secuencia concreta de asientos aplicados en orden:

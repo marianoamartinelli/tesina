@@ -52,9 +52,10 @@ paginación se fijan en HU-09-*; aquí se fija la **semántica**.
       `= Σ floor(q_fill × P_fill / 10^18)` USDC-min (suma sobre todos los fills);
     - `avgExecutionPrice` = `floor(executedQuoteQty × 10^18 / executedQty)` USDC-min por ETH
       (precio promedio **ponderado** real, que puede diferir del `priceMin` límite cuando hubo
-      fills a distintos precios). Si `executedQty = "0"`, `avgExecutionPrice` es `null` (o
-      `"0"`). Ambos se serializan como string (RN-6). Sin este dato el trader no puede
-      conciliar el USDC gastado con el ETH obtenido cuando barrió varios niveles.
+      fills a distintos precios). Si `executedQty = "0"`, `avgExecutionPrice` es **`null`**
+      (serialización única; **nunca** `"0"`). Cuando no son `null`, ambos se serializan como
+      string (RN-6). Sin este dato el trader no puede conciliar el USDC gastado con el ETH
+      obtenido cuando barrió varios niveles.
 
 ## Criterios de aceptación (DoD)
 
@@ -92,7 +93,7 @@ paginación se fijan en HU-09-*; aquí se fija la **semántica**.
 ### Escenario 7 (serialización): Montos como string entero [AT-04-06-07]
 - Dado un trader con una orden abierta `priceMin="2000000000"`, `quantityWei="1000000000000000000"`
 - Cuando consulta sus órdenes abiertas
-- Entonces todos los campos monetarios viajan como string `^(0|[1-9][0-9]*)$` (p. ej. `"2000000000"`), nunca como número JSON ni con decimales (RN-6)
+- Entonces todos los campos monetarios viajan como string `^(0|[1-9][0-9]*)$` (p. ej. `"2000000000"`), nunca como número JSON ni con decimales (RN-6), con la única excepción de `avgExecutionPrice = null` cuando `executedQty = "0"` (RN-10)
 
 ### Escenario 8 (solo lectura): La consulta no altera estado [AT-04-06-08]
 - Dado un trader con balances y órdenes en cierto estado

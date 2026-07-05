@@ -4,8 +4,8 @@
 - **Actor / rol:** Trader autenticado
 - **Prioridad:** Alta
 - **Dependencias:** HU-04-03 (validaciones), HU-04-05 (estados), HU-02-* (reserva/ledger),
-  HU-03-* (matching, barrido del libro, `MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED`).
-  Fundaciones (00).
+  HU-03-* (matching, barrido del libro, `MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED`,
+  `MARKET_BUDGET_INSUFFICIENT`). Fundaciones (00).
 - **Estandares de dominio aplicables:** N/A (operación interna; sin interacción on-chain).
 
 ## Historia
@@ -22,9 +22,9 @@ formas de tamaño: por **cantidad de base** (`quantityWei`) o por **monto de quo
 (`quoteOrderQty`). Exactamente una de las dos debe estar presente.
 
 Cubre validación, reserva de fondos previa, validación de liquidez y el estado final
-(`FILLED`, `CANCELLED` con ejecución parcial, o `REJECTED` por falta de liquidez). No
-cubre el barrido concreto del libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de
-la API (HU-09-*).
+(`FILLED`, `CANCELLED` con ejecución parcial, o `REJECTED` por `MARKET_NO_LIQUIDITY`,
+`SELF_TRADE_BLOCKED` o `MARKET_BUDGET_INSUFFICIENT`). No cubre el barrido concreto del
+libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (entrada).** Una orden market requiere `side ∈ {BUY, SELL}`, `type = MARKET`, y
@@ -61,7 +61,9 @@ la API (HU-09-*).
      los wei a vender para cubrir el quote restante son
      `q_nivel = ceil(quote_restante × 10^18 / P_bid)` (redondeo **hacia arriba** para no
      quedar corto por sub-unidad; `convenciones-monetarias.md §2.3`). `R` es la suma de los
-     `q_nivel` (acotada por la liquidez del snapshot y por `disponible(ETH)`). **Terminación:**
+     `q_nivel`, determinada **únicamente** por el snapshot de liquidez y el objetivo
+     `quoteOrderQty` (**no** se acota por `disponible(ETH)`); luego se exige
+     `disponible(ETH) ≥ R`, si no `INSUFFICIENT_FUNDS` (422). **Terminación:**
      la orden se considera completa (`FILLED`) cuando se agota la base reservada por el
      snapshot (equivalente a haber vendido los wei necesarios); el quote recibido nunca es
      **menor** que `quoteOrderQty` cuando hay liquidez suficiente (puede excederlo en a lo
@@ -74,29 +76,32 @@ la API (HU-09-*).
    completar su objetivo (`quantityWei` o `quoteOrderQty`) o agotar el lado opuesto. El
    objetivo no alcanzado **no descansa**: se descarta. Estado final:
    - objetivo completado ⇒ `FILLED`;
-   - ejecución parcial y luego liquidez agotada ⇒ `CANCELLED` con `executedQty > 0`
-     (remanente descartado);
-   - cero ejecución por lado vacío ⇒ `REJECTED` con `MARKET_NO_LIQUIDITY`.
+   - ejecución parcial y luego liquidez **o presupuesto** agotados ⇒ `CANCELLED` con
+     `executedQty > 0` (remanente descartado; `reason = MARKET_EXHAUSTED` o
+     `MARKET_BUDGET_EXHAUSTED` según HU-03-04 RN-9);
+   - cero ejecución por lado vacío ⇒ `REJECTED` con `MARKET_NO_LIQUIDITY`;
+   - cero ejecución (`filledWei = 0`) en `MARKET BUY` con lado opuesto **no** vacío cuyo
+     presupuesto no alcanza para ejecutar ni 1 lot del mejor maker (sea de quien sea) ⇒
+     `REJECTED` con `MARKET_BUDGET_INSUFFICIENT` (422); la reserva se libera **íntegra**
+     (HU-03-04 RN-9, fundaciones §4 paso 7). El rechazo por self-trade lo rige RN-9.
 8. **RN-8 (liberación del sobrante).** Todo monto reservado no consumido (por mejor precio,
    por descarte del remanente o por redondeo del barrido) se **libera** a disponible
    (RE-3, INV-3).
-9. **RN-9 (self-trade).** **Caso degenerado:** si **lo primero** que la market cruzaría es
-   una orden **propia** (sin fills previos contra terceros), se rechaza con
-   `SELF_TRADE_BLOCKED` (422); como la detección es posterior a la reserva (RE-4 paso 8 >
-   paso 7), la reserva tomada se **revierte atómicamente** (`bloqueado −= R; disponible += R`),
-   dejando los balances **idénticos** a los previos (INV-2, INV-3), y la orden se registra
-   `REJECTED` (RE-12). **Caso con fills previos (STP en barrido):** si la market ejecuta
-   contra terceros y luego encuentra una orden propia, el barrido **se detiene** allí (RE-11,
-   *expire-taker*): los fills previos son **definitivos**, el remanente se descarta liberando
-   su reserva (RN-8) y la orden termina `CANCELLED` con `executedQty > 0` (respuesta exitosa,
-   no 422).
+9. **RN-9 (self-trade: rechazo atómico).** Si el **rango consumible** de la market
+   (HU-03-06 RN-2: lo que ejecutaría hasta completar su objetivo o presupuesto) contiene
+   **alguna** orden **propia**, se rechaza **íntegra** con `SELF_TRADE_BLOCKED` (422),
+   **sin ningún fill** —tampoco contra terceros dentro del rango: no existe un caso de
+   "fills previos"— (RE-11, HU-03-06 RN-3). Como la detección es posterior a la reserva
+   (RE-4 paso 8 > paso 7), la reserva tomada se **revierte atómicamente**
+   (`bloqueado −= R; disponible += R`), dejando los balances **idénticos** a los previos
+   (INV-2, INV-3), y la orden se registra `REJECTED` (RE-12); el libro queda idéntico.
 10. **RN-10 (idempotencia).** `clientOrderId` repetido ⇒ `DUPLICATE_CLIENT_ORDER_ID` (409),
     sin ejecutar ni reservar (RE-5).
 11. **RN-11 (precedencia).** rate limiting → auth → esquema (incl. `PRICE_NOT_ALLOWED`, forma
     única de tamaño) → enums → reglas del par (`INVALID_LOT_SIZE`, `BELOW_MIN_NOTIONAL`) →
     idempotencia → **liquidez de market (lado opuesto vacío ⇒ `MARKET_NO_LIQUIDITY`, antes de
-    fondos)** → fondos → barrido (`SELF_TRADE_BLOCKED`, con reserva revertida si aplica)
-    (RE-4).
+    fondos)** → fondos → matching sobre el rango consumible (`SELF_TRADE_BLOCKED`, con
+    reserva revertida → `MARKET_BUDGET_INSUFFICIENT`) (RE-4 paso 8).
 12. **RN-12 (invariantes).** Respeta INV-1, INV-2, INV-3, INV-4 (settlement atómico de
     cada fill, HU-05-*) e INV-8.
 13. **RN-13 (serialización).** `quantityWei`, `quoteOrderQty`, reservas, ejecutado y fees
@@ -178,6 +183,7 @@ la API (HU-09-*).
 
 ### Escenario 9 (error): Fondos insuficientes [AT-04-02-09]
 - Dado un trader autenticado con `disponible(USDC) = 1000000000`
+- Y un ask resting **ajeno** cruzable (lado opuesto no vacío, patrón de AT-04-03-13: así el resultado es únicamente `INSUFFICIENT_FUNDS` y no `MARKET_NO_LIQUIDITY`)
 - Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="2000000000"`
 - Entonces se rechaza con `INSUFFICIENT_FUNDS` (HTTP 422), `details = { asset:"USDC", required:"2000000000", available:"1000000000" }`
 - Y no se ejecuta ni se mantiene reserva (INV-2)
@@ -185,7 +191,7 @@ la API (HU-09-*).
 ### Escenario 10 (error): Monto por debajo del mínimo notional [AT-04-02-10]
 - Dado un trader autenticado con fondos suficientes
 - Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="9999999"` (9.999999 USDC < 10 USDC)
-- Entonces se rechaza con `BELOW_MIN_NOTIONAL` (HTTP 422), `details = { notionalMin:"9999999", minNotional:"10000000" }`
+- Entonces se rechaza con `BELOW_MIN_NOTIONAL` (HTTP 422), `details = { actualNotional:"9999999", minNotional:"10000000" }`
 - Y no se reserva ni se ejecuta
 
 ### Escenario 11 (error): Cantidad fuera de lot size [AT-04-02-11]
@@ -209,20 +215,20 @@ la API (HU-09-*).
 - Y la orden queda `CANCELLED` con `executedQty = "400000000000000000"` y `executedQuoteQty = floor(400000000000000000 × 1500000000 / 10^18) = "600000000"` (RN-7, RN-14)
 - Y el ETH reservado no vendido se libera a disponible (RN-8)
 
-### Escenario 13 (error): Self-trade en market, caso degenerado [AT-04-02-13]
+### Escenario 13 (error): Self-trade en market (bid propio como única liquidez) [AT-04-02-13]
 - Dado un trader autenticado con `disponible(ETH) = 2000000000000000000`, `bloqueado(ETH) = 0`, y un bid **propio** resting como **única** liquidez del lado opuesto
-- Cuando coloca `side=SELL, type=MARKET, quantityWei="1000000000000000000"` que cruzaría su propio bid como primera liquidez
+- Cuando coloca `side=SELL, type=MARKET, quantityWei="1000000000000000000"` cuyo rango consumible contiene su propio bid
 - Entonces se rechaza con `SELF_TRADE_BLOCKED` (HTTP 422), `details = { restingOrderId }`
 - Y la reserva tomada se **revierte atómicamente**: `disponible(ETH) = 2000000000000000000`, `bloqueado(ETH) = 0` (idénticos a los previos, RN-9, INV-3)
 - Y la orden se registra como `REJECTED` (RE-12)
 
-### Escenario 14 (borde): Self-trade tras fills previos detiene el barrido (STP) [AT-04-02-14]
-- Dado un trader autenticado con `disponible(ETH) = 2000000000000000000`
+### Escenario 14 (borde): Orden propia dentro del rango consumible ⇒ rechazo íntegro [AT-04-02-14]
+- Dado un trader autenticado con `disponible(ETH) = 2000000000000000000` y `bloqueado(ETH) = 0`
 - Y dos bids cruzables a `priceMin = 2000000000`: el primero **ajeno** por `400000000000000000` wei (0.4 ETH) y el segundo **propio** por `600000000000000000` wei
-- Cuando coloca `side=SELL, type=MARKET, quantityWei="1000000000000000000"` (vender 1 ETH)
-- Entonces ejecuta 0.4 ETH contra el bid ajeno (fill **definitivo**) y, al encontrar su propio bid, **detiene** el barrido (RN-9, RE-11)
-- Y el remanente `600000000000000000` wei se **descarta** y su reserva se libera (RN-8)
-- Y la orden queda `CANCELLED` con `executedQty = "400000000000000000"`; la respuesta es exitosa (no 422)
+- Cuando coloca `side=SELL, type=MARKET, quantityWei="1000000000000000000"` (vender 1 ETH; rango consumible = ambos bids)
+- Entonces se rechaza **íntegra y atómicamente** con `SELF_TRADE_BLOCKED` (HTTP 422), `details = { restingOrderId }` (el bid propio), **sin ningún fill**, tampoco contra el bid ajeno (RN-9, RE-11; coincide con AT-03-06-03)
+- Y la reserva tomada se revierte: `disponible(ETH) = 2000000000000000000`, `bloqueado(ETH) = 0`; el libro queda **idéntico** (ambos bids intactos)
+- Y la orden queda `REJECTED` con `executedQty = "0"` (RE-12)
 
 ## Definicion de Done (checklist transversal)
 - [ ] Todos los escenarios de aceptación (AT-04-02-01 .. AT-04-02-14, incluidos 05a/05b y 12a/12b) pasan

@@ -47,7 +47,7 @@ presentado** y no afecta otras sesiones de la misma cuenta (RN-5).
    No se produce un error de servidor ni un doble efecto. La invalidación del token es
    **atómica** (implementable como operación CAS, transacción de BD con aislamiento
    serializable o equivalente): si dos solicitudes de logout **concurrentes** presentan el
-   mismo token, **a lo sumo una** recibe respuesta exitosa y la(s) restante(s) reciben
+   mismo token, **exactamente una** recibe respuesta exitosa y la(s) restante(s) reciben
    `UNAUTHENTICATED` (401); el token queda revocado **exactamente una vez** (no se permite que
    ambas fallen ni que el token quede sin revocar).
 7. **RN-7 (sin reactivación).** Un token invalidado o expirado **no** puede reactivarse;
@@ -145,8 +145,8 @@ presentado** y no afecta otras sesiones de la misma cuenta (RN-5).
 - Dado un token válido `T` y no expirado
 - Cuando dos solicitudes de logout con `T` se envían de forma **concurrente**
 - Entonces el token queda invalidado **exactamente una vez** (RN-6)
-- Y **al menos una** de las dos respuestas es el logout exitoso (204); la otra puede ser 204
-  o `UNAUTHENTICATED` (401), pero **no** se permite que ambas fallen
+- Y **exactamente una** de las respuestas es el logout exitoso (204); la(s) restante(s)
+  reciben `UNAUTHENTICATED` (401) — no se permite que ambas respondan 204 ni que ambas fallen
 - Y cualquier uso posterior de `T` en un endpoint protegido devuelve `UNAUTHENTICATED` (401)
 
 ## Definicion de Done (checklist transversal)

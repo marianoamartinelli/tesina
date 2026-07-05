@@ -135,9 +135,12 @@ exactamente: un fill solo **redistribuye** valor entre maker, taker y EX.
     fills concurrentes (que rompería INV-2). INV-4 (atomicidad) **no** basta por sí solo bajo
     `READ COMMITTED`. (Ver HU-05-01 AT-05-01-11.)
 12. **Identidad del fill (`tradeId`/`sequence`).** Cada fill llega con una identidad estable
-    `tradeId = "T-" + sequence` (asignada por el matching, persistida junto al ledger),
-    determinística y reconstruible tras reinicio; es la **clave de idempotencia** del
-    settlement y la **clave de ordenamiento** del historial (ver HU-05-03 RN-2/RN-3).
+    `tradeId = "T-" + sequence`, donde esa `sequence` es el **número de trade** (contador
+    propio de los trades, HU-05-03 RN-3), **independiente** de la numeración de eventos del
+    motor (README 03 RT-2) y de las secuencias por canal WebSocket (RG-API-7). Es asignada
+    por el matching, persistida junto al ledger, determinística y reconstruible tras
+    reinicio; es la **clave de idempotencia** del settlement y la **clave de ordenamiento**
+    del historial (ver HU-05-03 RN-2/RN-3).
 
 ---
 

@@ -64,13 +64,17 @@ cuentas** (RNE-3).
    (HU-01-03). El login no invalida sesiones previas.
 7. **RN-7 (esquema del payload).** El payload debe contener `email` (string) y `password`
    (string). Esquema inválido (campo faltante, tipo incorrecto) ⇒ `VALIDATION_ERROR` (422).
-8. **RN-8 (precedencia de validación).** Orden determinista: (1) esquema/tipos
-   (`VALIDATION_ERROR`) → (2) verificación de credenciales (`INVALID_CREDENTIALS`). Un solo
-   error por respuesta. (RNE-7)
+8. **RN-8 (precedencia de validación).** Orden determinista: (0) rate limiting
+   (`RATE_LIMITED`, cuando está activo, RN-9): se evalúa **antes** de cualquier otra
+   validación, incluso la de esquema (mismo criterio que el "paso 0" de la épica 04, RE-4);
+   con el límite excedido, la solicitud `N+1` con payload inválido responde **429**, no 422
+   → (1) esquema/tipos (`VALIDATION_ERROR`) → (2) verificación de credenciales
+   (`INVALID_CREDENTIALS`). Un solo error por respuesta. (RNE-7)
 9. **RN-9 (rate limiting anti-fuerza-bruta, opcional por config).** El endpoint puede
    limitar intentos por email/origen. Al superarse el umbral, `RATE_LIMITED` (429) con
-   `details.retryAfterSeconds`. El rate limiting no debe revelar la existencia del email
-   (se aplica de forma uniforme).
+   `details.retryAfterSeconds`. Se evalúa como **paso 0** de la precedencia (RN-8): antes de
+   cualquier otra validación, incluso la de esquema. El rate limiting no debe revelar la
+   existencia del email (se aplica de forma uniforme).
 10. **RN-10 (estado de la cuenta).** En este alcance solo existe el estado `ACTIVE`; toda
     cuenta registrada puede autenticarse. (La gestión de estados como suspensión queda
     fuera de alcance de la épica.)

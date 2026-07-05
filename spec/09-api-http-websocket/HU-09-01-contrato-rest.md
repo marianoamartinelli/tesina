@@ -40,8 +40,10 @@ autenticación por token Bearer (HU-09-02).
 | Listar órdenes     | GET    | `/api/v1/orders`                       | Sí   | 200   | 04    |
 | Detalle de orden   | GET    | `/api/v1/orders/{orderId}`             | Sí   | 200   | 04    |
 | Cancelar orden     | DELETE | `/api/v1/orders/{orderId}`             | Sí   | 200   | 04    |
+| Trades propios     | GET    | `/api/v1/trades`                       | Sí   | 200   | 05    |
 | Dirección depósito | GET    | `/api/v1/deposit-address?asset=ETH`    | Sí   | 200   | 06    |
 | Listar depósitos   | GET    | `/api/v1/deposits`                     | Sí   | 200   | 07    |
+| Detalle de depósito| GET    | `/api/v1/deposits/{depositId}`         | Sí   | 200   | 07    |
 | Crear retiro       | POST   | `/api/v1/withdrawals`                  | Sí   | 202   | 08    |
 | Listar retiros     | GET    | `/api/v1/withdrawals`                  | Sí   | 200   | 08    |
 | Detalle de retiro  | GET    | `/api/v1/withdrawals/{withdrawalId}`   | Sí   | 200   | 08    |
@@ -77,15 +79,18 @@ autenticación por token Bearer (HU-09-02).
    feeWei, feeUsdcMin, status, createdAt, updatedAt }`. `priceMin` es `null` para `MARKET`.
    `feeWei`/`feeUsdcMin` (ver RN-2) acumulan la fee cobrada por los fills ocurridos hasta el
    momento; valen `"0"` si la orden aún no tuvo fills.
-   `status` ∈ `{OPEN, PARTIALLY_FILLED, FILLED}` según el resultado inmediato del matching.
-   `REJECTED` **nunca** aparece en una respuesta 201: toda orden rechazada (por validación de
-   esquema/par o por matching, p. ej. `SELF_TRADE_BLOCKED`, `MARKET_NO_LIQUIDITY`) devuelve
-   un código de error **4xx** (HU-09-05), no 201.
-   **Estado terminal de MARKET con fill parcial:** una orden `MARKET` que ejecuta
-   parcialmente y luego agota la liquidez del lado opuesto (descartando el remanente, glosario
-   `00-fundaciones`) queda en estado terminal `PARTIALLY_FILLED` (sin remanente en el libro).
-   Para `MARKET`, `PARTIALLY_FILLED` es **terminal**; para `LIMIT`, `PARTIALLY_FILLED` es un
-   estado **abierto** (el remanente permanece resting).
+   `status` ∈ `{OPEN, PARTIALLY_FILLED, FILLED, CANCELLED}` según el resultado inmediato del
+   matching. `REJECTED` **nunca** aparece en una respuesta 201: toda orden rechazada (por
+   validación de esquema/par o por matching, p. ej. `SELF_TRADE_BLOCKED`,
+   `MARKET_NO_LIQUIDITY`, `MARKET_BUDGET_INSUFFICIENT`) devuelve un código de error **4xx**
+   (HU-09-05), no 201.
+   **Estado terminal de MARKET con fill parcial:** una orden `MARKET` que ejecutó
+   **parcialmente** (`filledWei > "0"`) y luego agotó la liquidez del lado opuesto o su
+   presupuesto queda en estado terminal `CANCELLED`, con el remanente **descartado** (sin
+   remanente en el libro; HU-03-04 RN-9, HU-04-05), y así se devuelve en la respuesta 201.
+   `CANCELLED` en una respuesta 201 aplica **únicamente** a ese caso. `PARTIALLY_FILLED` es
+   un estado **abierto** y **solo** de órdenes `LIMIT` (el remanente permanece resting); una
+   `MARKET` nunca queda `PARTIALLY_FILLED`.
 6. **RN-6 (idempotencia):** `clientOrderId` es provisto por el cliente y único por cuenta.
    Reutilizarlo devuelve `DUPLICATE_CLIENT_ORDER_ID` (409). (INV de idempotencia de alta;
    detalle en HU-04-*.)
@@ -94,7 +99,9 @@ autenticación por token Bearer (HU-09-02).
    `ORDER_NOT_CANCELLABLE` (409). Si no existe o no pertenece a la cuenta,
    `ORDER_NOT_FOUND` (404).
 8. **RN-8 (listar órdenes — paginación):** `GET /orders` acepta `status` (filtro opcional
-   por estado), `limit` (default 50, máx 200) y `cursor` (paginación por cursor opaco).
+   por estado), `clientOrderId` (filtro opcional: devuelve los items de la cuenta con ese
+   `clientOrderId` — 0 o 1 por la unicidad de RN-6; sin nueva ruta), `limit` (default 50,
+   máx 200) y `cursor` (paginación por cursor opaco).
    Devuelve `{ items: [orden...], nextCursor: string|null }`. `limit` inválido (no entero
    positivo o > máx) ⇒ `VALIDATION_ERROR` (422).
    **Ordenamiento:** los `items` se devuelven ordenados por `createdAt` **descendente** (más
@@ -111,20 +118,26 @@ autenticación por token Bearer (HU-09-02).
     `{ asset, address }` con la dirección Ethereum (formato `0x`+40 hex, checksum EIP-55)
     asignada a la cuenta (derivada por HU-06-*). `asset` ausente o distinto de `ETH`/`USDC`
     ⇒ `VALIDATION_ERROR` (422). Como el par on-chain es una sola red (Sepolia), la misma
-    dirección puede servir para ambos activos según lo defina 06; el contrato solo expone el
-    campo `address`.
+    dirección puede servir para ambos activos según lo defina 06. Cuando `asset=USDC`, la
+    respuesta incluye además `tokenAddress`: la dirección del contrato USDC-mock del entorno
+    (formato `0x`+40 hex con checksum EIP-55, HU-06-*); es decir,
+    `{ asset, address, tokenAddress }`.
 11. **RN-11 (crear retiro):** `POST /withdrawals` body
-    `{ asset, amountMinUnit, address }`. `asset ∈ {ETH, USDC}`. **`amountMinUnit`** es un
-    string entero en la **unidad mínima del activo declarado en `asset`**: wei si
-    `asset = ETH`, USDC-min si `asset = USDC` (no se usa el nombre genérico `amount` para no
-    ocultar la unidad; RG-API-3). `address` es la dirección destino externa (checksum EIP-55).
+    `{ asset, amountMinUnit, address, clientWithdrawalId? }`. `asset ∈ {ETH, USDC}`.
+    **`amountMinUnit`** es un string entero en la **unidad mínima del activo declarado en
+    `asset`**: wei si `asset = ETH`, USDC-min si `asset = USDC` (no se usa el nombre
+    genérico `amount` para no ocultar la unidad; RG-API-3). `address` es la dirección
+    destino externa (checksum EIP-55). `clientWithdrawalId` (opcional) es la **clave de
+    idempotencia** del retiro (HU-08-01 RN-2/RN-10): reenviar la **misma** clave con los
+    **mismos** parámetros devuelve el retiro ya existente (no crea otro ni vuelve a bloquear
+    fondos); la misma clave con parámetros **distintos** ⇒ `CONFLICT` (409).
     Responde **202 Accepted** con
     `{ withdrawalId, asset, amountMinUnit, address, status, createdAt, updatedAt }`
     (`status` inicial `PENDING`; `createdAt`/`updatedAt` string ISO-8601 UTC), porque el
     procesamiento on-chain (firma EIP-155 + broadcast) es asíncrono (HU-08-*). El enum de
     `status` del retiro es `{PENDING, BROADCAST, CONFIRMED, FAILED}` (máquina de estados de
     HU-08-04). Errores posibles: `INVALID_ADDRESS`, `WITHDRAWAL_BELOW_MIN`,
-    `WITHDRAWAL_AMOUNT_INVALID`, `INSUFFICIENT_FUNDS`.
+    `WITHDRAWAL_AMOUNT_INVALID`, `INSUFFICIENT_FUNDS`, `CONFLICT`.
 12. **RN-12 (mercado — orderbook):** `GET /market/orderbook?depth=N` devuelve
     `{ symbol, sequence, bids: [[priceMin, quantityWei], ...], asks: [[priceMin,
     quantityWei], ...] }`. `bids` ordenados por `priceMin` **descendente**, `asks`
@@ -159,20 +172,36 @@ autenticación por token Bearer (HU-09-02).
 17. **RN-17 (listar depósitos):** `GET /deposits` (Auth: Sí) devuelve
     `{ items: [...], nextCursor: string|null }` con paginación por cursor análoga a RN-8
     (`limit` default 50, máx 200; `cursor` opaco; `limit` inválido ⇒ `VALIDATION_ERROR`),
-    ordenados por `createdAt` descendente. Cada item es
-    `{ depositId, asset, amountMinUnit, txHash, logIndex, confirmations,
-    requiredConfirmations, status, createdAt, updatedAt }`. `asset ∈ {ETH, USDC}`;
-    `amountMinUnit` en la unidad mínima del activo; `confirmations`/`requiredConfirmations`
-    como string entero (`requiredConfirmations = "12"`, HU-07-03); `status ∈ {PENDING,
-    CREDITED}` (mapeo: `PENDING` = detectado/pendiente con `confirmations < 12`; `CREDITED` =
-    acreditado al balance, HU-07-03). Solo incluye depósitos de la cuenta autenticada
-    (HU-09-02 RN-5).
+    ordenados por `createdAt` descendente, con filtros opcionales `asset ∈ {ETH, USDC}` y
+    `status` (HU-07-03 RN-12). Cada item es
+    `{ depositId, txHash, logIndex, asset, amountMinUnit, status, confirmations, required,
+    blockNumber, createdAt, updatedAt, creditedAt?, discardReason? }`, con
+    `depositId = "<txHash>:<logIndex>"` (HU-07-03 RN-12); `amountMinUnit` como string entero
+    en la unidad mínima del activo; `status ∈ {PENDIENTE, ACREDITADO, DESCARTADO}` (enum
+    canónico de la épica 07, en español a propósito); `confirmations`, `required` (= 12,
+    HU-07-03 RN-8), `logIndex` y `blockNumber` como **enteros JSON** (conteos, no montos;
+    convenciones §5); `creditedAt` presente **solo** si `ACREDITADO`;
+    `discardReason ∈ {REORG, REVERTED}` **solo** si `DESCARTADO`.
+    `GET /deposits/{depositId}` devuelve el mismo objeto item (200) para un depósito de la
+    cuenta; errores y precedencia según HU-07-03 RN-11/RN-12. Solo incluye depósitos de la
+    cuenta autenticada (HU-09-02 RN-5).
 18. **RN-18 (listar retiros):** `GET /withdrawals` (Auth: Sí) devuelve
     `{ items: [...], nextCursor: string|null }` con la misma paginación por cursor de RN-17,
     ordenados por `createdAt` descendente. Cada item es
     `{ withdrawalId, asset, amountMinUnit, address, txHash|null, confirmations, status,
-    createdAt, updatedAt }`. `status ∈ {PENDING, BROADCAST, CONFIRMED, FAILED}` (HU-08-04);
-    `txHash` es `null` mientras el retiro no se broadcasteó; `confirmations` string entero.
+    failureReason, createdAt, updatedAt }`. `status ∈ {PENDING, BROADCAST, CONFIRMED,
+    FAILED}` (HU-08-04); `txHash` es `null` mientras el retiro no se broadcasteó;
+    `confirmations` es **entero JSON** (conteo, no monto; convenciones §5).
+    `failureReason: string|null` es el **código de causa** cuando `status = FAILED` y `null`
+    en cualquier otro estado; enum (causas de la máquina de estados de la épica 08,
+    HU-08-03/HU-08-04):
+    - `BROADCAST_FAILED` — el broadcast falló definitivamente (se agotaron
+      `MAX_BROADCAST_RETRIES`, HU-08-03).
+    - `TX_DROPPED` — la transacción fue descartada del mempool sin reaparecer, o venció el
+      timeout de inclusión (`MAX_BLOCKS_PENDING`, HU-08-04).
+    - `TX_REVERTED` — la transacción fue minada pero revertida (receipt `status = 0`; o,
+      para USDC, `status = 1` sin el evento `Transfer` esperado — HU-08-04).
+    - `USER_CANCELLED` — el usuario canceló el retiro antes del broadcast (épica 08).
     `GET /withdrawals/{withdrawalId}` devuelve el **mismo** objeto item (200) para un retiro
     de la cuenta; un retiro inexistente o de otra cuenta ⇒ `NOT_FOUND` (404) (HU-09-02 RN-7,
     para no filtrar existencia). Solo incluye retiros de la cuenta autenticada.
@@ -182,6 +211,20 @@ autenticación por token Bearer (HU-09-02).
     ⇒ `VALIDATION_ERROR` (422), evaluado en el paso de esquema (antes de la idempotencia,
     `00-fundaciones/modelo-de-errores.md` §4). Esta restricción hace reproducible la prueba
     de `DUPLICATE_CLIENT_ORDER_ID` (RN-6).
+20. **RN-20 (historial de trades propios):** `GET /trades` (Auth: Sí) devuelve
+    `{ items: [...], nextCursor: string|null }` con paginación **cursor-based (keyset)** por
+    la `sequence` del trade (HU-05-04 RN-6): la primera página trae los trades más recientes
+    (`sequence` descendente); `nextCursor` es el cursor (opaco, derivado de la `sequence`
+    del último item devuelto) o `null` si no hay más páginas; `limit` default 50, máx 200
+    (`limit` inválido ⇒ `VALIDATION_ERROR`, 422). Filtros opcionales: `from`/`to`
+    (timestamps ISO-8601 UTC, RN-15) y `orderId` **propio**; un `orderId` ajeno o
+    inexistente devuelve **lista vacía**, nunca 404 (HU-05-04 RN-7). Cada item proyecta la
+    **pata propia** del trade (HU-05-04 RN-3/RN-4, sin exponer la contraparte):
+    `{ tradeId, sequence, timestamp, symbol, priceMin, quantityWei, quoteAmountMin, side,
+    role, feeAsset, feeAmount, netReceived, paid, orderId }`. `symbol` es `"ETH-USDC"`
+    (nombre API del par, RN-1); `sequence` es **entero JSON** (conteo, no monto);
+    `timestamp` string ISO-8601 UTC; montos como string entero (RN-2);
+    `side ∈ {BUY, SELL}`, `role ∈ {MAKER, TAKER}`, `feeAsset ∈ {ETH, USDC}`.
 
 ## Criterios de aceptación (DoD)
 
@@ -283,12 +326,16 @@ autenticación por token Bearer (HU-09-02).
 - Cuando el cliente hace `GET /api/v1/deposits` y `GET /api/v1/withdrawals`
 - Entonces ambas respuestas son **200** con `{ items: [...], nextCursor }` que contienen solo
   recursos de la cuenta dueña del token
-- Y cada depósito tiene `{ depositId, asset, amountMinUnit, txHash, logIndex, confirmations,
-  requiredConfirmations, status ∈ {PENDING, CREDITED}, createdAt, updatedAt }` (RN-17), con
-  `amountMinUnit`/`confirmations`/`requiredConfirmations` como strings
+- Y cada depósito tiene `{ depositId, txHash, logIndex, asset, amountMinUnit, status ∈
+  {PENDIENTE, ACREDITADO, DESCARTADO}, confirmations, required, blockNumber, createdAt,
+  updatedAt }` (RN-17), con `depositId = "<txHash>:<logIndex>"`, `amountMinUnit` como string
+  y `confirmations`/`required`/`logIndex`/`blockNumber` como **enteros JSON**
+  (`required` = 12); `creditedAt` presente solo si `ACREDITADO` y
+  `discardReason ∈ {REORG, REVERTED}` solo si `DESCARTADO`
 - Y cada retiro tiene `{ withdrawalId, asset, amountMinUnit, address, txHash|null,
-  confirmations, status ∈ {PENDING, BROADCAST, CONFIRMED, FAILED}, createdAt, updatedAt }`
-  (RN-18), con `amountMinUnit` como string
+  confirmations, status ∈ {PENDING, BROADCAST, CONFIRMED, FAILED}, failureReason,
+  createdAt, updatedAt }` (RN-18), con `amountMinUnit` como string, `confirmations` como
+  **entero JSON** y `failureReason` no nulo **solo** si `FAILED`
 - Y `GET /api/v1/withdrawals/{withdrawalId}` de un retiro propio devuelve **200** con ese
   mismo objeto; de un retiro inexistente o ajeno devuelve `NOT_FOUND` (404)
 
@@ -366,13 +413,14 @@ autenticación por token Bearer (HU-09-02).
 - Dado un orderbook cuyo lado opuesto solo alcanza para ejecutar **parte** de la cantidad
   pedida
 - Cuando el cliente envía una orden `MARKET` por una cantidad mayor a la liquidez disponible
-- Entonces la respuesta es **201** con `status: "PARTIALLY_FILLED"`, `filledWei` < `quantityWei`
-- Y la orden **no** queda en el libro (remanente descartado): `PARTIALLY_FILLED` es el estado
-  **terminal** para esta orden MARKET (RN-5)
+- Entonces la respuesta es **201** con `status: "CANCELLED"`, `filledWei > "0"` y
+  `filledWei < quantityWei`
+- Y la orden **no** queda en el libro (remanente descartado): `CANCELLED` es el estado
+  **terminal** de esa orden MARKET (RN-5, HU-03-04 RN-9)
 
 ## Definicion de Done (checklist transversal)
 - [ ] Todos los escenarios de aceptación (AT-*) pasan
-- [ ] Reglas de negocio RN-1..RN-19 verificadas
+- [ ] Reglas de negocio RN-1..RN-20 verificadas
 - [ ] Manejo de errores conforme a 00-fundaciones/modelo-de-errores.md
 - [ ] Precision/redondeo conforme a 00-fundaciones/convenciones-monetarias.md
 - [ ] Sin violacion de invariantes globales (00-fundaciones/invariantes-globales.md)

@@ -113,10 +113,10 @@ nivel de precio.
 - Cuando el motor recibiera una segunda inserción con el **mismo** `orderId` (p. ej. por un
   fallo interno o un reintento que sorteó la idempotencia de épica 04)
 - Entonces el libro contiene **exactamente una** instancia de ese `orderId`: la inserción
-  duplicada se rechaza y no se asigna un segundo `seq` (RN-11)
+  duplicada se rechaza y no se asigna un segundo `seq` (HU-03-01 RN-11)
 - Y nota de trazabilidad: la **prevención** del duplicado en el borde externo es de la épica
   04 vía `clientOrderId` (`DUPLICATE_CLIENT_ORDER_ID`, RN-8, 409); esta HU verifica la
-  garantía **interna** del motor (RN-11), no la respuesta HTTP de la épica 04
+  garantía **interna** del motor (HU-03-01 RN-11), no la respuesta HTTP de la épica 04
 
 ## Definicion de Done (checklist transversal)
 - [ ] Todos los escenarios de aceptación (AT-*) pasan

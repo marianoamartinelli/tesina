@@ -129,6 +129,7 @@ Catálogo cerrado de tipos de asiento usado por HU-02-03 y filtrable en HU-02-05
 | `WITHDRAWAL_LOCK` | Solicitud de retiro aceptada (épica 08). | `available(acc,A) −=`; `locked(acc,A) +=`. |
 | `WITHDRAWAL_SETTLE` | Retiro confirmado on-chain (épica 08). | `locked(acc,A) −=`; `EXTERNAL(A) +=`. |
 | `WITHDRAWAL_RELEASE` | Retiro abortado/fallido antes del débito definitivo. | `locked(acc,A) −=`; `available(acc,A) +=`. |
+| `REVERSAL` | Corrección/reversión de un asiento previo (HU-02-03 RN-4/RN-5). | Postings exactamente **inversos** a los del asiento revertido (`reference = { reversedEntryId }`); el original queda intacto. |
 
 > Las **fees** se registran como postings hacia `EX` **dentro** del asiento `TRADE_FILL`
 > (sub-clasificación `kind = FEE`), nunca como un asiento separado, para preservar la

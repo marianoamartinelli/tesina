@@ -43,8 +43,13 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
       la orden es `MARKET` y el lado opuesto está **vacío**; se evalúa **antes** de fondos y
       **sin** reservar (RE-4 paso 6). Por eso prevalece sobre `INSUFFICIENT_FUNDS`.
    7. **Fondos** → `INSUFFICIENT_FUNDS` (422).
-   8. **Matching (barrido)** → `SELF_TRADE_BLOCKED` (422); si se detecta tras reservar, la
-      reserva se **revierte atómicamente** (HU-04-01 RN-10, HU-04-02 RN-9).
+   8. **Matching (rango consumible, previo al barrido)** → `SELF_TRADE_BLOCKED` (422) si el
+      rango consumible de la entrante contiene una orden propia (rechazo íntegro; la reserva
+      tomada se **revierte atómicamente**, HU-04-01 RN-10, HU-04-02 RN-9) →
+      `MARKET_BUDGET_INSUFFICIENT` (422) si es `MARKET BUY` con lado opuesto **no** vacío y
+      presupuesto que no alcanza para ejecutar ni 1 lot del mejor maker (`filledWei = 0`;
+      la reserva se libera íntegra, HU-03-04 RN-9). Mismo orden que el paso 7 de
+      fundaciones §4.
 2. **RN-2 (esquema/serialización).** Todo monto/precio/cantidad recibido debe ser string y
    matchear `^(0|[1-9][0-9]*)$` (sin floats, decimales, signo, notación científica ni ceros
    a la izquierda). Si no, `VALIDATION_ERROR` con `details.issues`.
@@ -62,7 +67,7 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
    también cae en `INVALID_LOT_SIZE`.
 8. **RN-8 (mínimo notional).** Para `LIMIT`:
    `notional_min = floor(quantityWei × priceMin / 10^18) ≥ 10000000`; si no,
-   `BELOW_MIN_NOTIONAL` (422), `details = { notionalMin, minNotional:"10000000" }`. Para
+   `BELOW_MIN_NOTIONAL` (422), `details = { actualNotional, minNotional:"10000000" }`. Para
    `MARKET`: notional estimado según HU-04-02 RN-3 ≥ `10000000`.
 9. **RN-9 (positividad como subcaso).** No existen códigos separados de "no positivo": un
    precio ≤ 0 se canaliza por `INVALID_PRICE_TICK` y una cantidad ≤ 0 por
@@ -74,9 +79,12 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
     (lifetime): no se reutiliza aunque la orden original esté en estado terminal. El alcance
     es **por cuenta** (índice `(accountId, clientOrderId)`): dos cuentas distintas pueden usar
     el mismo `clientOrderId` sin conflicto (RE-5).
-11. **RN-11 (sin efectos colaterales).** Cualquier rechazo de validación deja balances,
-    reservas y orderbook **intactos** (INV-2): no se bloquea, no se crea orden con estado
-    distinto de `REJECTED` para auditoría, no se emite fill.
+11. **RN-11 (sin efectos colaterales).** Cualquier rechazo de validación, idempotencia o
+    fondos (pasos 1–5 y 7) deja balances, reservas y orderbook **intactos** (INV-2) y **no
+    crea ninguna orden, en ningún estado**: no se bloquea, no se persiste registro de orden
+    (ni siquiera como `REJECTED`) y no se emite fill (README RE-12, HU-04-05 RN-5,
+    AT-04-07-14). Solo los rechazos de la capa de matching (`MARKET_NO_LIQUIDITY` del paso 6
+    y los del paso 8) se persisten como orden `REJECTED`.
 12. **RN-12 (estabilidad de `code`).** Los `code` provienen del catálogo de
     `00-fundaciones/modelo-de-errores.md` y son estables; `message` es libre pero coherente
     con el `code`.
@@ -122,7 +130,7 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
 ### Escenario 8 (error): Notional por debajo del mínimo [AT-04-03-08]
 - Dado un trader autenticado con fondos suficientes
 - Cuando coloca `type=LIMIT, priceMin="2000000000", quantityWei="100000000000000"` (0.0001 ETH @ 2000 ⇒ notional `200000` = 0.2 USDC)
-- Entonces se rechaza con `BELOW_MIN_NOTIONAL` (422), `details = { notionalMin:"200000", minNotional:"10000000" }`
+- Entonces se rechaza con `BELOW_MIN_NOTIONAL` (422), `details = { actualNotional:"200000", minNotional:"10000000" }`
 
 ### Escenario 9 (error): Monto no entero / float / patrón inválido [AT-04-03-09]
 - Dado un trader autenticado

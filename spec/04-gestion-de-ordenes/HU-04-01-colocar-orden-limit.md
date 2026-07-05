@@ -55,14 +55,14 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 9. **RN-9 (resultado de estado).** Tras el matching: sin ejecución ⇒ `OPEN`; ejecución
    parcial con remanente que descansa ⇒ `PARTIALLY_FILLED`; ejecución total ⇒ `FILLED`
    (HU-04-05).
-10. **RN-10 (self-trade, caso degenerado).** Si al entrar la orden **lo primero** que
-    cruzaría es una orden **propia** (misma cuenta maker y taker) y **no** hubo ningún fill
-    previo contra terceros, se rechaza con `SELF_TRADE_BLOCKED` (422). Como esta detección es
+10. **RN-10 (self-trade: rechazo atómico).** Si el **rango consumible** de la orden entrante
+    (HU-03-06 RN-2) contiene **alguna** orden **propia** (misma cuenta maker y taker), la
+    orden se rechaza **íntegra** con `SELF_TRADE_BLOCKED` (422), **sin ningún fill** (tampoco
+    contra terceros dentro del rango; RE-11, HU-03-06 RN-3). Como esta detección es
     **posterior** a la reserva de fondos (RE-4 paso 8 > paso 7), la reserva ya tomada se
     **revierte atómicamente** antes de responder: `bloqueado −= R; disponible += R`, dejando
     los balances **idénticos** a los previos al alta (INV-2, INV-3). La orden se registra como
-    `REJECTED` (RE-12) y no descansa en el libro. El caso de self-trade **tras** fills previos
-    se rige por RN-14.
+    `REJECTED` (RE-12) y no descansa en el libro; el libro queda idéntico al estado previo.
 11. **RN-11 (idempotencia).** `clientOrderId` ya usado por la cuenta ⇒
     `DUPLICATE_CLIENT_ORDER_ID` (409), sin crear orden ni reservar (RE-5).
 12. **RN-12 (invariantes).** El alta y sus reservas respetan INV-1 (conservación; la
@@ -72,13 +72,12 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
     persisten).
 13. **RN-13 (serialización).** `priceMin`, `quantityWei`, montos reservados y cantidades
     ejecutadas/remanentes se serializan como string `^(0|[1-9][0-9]*)$` (RE-8).
-14. **RN-14 (self-trade en barrido tras fills previos, STP).** Si la limit marketable ejecuta
-    fills contra órdenes de **terceros** y luego, al continuar el barrido, el siguiente nivel
-    cruzable es una orden **propia**, el barrido **se detiene** en la orden propia (RE-11,
-    modo *expire-taker*): los fills previos son **definitivos**. El remanente **no** descansa
-    (evita un libro cruzado contra la propia orden, INV-7) y se descarta, liberando su reserva
-    (RE-3). La orden termina `FILLED` (si completó antes de tocar la propia) o `CANCELLED` con
-    `executedQty > 0`; la respuesta es **exitosa** (no 422).
+14. **RN-14 (sin fills parciales previos al rechazo por STP).** No existe un caso de
+    "self-trade tras fills previos": la evaluación del rango consumible (RN-10) es **previa**
+    al barrido, por lo que si una orden propia cae dentro del rango, el rechazo es del
+    **conjunto** de la entrante y **ningún** fill se aplica, ni siquiera contra las órdenes
+    de terceros del rango (política atómica de HU-03-06 RN-3/RN-7, RE-11). Una limit
+    marketable solo ejecuta fills cuando su rango consumible **no** contiene órdenes propias.
 15. **RN-15 (alcance de `clientOrderId`).** La unicidad de `clientOrderId` es **permanente
     por cuenta** (lifetime): no se reutiliza aunque la orden original ya esté `FILLED`,
     `CANCELLED` o `REJECTED`. Dos cuentas distintas pueden usar el mismo `clientOrderId` sin
@@ -137,10 +136,10 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 - Y `details = { asset:"USDC", required:"2000000000", available:"1000000000" }`
 - Y no se crea ninguna orden, no se bloquea nada y los balances quedan intactos (INV-2)
 
-### Escenario 7 (error): Self-trade bloqueado (caso degenerado, sin fills previos) [AT-04-01-07]
+### Escenario 7 (error): Self-trade bloqueado (ask propio como única liquidez del rango) [AT-04-01-07]
 - Dado un trader autenticado con un ask **propio** resting por `1000000000000000000` wei a `priceMin = 2000000000`
 - Y `disponible(USDC) = 5000000000` (≥ `R = floor(10^18 × 2000000000 / 10^18) = 2000000000`, para que la validación de fondos **pase** y el test aísle el self-trade), `bloqueado(USDC) = 0`
-- Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000"` que cruzaría su propio ask como **primera** liquidez
+- Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000"` cuyo rango consumible contiene su propio ask
 - Entonces se rechaza con `SELF_TRADE_BLOCKED` (HTTP 422), `details = { restingOrderId }`
 - Y la reserva tomada se **revierte atómicamente**: `disponible(USDC) = 5000000000`, `bloqueado(USDC) = 0` (idénticos a los previos al intento, RN-10, INV-3)
 - Y la orden entrante no descansa en el libro; se registra como `REJECTED` (RE-12)
@@ -175,13 +174,13 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 - Entonces se rechaza con `VALIDATION_ERROR` (HTTP 422); `details.issues` indica que `quoteOrderQty` no es un campo permitido en una orden `LIMIT` (RN-1)
 - Y no se reserva nada ni se crea orden
 
-### Escenario 13 (borde): Self-trade tras fills previos detiene el barrido (STP) [AT-04-01-13]
-- Dado un trader autenticado con `disponible(USDC) = 5000000000`
+### Escenario 13 (borde): Orden propia dentro del rango consumible ⇒ rechazo íntegro [AT-04-01-13]
+- Dado un trader autenticado con `disponible(USDC) = 5000000000` y `bloqueado(USDC) = 0`
 - Y dos asks cruzables a `priceMin = 2000000000`: el primero **ajeno** por `400000000000000000` wei (0.4 ETH) y el segundo **propio** por `600000000000000000` wei (0.6 ETH)
-- Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000"` (1 ETH)
-- Entonces ejecuta 0.4 ETH contra el ask ajeno (fill **definitivo**) y, al encontrar su propio ask, **detiene** el barrido (RN-14, RE-11)
-- Y el remanente `600000000000000000` wei **no** descansa: se descarta y su reserva se libera (RE-3)
-- Y la orden queda `CANCELLED` con `executedQty = "400000000000000000"`; la respuesta es exitosa (no 422)
+- Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000"` (1 ETH; rango consumible = ambos asks)
+- Entonces se rechaza **íntegra y atómicamente** con `SELF_TRADE_BLOCKED` (HTTP 422), `details = { restingOrderId }` (el ask propio), **sin ningún fill**, tampoco contra el ask ajeno (RN-10, RN-14, RE-11; coincide con AT-03-06-03)
+- Y la reserva tomada se revierte: `disponible(USDC) = 5000000000`, `bloqueado(USDC) = 0`; el libro queda **idéntico** (ambos asks intactos)
+- Y la orden queda `REJECTED` con `executedQty = "0"` (RE-12); no descansa ningún remanente
 
 ### Escenario 14 (idempotencia): `clientOrderId` no reutilizable tras estado terminal [AT-04-01-14]
 - Dado un trader cuya orden con `clientOrderId = "k-1"` ya está `FILLED` (terminal)

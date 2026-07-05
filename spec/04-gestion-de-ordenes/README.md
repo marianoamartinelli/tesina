@@ -68,7 +68,7 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
   `disponible + bloqueado = total`, asientos del ledger de doble entrada.
 - **03-motor-de-matching** — recepción de la orden, prioridad precio-tiempo, generación
   de fills, descarte del remanente market, `SELF_TRADE_BLOCKED`, `MARKET_NO_LIQUIDITY`,
-  persistencia del orderbook.
+  `MARKET_BUDGET_INSUFFICIENT`, persistencia del orderbook.
 - **05-settlement-y-fees** — efecto contable de cada fill (consumo de la reserva, cobro
   de fees maker/taker) que esta épica desencadena pero no implementa.
 
@@ -108,8 +108,8 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
 - **RE-4 — Precedencia de validación determinista** (deriva de
   `00-fundaciones/modelo-de-errores.md §4`; esta épica la **instancia** con dos precisiones
   de dominio: la precondición de liquidez de market se evalúa **antes** de reservar fondos, y
-  la detección de self-trade ocurre **durante** el barrido, posterior a la reserva. Un solo
-  error por respuesta, el primero que aplique):
+  la detección de self-trade se evalúa sobre el **rango consumible**, previa al barrido y
+  posterior a la reserva. Un solo error por respuesta, el primero que aplique):
   0. **rate limiting** (capa de red/middleware): si la cuenta supera el límite ⇒
      `RATE_LIMITED` (429), antes de cualquier otra evaluación y sin crear orden ni reservar
      (RE-10; el límite concreto en HU-09-*);
@@ -126,19 +126,24 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
      haber reservado nada. Por eso, ante libro vacío + fondos insuficientes, **prevalece**
      `MARKET_NO_LIQUIDITY` (no `INSUFFICIENT_FUNDS`);
   7. fondos (`INSUFFICIENT_FUNDS`);
-  8. matching durante el barrido: `SELF_TRADE_BLOCKED` (422). Si se detecta tras haber
-     reservado (paso 7), la reserva se **revierte atómicamente** antes de responder (ver
-     RE-11 y HU-04-01/02).
+  8. matching (evaluación del **rango consumible**, previa al barrido y posterior a fondos;
+     conserva el orden del paso 7 de fundaciones §4): `SELF_TRADE_BLOCKED` (422) si el rango
+     consumible de la entrante contiene una orden **propia** (rechazo íntegro, RE-11; la
+     reserva tomada en el paso 7 se **revierte atómicamente** antes de responder) →
+     `MARKET_BUDGET_INSUFFICIENT` (422) si es `MARKET BUY` con lado opuesto **no** vacío y
+     presupuesto que no alcanza para ejecutar ni 1 lot del mejor maker, sea de quien sea
+     (`filledWei = 0`; la reserva se libera íntegra, HU-03-04 RN-9).
 
-  > Nota de precedencia: la única diferencia respecto del orden recomendado por
-  > `00-fundaciones §4` (que ubica todo "matching" al final) es haber separado la
-  > **precondición de liquidez** (`MARKET_NO_LIQUIDITY` por lado vacío, paso 6, de solo
-  > lectura y previa a fondos) de la **detección de self-trade** durante el barrido (paso 8).
-  > Esto es legítimo —`00-fundaciones §4` declara su orden como *recomendado* y habilita a
-  > cada épica a instanciarlo— y necesario para que un `REJECTED` por falta de liquidez nunca
-  > deje fondos reservados (coherente con HU-04-05 RN-5). Se coloca tras la idempotencia
-  > (paso 5) porque ésta es un chequeo barato a nivel de solicitud que debe preceder a la
-  > lectura del estado del mercado.
+  > Nota de precedencia: respecto del orden recomendado por `00-fundaciones §4` (que ubica
+  > todo el paso de matching al final, paso 7: `SELF_TRADE_BLOCKED` → `MARKET_NO_LIQUIDITY`
+  > → `MARKET_BUDGET_INSUFFICIENT`), esta épica **adelanta** la precondición de liquidez
+  > (`MARKET_NO_LIQUIDITY` por lado vacío, paso 6, de solo lectura y previa a fondos); el
+  > resto del paso de matching conserva el orden de fundaciones (`SELF_TRADE_BLOCKED` →
+  > `MARKET_BUDGET_INSUFFICIENT`, paso 8). Esto es legítimo —`00-fundaciones §4` declara su
+  > orden como *recomendado* y habilita a cada épica a instanciarlo— y necesario para que un
+  > `REJECTED` por falta de liquidez nunca deje fondos reservados (coherente con HU-04-05
+  > RN-5). Se coloca tras la idempotencia (paso 5) porque ésta es un chequeo barato a nivel
+  > de solicitud que debe preceder a la lectura del estado del mercado.
 - **RE-5 — Idempotencia de alta.** Si el trader envía un `clientOrderId` ya usado por su
   cuenta, el alta se rechaza con `DUPLICATE_CLIENT_ORDER_ID` (409) y **no** crea una
   segunda orden ni reserva fondos. La unicidad es **permanente por cuenta** (lifetime): un
@@ -150,7 +155,8 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
   `PARTIALLY_FILLED`, `FILLED`, `CANCELLED`, `REJECTED`. `FILLED`, `CANCELLED` y `REJECTED`
   son **terminales** (sin transiciones salientes). Las market son **immediate-or-cancel**:
   nunca descansan; su remanente no ejecutado se descarta (`CANCELLED` si hubo ejecución
-  parcial; `REJECTED` con `MARKET_NO_LIQUIDITY` si no hubo ninguna).
+  parcial; `REJECTED` si no hubo ninguna, por `MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED` o
+  `MARKET_BUDGET_INSUFFICIENT`).
 - **RE-7 — Aislamiento por cuenta.** Un trader solo puede consultar/cancelar **sus**
   órdenes. Referir una orden ajena o inexistente devuelve `ORDER_NOT_FOUND` (404), sin
   filtrar la existencia de órdenes de terceros.
@@ -168,21 +174,22 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
   `details = { retryAfterSeconds }`) **sin** crear orden, reservar fondos ni alterar estado.
   Se evalúa en la capa de red/middleware, **antes** de la autenticación (RE-4 paso 0). El
   límite concreto (requests por segundo por cuenta) se fija en `09-api-http-websocket`.
-- **RE-11 — Prevención de self-trade (STP) en el barrido.** El modo de STP de esta épica es
-  **cancelar el remanente del taker** (*expire-taker*): durante el barrido, cuando el
-  siguiente maker cruzable es una orden **propia** del taker, el barrido **se detiene** en esa
-  orden y los fills previos contra terceros son **definitivos**. El remanente no ejecutado
-  **no** descansa (para no dejar un libro cruzado/bloqueado contra la propia orden, INV-7) y
-  se descarta, liberando su reserva (RE-3). Resultado:
-  - **sin** fills previos (la orden propia es la primera liquidez cruzable) ⇒
-    `SELF_TRADE_BLOCKED` (422), orden `REJECTED`, reserva (si se tomó) revertida atómicamente;
-  - **con** fills previos contra terceros ⇒ la orden termina `FILLED` (si completó antes de
-    tocar la propia) o `CANCELLED` con `executedQty > 0` (remanente descartado); la respuesta
-    es **exitosa** (no un error 422).
+- **RE-11 — Prevención de self-trade (STP): rechazo atómico de la entrante.** El modo de STP
+  de esta épica es el **fijado por HU-03-06** (*cancel-incoming, whole-order*): si el **rango
+  consumible** de la orden entrante (HU-03-06 RN-2: lo que ejecutaría según prioridad
+  precio-tiempo hasta completar su cantidad o presupuesto) contiene **al menos una** orden
+  **propia**, la entrante se rechaza **íntegra y atómicamente** con `SELF_TRADE_BLOCKED`
+  (422): **sin ningún fill** (ni siquiera contra terceros dentro del rango), sin posar
+  remanente, orden `REJECTED` (RE-12) y reserva revertida atómicamente si ya se había tomado
+  (RE-4 paso 8). El libro y los balances quedan **idénticos** al estado previo (HU-03-06
+  RN-3, INV-4). La detección puede describirse como una evaluación del rango consumible
+  **previa al barrido** (después de fondos): no existe ningún caso de "fills previos" ni de
+  `CANCELLED` por STP.
 - **RE-12 — Persistencia de rechazos.** Solo las órdenes rechazadas por la **capa de
   matching** se persisten como `REJECTED` y aparecen en el historial (HU-04-07):
-  `MARKET_NO_LIQUIDITY` (libro vacío, RE-4 paso 6) y `SELF_TRADE_BLOCKED` (barrido, RE-4 paso
-  8). Los rechazos de validación, idempotencia y fondos (RE-4 pasos 1–5 y 7, p. ej.
+  `MARKET_NO_LIQUIDITY` (libro vacío, RE-4 paso 6), `SELF_TRADE_BLOCKED` y
+  `MARKET_BUDGET_INSUFFICIENT` (rango consumible, RE-4 paso 8). Los rechazos de validación,
+  idempotencia y fondos (RE-4 pasos 1–5 y 7, p. ej.
   `INVALID_PRICE_TICK`, `DUPLICATE_CLIENT_ORDER_ID`, `INSUFFICIENT_FUNDS`) **no** se persisten
   como órdenes: solo devuelven el error, sin dejar registro de orden.
 

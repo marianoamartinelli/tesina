@@ -23,7 +23,8 @@ Estados: **`NEW`** (transitorio interno: aceptada y con fondos reservados, aún 
 por el matching), **`OPEN`** (resting sin ejecución), **`PARTIALLY_FILLED`** (resting con
 ejecución parcial), **`FILLED`** (ejecución total), **`CANCELLED`** (remanente removido por
 el usuario o descartado por el sistema en market), **`REJECTED`** (rechazada en validación
-o sin liquidez; nunca descansó).
+o por la capa de matching — sin liquidez, self-trade o presupuesto insuficiente; nunca
+descansó).
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (conjunto de estados).** El universo de estados es exactamente
@@ -35,7 +36,7 @@ o sin liquidez; nunca descansó).
    | Desde               | Hacia               | Disparador                                                        |
    |---------------------|---------------------|------------------------------------------------------------------|
    | (alta)              | `NEW`               | Orden aceptada en validación y fondos reservados                  |
-   | (alta)              | `REJECTED`          | Rechazo por validación/idempotencia/fondos, o por la capa de matching (`MARKET_NO_LIQUIDITY` / `SELF_TRADE_BLOCKED`). Solo los rechazos de **matching** se persisten como orden `REJECTED` (RN-5, RE-12) |
+   | (alta)              | `REJECTED`          | Rechazo por validación/idempotencia/fondos, o por la capa de matching (`MARKET_NO_LIQUIDITY` / `SELF_TRADE_BLOCKED` / `MARKET_BUDGET_INSUFFICIENT`). Solo los rechazos de **matching** se persisten como orden `REJECTED` (RN-5, RE-12) |
    | `NEW`               | `OPEN`              | Limit sin ejecución inmediata: descansa en el libro              |
    | `NEW`               | `PARTIALLY_FILLED`  | Limit con ejecución parcial en el ingreso; remanente descansa     |
    | `NEW`               | `FILLED`            | Ejecución total en el ingreso (limit marketable o market)         |
@@ -54,16 +55,20 @@ o sin liquidez; nunca descansó).
    **nunca** termina con fondos bloqueados de forma permanente: las rechazadas por
    validación/idempotencia/fondos nunca llegaron a reservar; `MARKET_NO_LIQUIDITY` se evalúa
    **antes** de reservar (RE-4 paso 6); `SELF_TRADE_BLOCKED` se detecta tras reservar pero la
-   reserva se **revierte atómicamente** (HU-04-01 RN-10, HU-04-02 RN-9). Nunca produjo fills
-   ni descansó en el libro (INV-2). **Persistencia (normativa):** se persisten como orden
-   `REJECTED` —y aparecen en el historial (HU-04-07)— **solo** las rechazadas por la **capa
-   de matching** (`MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED`); las rechazadas en validación,
-   idempotencia o fondos (`VALIDATION_ERROR`, `INVALID_PRICE_TICK`, `INVALID_LOT_SIZE`,
-   `BELOW_MIN_NOTIONAL`, `DUPLICATE_CLIENT_ORDER_ID`, `INSUFFICIENT_FUNDS`, …) **no** se
-   persisten como órdenes (solo devuelven el error) (RE-12).
+   reserva se **revierte atómicamente** (HU-04-01 RN-10, HU-04-02 RN-9);
+   `MARKET_BUDGET_INSUFFICIENT` se detecta en el matching con `filledWei = 0` y la reserva se
+   libera **íntegra** (HU-03-04 RN-9). Nunca produjo fills ni descansó en el libro (INV-2).
+   **Persistencia (normativa):** se persisten como orden `REJECTED` —y aparecen en el
+   historial (HU-04-07)— **solo** las rechazadas por la **capa de matching**
+   (`MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED`, `MARKET_BUDGET_INSUFFICIENT`); las
+   rechazadas en validación, idempotencia o fondos (`VALIDATION_ERROR`, `INVALID_PRICE_TICK`,
+   `INVALID_LOT_SIZE`, `BELOW_MIN_NOTIONAL`, `DUPLICATE_CLIENT_ORDER_ID`,
+   `INSUFFICIENT_FUNDS`, …) **no** se persisten como órdenes (solo devuelven el error)
+   (RE-12).
 6. **RN-6 (market IOC).** Una orden market solo puede terminar en `FILLED` (objetivo
-   completo), `CANCELLED` (parcial + remanente descartado) o `REJECTED`
-   (`MARKET_NO_LIQUIDITY`); nunca en `OPEN` ni en `PARTIALLY_FILLED` persistente (RE-6).
+   completo), `CANCELLED` (parcial + remanente descartado) o `REJECTED` sin ejecución alguna
+   (`MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED` o `MARKET_BUDGET_INSUFFICIENT`); nunca en
+   `OPEN` ni en `PARTIALLY_FILLED` persistente (RE-6).
 7. **RN-7 (monotonía y unidad de ejecutado).** `executedQty` es monótona no decreciente y
    nunca excede `quantityWei` (o el objetivo de la market). Se expresa **siempre en base
    (wei)**: es la suma de los `q_wei` de todos los fills, también para órdenes market por

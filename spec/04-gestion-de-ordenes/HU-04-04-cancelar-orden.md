@@ -42,9 +42,11 @@ también el aislamiento por cuenta y las condiciones de carrera con fills concur
    - **LIMIT SELL:** `remainingQty` wei.
    En general, tras varios fills a **mejor** precio, `floor(remainingQty × priceMin / 10^18)`
    puede **subestimar** el bloqueado real por subaditividad del `floor`
-   (`Σ floor(q_i × p) ≤ floor(Σ q_i × p)`, hasta `(N−1)` unidades con `N` fills); liberar el
-   `reservaOrden` rastreado garantiza que el bloqueado de la orden quede en **exactamente 0**,
-   sin residuo permanente (INV-3, INV-7). La parte ya consumida por fills previos no se toca.
+   (`Σ floor(q_i × p) ≤ floor(Σ q_i × p)`; con `N` fills el residuo se acota por `N`
+   unidades — suma de las `N+1` partes fraccionarias descartadas: las de los `N` fills más
+   la del remanente —, cota alcanzable incluso con `N = 1`); liberar el `reservaOrden`
+   rastreado garantiza que el bloqueado de la orden quede en **exactamente 0**, sin residuo
+   permanente (INV-3, INV-7). La parte ya consumida por fills previos no se toca.
 4. **RN-4 (idempotencia/terminalidad).** Cancelar una orden ya `CANCELLED` (o `FILLED`/
    `REJECTED`) ⇒ `ORDER_NOT_CANCELLABLE` (409); el estado terminal no cambia y no se libera
    nada (ya fue liberado/consumido).

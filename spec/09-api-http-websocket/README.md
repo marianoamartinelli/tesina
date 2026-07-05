@@ -7,8 +7,8 @@ Definir el **contrato de interfaz** que consumen los clientes web (React) y mobi
 observable**: recursos REST (perfil/auth, órdenes, balances, depósitos, retiros,
 mercado), sus payloads de request/response y códigos de estado; la **autenticación por
 token** y la **autorización** (un usuario solo accede a sus propios recursos); y los
-**canales WebSocket** público (orderbook + trades) y privado (órdenes y balances del
-usuario). Además, fija la **forma uniforme de los errores** de la API y su mapeo desde el
+**canales WebSocket** público (orderbook + trades) y privado (órdenes, balances y
+retiros del usuario). Además, fija la **forma uniforme de los errores** de la API y su mapeo desde el
 modelo de errores de dominio.
 
 Esta épica define **el contrato**; el **comportamiento detallado** vive en las épicas de
@@ -99,9 +99,10 @@ dominio (01–08). Cuando hay conflicto, prevalece `00-fundaciones`.
   existencia; los listados nunca incluyen recursos de otra cuenta (INV de privacidad).
 - **RG-API-7 (secuencia WebSocket):** los canales emiten primero un **snapshot** y luego
   **deltas** con `sequence` estrictamente creciente y contiguo. La `sequence` es
-  **independiente por canal y por símbolo**: `orderbook` tiene su propia secuencia continua,
-  `trades` la suya, y los canales privados `orders`, `balances` y `withdrawals` cada uno la
-  suya por conexión/suscripción. Un cliente suscrito a varios canales **no** debe comparar
+  **independiente por canal y por símbolo**: `orderbook` usa la numeración **única y global
+  del libro** (la misma que expone el snapshot REST, HU-09-03 RN-5/RN-12), `trades` la suya,
+  y los canales privados `orders`, `balances` y `withdrawals` cada uno la suya por
+  conexión/suscripción. Un cliente suscrito a varios canales **no** debe comparar
   secuencias entre canales: un hueco se detecta **solo dentro del mismo canal** (un mensaje
   de otro canal con `sequence` distinta no es un hueco). Un hueco dentro de un canal obliga
   al cliente a re-suscribirse a ese canal (re-snapshot).

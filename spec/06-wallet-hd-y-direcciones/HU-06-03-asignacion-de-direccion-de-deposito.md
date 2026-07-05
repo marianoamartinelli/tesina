@@ -162,12 +162,13 @@ El registro persistido de una asignación contiene, como mínimo: `accountId`, `
   (RN-7, INV-8)
 
 ### Escenario 7 (reproducibilidad): Coherencia índice → dirección [AT-06-03-07]
-- Dado el seed de prueba canónico `MNEMONIC_HARDHAT`
-  (= `"test test test test test test test test test test test junk"`, HU-06-02) y la cuenta
-  a la que se asignó `address_index = 0`
-- Cuando se deriva su dirección de depósito
-- Entonces la dirección es exactamente `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`
-  (consistente con el known-answer test de HU-06-02)
+- Dado el sistema provisionado con su mnemonic de **24 palabras** (HU-06-01) y una cuenta a
+  la que se asignó `address_index = i`
+- Cuando se deriva de forma **independiente** (implementación BIP-44 de referencia, externa
+  al sistema) la dirección del path `m/44'/60'/0'/0/i` sobre **ese mismo** mnemonic
+- Entonces la dirección de depósito asignada por el sistema a la cuenta coincide
+  **exactamente** con la dirección derivada por la referencia (HU-06-02; la función pura de
+  derivación se verifica además con los known-answer tests de HU-06-02)
 
 ### Escenario 8 (error): Cuenta inexistente [AT-06-03-08]
 - Dado una referencia a una cuenta que **no** existe

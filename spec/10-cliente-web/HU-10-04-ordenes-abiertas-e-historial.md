@@ -14,12 +14,12 @@ Cubre dos vistas relacionadas del cliente React: (1) órdenes abiertas (`OPEN` y
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (clasificación por estado).** "Órdenes abiertas" lista únicamente `OPEN` y `PARTIALLY_FILLED`. "Historial" lista `FILLED`, `CANCELLED` y `REJECTED`. Una orden que pasa a estado terminal se mueve de abiertas a historial.
-2. **RN-2 (columnas).** Cada fila muestra: `orderId`, `side`, `type`, `priceMin` (o "market"), `quantityWei`, cantidad ejecutada, remanente (`quantityWei − ejecutada`), **precio promedio de ejecución** (`avgFillPrice`), `status` y timestamp de creación. El **precio promedio de ejecución** es el monto total ejecutado en quote dividido por la cantidad ejecutada en base, expresado como `priceMin` (string), provisto por la épica 09; para órdenes sin ningún fill (ejecutada = 0) se muestra `"--"`. Es la información más relevante post-trade para MARKET y fills parciales a múltiples precios. Los montos se formatean desde unidad mínima sin floats (RNE-1).
+2. **RN-2 (columnas).** Cada fila muestra: `orderId`, `side`, `type`, `priceMin` (o "market"), `quantityWei`, cantidad ejecutada, remanente (`quantityWei − ejecutada`), **precio promedio de ejecución** (`avgExecutionPrice`), `status` y timestamp de creación. El **precio promedio de ejecución** es el monto total ejecutado en quote dividido por la cantidad ejecutada en base, expresado como `priceMin` (string), provisto por la épica 09; para órdenes sin ningún fill (ejecutada = 0) se muestra `"--"`. Es la información más relevante post-trade para MARKET y fills parciales a múltiples precios. Los montos se formatean desde unidad mínima sin floats (RNE-1).
 3. **RN-3 (remanente respaldado — INV-7).** El remanente mostrado de una orden abierta corresponde a lo que sigue bloqueado en balances (HU-10-05); el cliente no muestra remanentes que contradigan el bloqueado informado por el servidor (RNE-6).
 4. **RN-4 (actualización en vivo).** Vía WebSocket, los eventos de fill/cambio de estado actualizan la fila correspondiente (ejecutada, remanente, status). Al alcanzar un estado terminal, la orden se reubica en historial sin recargar toda la vista.
 5. **RN-5 (cancelar — solo cancelables).** El botón "Cancelar" está habilitado solo para `OPEN`/`PARTIALLY_FILLED`. Al cancelar, el cliente llama al endpoint de cancelación (épica 09). Ante éxito, la orden pasa a `CANCELLED` y el remanente bloqueado se libera (reflejado en HU-10-05 por su propio canal).
 6. **RN-6 (cancelación no cancelable — concurrencia).** Si la orden ya está `FILLED`/`CANCELLED`/`REJECTED` al momento de cancelar (carrera con un fill), la API responde `ORDER_NOT_CANCELLABLE` (409) con `{ orderId, status }`; el cliente informa el estado real y refresca la fila, sin reintentar a ciegas.
-7. **RN-7 (orden inexistente o ajena).** Si la orden no existe o no pertenece a la cuenta, la API responde `ORDER_NOT_FOUND` (404) (o `UNAUTHORIZED` 403 si aplica); el cliente informa y refresca el listado. El cliente nunca opera sobre órdenes de otra cuenta.
+7. **RN-7 (orden inexistente o ajena).** Si la orden no existe **o pertenece a otra cuenta**, la API responde **siempre** `ORDER_NOT_FOUND` (404): la respuesta es indistinguible entre ambos casos para no revelar la existencia de órdenes ajenas (paridad con HU-11-04 RN-3); nunca `UNAUTHORIZED`. El cliente informa y refresca el listado. El cliente nunca opera sobre órdenes de otra cuenta.
 8. **RN-8 (anti doble submit de cancelación).** Mientras una cancelación está en curso para una orden, su botón se deshabilita para evitar doble envío.
 9. **RN-9 (paginación del historial).** El historial se pagina según el contrato de la épica 09. El cliente es agnóstico al modelo concreto (cursor opaco o número de página): en cada solicitud envía el **parámetro de continuación devuelto por la API en la respuesta anterior** (p. ej. `nextCursor`), tratándolo como opaco. Solicita la siguiente página bajo demanda, no asume un total fijo, y marca "no hay más resultados" cuando la API deja de devolver un parámetro de continuación.
 10. **RN-10 (historial vacío).** Si la cuenta no tiene órdenes terminadas, el historial muestra un estado vacío explícito (sin filas), no un error.
@@ -34,19 +34,19 @@ Cubre dos vistas relacionadas del cliente React: (1) órdenes abiertas (`OPEN` y
 - Y aparecen ordenadas por timestamp de creación descendente: la de `t2` antes que la de `t1` (RN-11)
 - Y las cantidades se muestran formateadas desde unidad mínima sin floats
 - Y el remanente mostrado = `quantityWei − ejecutada`
-- Y la orden `OPEN` sin fills muestra `avgFillPrice = "--"`
+- Y la orden `OPEN` sin fills muestra `avgExecutionPrice = "--"`
 
 ### Escenario 2: Actualización en vivo por fill parcial [AT-10-04-02]
-- Dado una orden `OPEN` listada con `avgFillPrice = "--"`
+- Dado una orden `OPEN` listada con `avgExecutionPrice = "--"`
 - Cuando llega por WebSocket un fill parcial de esa orden
-- Entonces la fila pasa a `PARTIALLY_FILLED`, actualiza ejecutada, remanente y `avgFillPrice` (precio promedio provisto por la API)
+- Entonces la fila pasa a `PARTIALLY_FILLED`, actualiza ejecutada, remanente y `avgExecutionPrice` (precio promedio provisto por la API)
 - Y permanece en órdenes abiertas
 
 ### Escenario 3: Orden pasa a terminal y se mueve a historial [AT-10-04-03]
 - Dado una orden `PARTIALLY_FILLED` listada en abiertas
 - Cuando un fill la completa (`FILLED`)
 - Entonces deja de aparecer en órdenes abiertas
-- Y aparece en el historial con estado `FILLED` y su `avgFillPrice` (precio promedio de ejecución) poblado
+- Y aparece en el historial con estado `FILLED` y su `avgExecutionPrice` (precio promedio de ejecución) poblado
 
 ### Escenario 4: Cancelación exitosa desde la UI [AT-10-04-04]
 - Dado una orden `OPEN` de la cuenta
@@ -63,7 +63,7 @@ Cubre dos vistas relacionadas del cliente React: (1) órdenes abiertas (`OPEN` y
 
 ### Escenario 6 (error): cancelar orden inexistente o ajena [AT-10-04-06]
 - Dado un `orderId` que no existe o no pertenece a la cuenta
-- Cuando el usuario intenta cancelarla y la API responde `ORDER_NOT_FOUND` (404) o `UNAUTHORIZED` (403)
+- Cuando el usuario intenta cancelarla y la API responde `ORDER_NOT_FOUND` (404) — la misma respuesta en ambos casos, sin revelar la existencia de órdenes ajenas (RN-7)
 - Entonces el cliente informa el error correspondiente y refresca el listado
 - Y no se altera ninguna orden ajena
 
@@ -84,10 +84,10 @@ Cubre dos vistas relacionadas del cliente React: (1) órdenes abiertas (`OPEN` y
 - Entonces se muestra un estado vacío explícito (sin filas) y no un error
 
 ### Escenario 10 (borde): orden REJECTED en historial [AT-10-04-10]
-- Dado una cuenta con una orden `REJECTED` (p. ej. rechazada por `INSUFFICIENT_FUNDS` al ingresar)
+- Dado una cuenta con una orden `REJECTED` persistida por un rechazo **del matching** (p. ej. una MARKET rechazada por `MARKET_NO_LIQUIDITY`, o una orden rechazada por `SELF_TRADE_BLOCKED`; los rechazos de validación/fondos **no** se persisten como orden, HU-04-05 RN-5)
 - Cuando el usuario abre el historial
 - Entonces aparece la orden con estado `REJECTED`, ejecutada = `0` y remanente = `quantityWei`
-- Y `avgFillPrice = "--"` (nunca tuvo fills) y se muestra el motivo de rechazo si la API lo provee
+- Y `avgExecutionPrice = "--"` (nunca tuvo fills) y se muestra el motivo de rechazo si la API lo provee
 - Y el botón "Cancelar" no aparece para órdenes `REJECTED`
 
 ## Definicion de Done (checklist transversal)

@@ -108,14 +108,15 @@ Fuera de alcance:
    Estas constantes son el **contrato de evaluación**; en producción son configurables. Esta
    política rige para HU-10-02 (RN-8), HU-10-04 (canal de órdenes) y HU-10-05 (RN-7).
 10. **RNE-10 (servidor como fuente de verdad del estado on-chain; reorgs).** El cliente
-   nunca asume que un estado on-chain es permanente: sigue siempre al servidor (RNE-2). Si
-   un depósito previamente `ACREDITADO` es **revertido** por el backend a raíz de una
-   reorganización de la cadena (en Sepolia los tiempos de bloque son cortos y las reorgs
-   superficiales son posibles), el backend emite un evento de reversión por WebSocket; el
-   cliente muestra ese depósito como `REVERTIDO` con su `(txHash, logIndex)` y aplica el
-   nuevo balance informado por el servidor, **sin** tratar la baja de balance como
-   inconsistencia ni disparar una resincronización por aparente violación de invariantes
-   (ver HU-10-06 RN-12 y HU-10-05 RN-6).
+   sigue siempre al servidor (RNE-2) para el estado on-chain. Un depósito **`ACREDITADO` es
+   terminal**: el backend **nunca** revierte un crédito ya aplicado (HU-07-04 RN-10), por lo
+   que **no existe** un estado `REVERTIDO` ni eventos de reversión de créditos. El caso real
+   ante una reorg (en Sepolia los tiempos de bloque son cortos y las reorgs superficiales
+   son posibles) es un depósito **`PENDIENTE`** que pasa a **`DESCARTADO`** con
+   `discardReason ∈ {REORG, REVERTED}` (épica 07): el cliente lo muestra como descartado con
+   su `(txHash, logIndex)` y la causa, **sin** cambio de balance (el monto nunca se había
+   acreditado) y sin tratar el descarte como inconsistencia ni disparar una
+   resincronización (ver HU-10-06 RN-12 y HU-10-05 RN-6).
 
 ## Escenarios de integración entre HUs
 
@@ -137,6 +138,6 @@ AT por HU). El identificador `AT-10-E2E-*` es trazable como cualquier otro AT.
 - Y el balance de USDC refleja la liberación (bloqueado↓, disponible↑) (HU-10-05)
 - Cuando solicita un retiro de USDC válido (HU-10-06)
 - Entonces el balance refleja el bloqueo del retiro y el retiro avanza por su ciclo de
-  estados (`SOLICITADO` → … → `CONFIRMADO`)
+  estados canónico (`PENDING` → `BROADCAST` → `CONFIRMED`, HU-10-06 RN-8)
 - Y, ante `UNAUTHENTICATED` en cualquier paso protegido, el cliente limpia la sesión y
   vuelve a login (HU-10-01, RNE-4)

@@ -56,7 +56,8 @@ Supuesto: las transacciones salientes se firman con la clave de una **dirección
 ### Escenario 4 (error): conflicto de nonce [AT-08-03-04]
 - Dado un retiro cuyo nonce candidato `7` ya fue usado por una transacción confirmada/pendiente de la misma emisora
 - Cuando se intenta broadcastear con `nonce = 7`
-- Entonces se rechaza con `NONCE_CONFLICT` (409), `details = { address, nonce: "7" }` (RN-4)
+- Entonces se rechaza con `NONCE_CONFLICT` (409), `details = { address, nonce: 7 }` (el
+  `nonce` es un conteo, viaja como **entero JSON**, no string; RN-4)
 - Y el retiro permanece `PENDING`, sin consumir el bloqueo ni duplicar transacción
 
 ### Escenario 5 (concurrencia): dos retiros de la misma emisora no toman el mismo nonce [AT-08-03-05]

@@ -41,8 +41,11 @@ entero en unidad mínima (`00-fundaciones/convenciones-monetarias.md` §5).
    array es `[]`.
    **Profundidad del snapshot:** el snapshot emite como máximo `depth` niveles por lado, con
    el mismo `depth` (default **50**, máx **200**) del endpoint REST `GET /market/orderbook`.
-   Un cliente que necesite más profundidad debe consultar REST. Las **deltas** posteriores
-   (RN-4) solo afectan niveles dentro de esa profundidad.
+   Un cliente que necesite más profundidad debe consultar REST. La profundidad limita
+   **únicamente** el snapshot inicial: las **deltas** posteriores (RN-4) se emiten para
+   **todo** cambio del libro completo, incluso en niveles fuera del top-`depth`. Un cliente
+   que mantiene un espejo top-N del libro descarta localmente las entradas de niveles fuera
+   de su profundidad.
 4. **RN-4 (deltas — orderbook):** tras el snapshot, los cambios se emiten como
    `{ "type": "update", "channel": "orderbook", "symbol", "sequence": <n>, "bids": [...],
    "asks": [...] }` donde cada entrada `[priceMin, quantityWei]` representa el **nuevo total
@@ -53,10 +56,12 @@ entero en unidad mínima (`00-fundaciones/convenciones-monetarias.md` §5).
    se emiten en **un único** mensaje `update` (mismo `sequence`, todos los niveles afectados
    en el mismo frame WS). El cliente aplica el delta como una operación atómica y nunca
    observa estados intermedios cruzados o inconsistentes del libro (coherente con INV-4).
-5. **RN-5 (secuencia monotónica):** `sequence` es un entero estrictamente creciente y
-   **contiguo** por suscripción (snapshot tiene la `sequence` base; cada update incrementa
-   en 1). Si el cliente detecta un hueco (sequence no contigua), debe descartar su estado y
-   re-suscribirse para obtener un nuevo snapshot (RG-API-7).
+5. **RN-5 (secuencia monotónica):** la `sequence` del canal `orderbook` es **única y global
+   del libro** —la misma numeración que expone el snapshot REST `GET /market/orderbook`
+   (RN-12)—, entera, estrictamente creciente y **contigua** para todo suscriptor (el
+   snapshot trae la `sequence` base vigente; cada update la incrementa en 1). Si el cliente
+   detecta un hueco (sequence no contigua), debe descartar su estado y re-suscribirse para
+   obtener un nuevo snapshot (RG-API-7).
 6. **RN-6 (stream de trades):** al suscribirse a `trades`, el servidor emite por cada fill
    `{ "type": "trade", "channel": "trades", "symbol", "sequence": <n>, "tradeId",
    "priceMin", "quantityWei", "takerSide", "timestamp" }`. `takerSide ∈ {BUY, SELL}`
@@ -84,7 +89,7 @@ entero en unidad mínima (`00-fundaciones/convenciones-monetarias.md` §5).
     `sequence` debe dar el mismo libro (a igual `depth`).
 13. **RN-13 (alcance de la secuencia):** la `sequence` es **independiente por canal y por
     símbolo** (RG-API-7): el canal `orderbook` de `ETH-USDC` tiene su propia secuencia
-    continua; el canal `trades`, la suya. Un cliente suscrito a ambos **no** debe comparar
+    continua (la numeración global del libro, RN-5); el canal `trades`, la suya. Un cliente suscrito a ambos **no** debe comparar
     secuencias entre canales: un hueco se detecta **solo dentro del mismo canal**. Recibir un
     mensaje de otro canal con `sequence` distinta **no** constituye un hueco.
 14. **RN-14 (heartbeat / detección de conexión muerta):** el servidor envía periódicamente
@@ -177,6 +182,9 @@ entero en unidad mínima (`00-fundaciones/convenciones-monetarias.md` §5).
 - Entonces el `snapshot` recibido trae a lo sumo 50 niveles por lado (RN-3)
 - Y suscribirse sin `depth` aplica el default 50; `depth > 200` produce
   `{ error: { code: "VALIDATION_ERROR" } }` por el socket
+- Y las deltas posteriores **no** se recortan por `depth`: se emiten para todo cambio del
+  libro (también en niveles fuera del top-50); el cliente que mantiene un espejo top-50
+  descarta localmente los niveles fuera de su profundidad (RN-3)
 
 ### Escenario 12: Heartbeat ping/pong [AT-09-03-12]
 - Dado una conexión WS abierta

@@ -178,7 +178,7 @@ Vector:
 - Cuando un cliente invoca, con respuesta exitosa, **cada uno** de los endpoints
   autenticados que pueden tocar datos derivados del seed —en particular
   `GET /api/v1/deposit-address?asset=ETH|USDC` (épica 09, HU-06-04), `GET /api/v1/balances`,
-  `GET /api/v1/profile`, `GET /api/v1/deposits` y `GET /api/v1/withdrawals`—
+  `GET /api/v1/me`, `GET /api/v1/deposits` y `GET /api/v1/withdrawals`—
 - Entonces en **ninguna** de esas respuestas (HTTP o, donde aplique, WebSocket) aparece un
   campo `mnemonic`, `seed` ni `privateKey` (ni su valor en ningún campo) — solo claves
   públicas y direcciones (RN-5)
@@ -232,8 +232,8 @@ Vector:
 
 ### Escenario 13 (integridad / arranque): Smoke test del seed contra el mapeo [AT-06-01-13]
 - Dado un seed persistido y un mapeo `cuenta → address_index` no vacío (HU-06-03), donde la
-  dirección persistida del índice más bajo es conocida (p. ej. con el seed de prueba,
-  `address_index = 0` ⇒ `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266`)
+  dirección persistida del índice más bajo es conocida (derivada del mnemonic de **24
+  palabras** con el que se provisionó el sistema, RN-1/RN-2)
 - Y que, por inyección del test harness, el seed cargado **no** deriva esa dirección
   (simulando corrupción o restauración incorrecta)
 - Cuando el sistema ejecuta la verificación de integridad al arrancar (RN-10)

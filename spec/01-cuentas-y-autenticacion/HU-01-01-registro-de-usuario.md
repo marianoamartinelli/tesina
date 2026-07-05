@@ -87,9 +87,13 @@ reinicios (`INV-8`), igual que el resto del estado del sistema.
    asignados (no quedan cuentas a medio crear que sean listables pero no consultables).
    (RNE-1, INV consistencia)
 9. **RN-9 (precedencia de validación).** Orden determinista de evaluación para el alta:
-   (1) esquema/tipos/campos requeridos (`VALIDATION_ERROR`) → (2) formato de email
-   (`VALIDATION_ERROR`) → (3) política de contraseña (`VALIDATION_ERROR`) → (4) unicidad de
-   email (`EMAIL_ALREADY_EXISTS`). Se reporta **un solo error** (el primero). (RNE-7)
+   (0) rate limiting (`RATE_LIMITED`, cuando está activo, RN-10): se evalúa **antes** de
+   cualquier otra validación, incluso la de esquema (mismo criterio que el "paso 0" de la
+   épica 04, RE-4); con el límite excedido, una solicitud con payload inválido responde
+   **429**, no 422 → (1) esquema/tipos/campos requeridos (`VALIDATION_ERROR`) → (2) formato
+   de email (`VALIDATION_ERROR`) → (3) política de contraseña (`VALIDATION_ERROR`) →
+   (4) unicidad de email (`EMAIL_ALREADY_EXISTS`). Se reporta **un solo error** (el
+   primero). (RNE-7)
 10. **RN-10 (rate limiting anti-flood de registro, configurable).** El endpoint de registro
     puede limitar la tasa de altas por origen para prevenir la creación masiva de cuentas
     (account farming), que en un exchange habilita wash trading entre cuentas propias y
@@ -97,8 +101,9 @@ reinicios (`INV-8`), igual que el resto del estado del sistema.
     independiente del KYC/AML (fuera de alcance). Cuando el rate limiting está activo, sus
     parámetros **umbral N** (solicitudes) y **ventana T** (segundos) son **obligatorios y
     declarados** en la configuración del entorno; al superarse el umbral en la ventana, se
-    rechaza con `RATE_LIMITED` (429) y `details.retryAfterSeconds ≥ 0`. (Consistente con el
-    rate limiting de login, HU-01-02 RN-9.)
+    rechaza con `RATE_LIMITED` (429) y `details.retryAfterSeconds ≥ 0`. Se evalúa como
+    **paso 0** de la precedencia (RN-9): antes de cualquier otra validación, incluso la de
+    esquema. (Consistente con el rate limiting de login, HU-01-02 RN-9.)
 11. **RN-11 (persistencia).** La cuenta creada se persiste de forma durable y sobrevive a
     reinicios del sistema (`INV-8`).
 

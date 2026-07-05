@@ -139,7 +139,7 @@ acota la ejecución (no se puede gastar más quote del reservado).
 - Y la orden queda terminal `CANCELLED` con `filledWei = "800000000000000000"` (RN-9), sin
   error HTTP (hubo ejecución)
 - Y se emite un `order-update` para el taker con `status = "CANCELLED"`,
-  `filledWei = "800000000000000000"`, `remainingWei = "200000000000000000"` y
+  `cumulativeFilledWei = "800000000000000000"`, `remainingWei = "200000000000000000"` y
   `reason = "MARKET_EXHAUSTED"` (RN-9, HU-03-05 RN-5)
 - Y la reserva no consumida se libera (RN-10)
 
@@ -165,8 +165,8 @@ acota la ejecución (no se puede gastar más quote del reservado).
   `remainingWei = "750100000000000000"` (1 ETH − `q'`), conservando su `seq` original y su
   posición como best ask del nivel `@ 2000.50`
 - Y se emite un `order-update` para el taker con `status = "CANCELLED"`,
-  `filledWei = "1249900000000000000"` y `reason = "MARKET_BUDGET_EXHAUSTED"` (RN-9,
-  HU-03-05 RN-5)
+  `cumulativeFilledWei = "1249900000000000000"` y `reason = "MARKET_BUDGET_EXHAUSTED"`
+  (RN-9, HU-03-05 RN-5)
 
 ### Escenario 6 (borde): precio enviado en MARKET es rechazado antes del motor [AT-03-04-06]
 - Dado un cliente que envía `MARKET BUY 1 ETH` con un `price` presente
@@ -187,8 +187,8 @@ acota la ejecución (no se puede gastar más quote del reservado).
   detalle en HU-03-06)
 
 ### Escenario 9 (error): MARKET BUY sin presupuesto para ni 1 lot [AT-03-04-09]
-- Dado un libro con liquidez de terceros, best ask A1 `SELL 1 ETH @ 2000.00` (de U2), y un
-  `MARKET BUY` de U1 cuyo presupuesto entregado al motor es `B = "100000"` (0.1 USDC)
+- Dado un libro con best ask A1 `SELL 1 ETH @ 2000.00` (de U2), y un `MARKET BUY` de U1
+  cuyo presupuesto entregado al motor es `B = "100000"` (0.1 USDC)
 - Y que el costo de **1 lot** del best ask es `floor(10^14 × 2000000000 / 10^18) = "200000"`
   USDC-min, mayor que `B`
 - Cuando el motor evalúa la ejecución (`max_lots = floor(100000 × 10^18 / (2000000000 ×
@@ -200,6 +200,8 @@ acota la ejecución (no se puede gastar más quote del reservado).
   idénticos (INV-2, INV-3)
 - Y **no** se reporta `MARKET_NO_LIQUIDITY` (sí hay liquidez, solo que el presupuesto no la
   cubre)
+- Y el error aplica **sea de quien sea** la liquidez del lado opuesto: con `max_lots = 0` el
+  rango consumible es vacío y no hay STP que evaluar (HU-03-06 RN-2/RN-4)
 - Nota: caso defensivo de determinismo; normalmente la épica 04 lo evita por
   `BELOW_MIN_NOTIONAL` al admitir (RN-9)
 

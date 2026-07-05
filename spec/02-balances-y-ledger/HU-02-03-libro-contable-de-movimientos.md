@@ -35,10 +35,11 @@ postings son enteros de unidad mínima.
      (p. ej. UUID v4 aleatorio). En la API se **serializa como string** (para no perder
      precisión por encima de 2⁵³). No se reutiliza (RN-5).
    - `type`: uno del enum cerrado `{ DEPOSIT, ORDER_LOCK, ORDER_RELEASE, TRADE_FILL,
-     WITHDRAWAL_LOCK, WITHDRAWAL_SETTLE, WITHDRAWAL_RELEASE }`.
+     WITHDRAWAL_LOCK, WITHDRAWAL_SETTLE, WITHDRAWAL_RELEASE, REVERSAL }`.
    - `timestamp`: instante de aplicación en UTC, formato ISO-8601 con milisegundos.
-   - `reference`: referencia al origen (`orderId`, `withdrawalId`, `tradeId`, o
-     `{ txHash, logIndex }` para `DEPOSIT`), que permite trazar el asiento a su causa. Para
+   - `reference`: referencia al origen (`orderId`, `withdrawalId`, `tradeId`,
+     `{ txHash, logIndex }` para `DEPOSIT`, o `{ reversedEntryId }` para `REVERSAL`), que
+     permite trazar el asiento a su causa. Para
      `TRADE_FILL` (y el `ORDER_RELEASE` de surplus asociado), la referencia es el `tradeId`:
      la identidad estable del fill **definida y generada por la épica 05** (`HU-05-03`).
      `fill`, `trade` y `execution` son sinónimos; el identificador canónico es `tradeId`.
@@ -64,6 +65,11 @@ postings son enteros de unidad mínima.
    - `TRADE_FILL`: conjunto atómico de postings que consume `locked`, acredita `available`
      a la contraparte y mueve fees a `EX` (composición exacta en épica 05). Los postings de
      fee se sub-clasifican `kind = FEE`.
+   - `REVERSAL`: postings exactamente **inversos** a los del asiento que revierte (mismas
+     líneas `{ account, asset, bucket, amount, kind }`, cada una con `direction` opuesta:
+     `DEBIT` ↔ `CREDIT`), con `reference = { reversedEntryId }` apuntando al `entryId` del
+     asiento original. Es el único mecanismo de corrección (RN-5): el asiento original queda
+     intacto.
    - **Liberación del excedente por mejor precio (surplus):** cuando una `BUY` limit ejecuta
      a mejor precio que su límite, la liberación del excedente se registra como un asiento
      `ORDER_RELEASE` **independiente** del `TRADE_FILL` (cada `TRADE_FILL` refleja únicamente
@@ -91,9 +97,10 @@ postings son enteros de unidad mínima.
    por cuenta ni por partición); el `timestamp` es no decreciente respecto del orden de
    aplicación. Dos asientos no comparten `entryId`. Este orden global es el que usa HU-02-05
    RN-6 (`entryId` desc ante empate de `timestamp`) y debe ser estable entre páginas.
-10. **RN-10 (montos y serialización):** todo `amount` de posting es entero de unidad mínima,
-    serializado como string `^(0|[1-9][0-9]*)$`. Prohibido floats; conversiones base→quote
-    con `floor` (una sola división).
+10. **RN-10 (montos y serialización):** todo `amount` de posting es entero de unidad mínima
+    **estrictamente positivo**, serializado como string `^[1-9][0-9]*$` (igual que RN-2; el
+    patrón `^(0|[1-9][0-9]*)$` aplica a montos de balance, no de posting). Prohibido floats;
+    conversiones base→quote con `floor` (una sola división).
 
 ## Criterios de aceptacion (DoD)
 
@@ -142,7 +149,7 @@ postings son enteros de unidad mínima.
 - Dado un asiento ya persistido con `entryId = E1`
 - Cuando se requiere revertir su efecto
 - Entonces **no** se modifica ni elimina `E1`
-- Y se escribe un **nuevo** asiento `E2` con los postings inversos, manteniendo `E1` intacto y `E1.entryId ≠ E2.entryId`
+- Y se escribe un **nuevo** asiento `E2` con `type = REVERSAL`, postings exactamente inversos a los de `E1` y `reference = { reversedEntryId: E1 }` (RN-4), manteniendo `E1` intacto y `E1.entryId ≠ E2.entryId`
 
 ### Escenario 7 (idempotencia): Reprocesar el mismo depósito no duplica asiento [AT-02-03-07]
 - Dado un asiento `DEPOSIT` ya escrito para la identidad `(txHash="0xabc...", logIndex=3)`
