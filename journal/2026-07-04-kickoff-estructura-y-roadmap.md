@@ -16,6 +16,9 @@
   más `ROADMAP.md` con hitos H0–H10.
 - Se creó el esqueleto LaTeX de la tesina con la estructura de capítulos derivada de
   la propuesta.
+- Se publicó un artefacto visual con el roadmap, el protocolo y la estructura del
+  experimento: <https://claude.ai/code/artifact/064ea0c6-f229-4a71-b998-3d9bef9d719b>
+  (se regenera cuando el plan cambie; la fuente de verdad es el repo).
 
 ## Decisiones tomadas (formalizadas como ADR)
 
