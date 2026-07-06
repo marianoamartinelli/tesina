@@ -23,3 +23,4 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-003](ADR-003-registro-exhaustivo-para-metaanalisis.md) | Registro exhaustivo: journal por sesión + ADRs + manifests | Aceptado |
 | [ADR-004](ADR-004-protocolo-experimental-preregistrado.md) | Protocolo experimental pre-registrado y congelado antes de las corridas | Aceptado |
 | [ADR-005](ADR-005-arquitectura-pipeline-y-model-ids.md) | Arquitectura del pipeline, paridad entre harnesses y pinneo de model IDs | Aceptado |
+| [ADR-006](ADR-006-reapertura-controlada-spec-v1.1.md) | Reapertura controlada de la spec (17 decisiones cerradas) y re-freeze como spec-v1.1 | Aceptado |
