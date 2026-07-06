@@ -1,0 +1,503 @@
+# Plantilla de resultados del agente evaluador white-box — v1.0 (ADR-007)
+#
+# Formato de salida OBLIGATORIO de cada pasada: un único YAML con este esquema,
+# exactamente 66 items, en el orden de la rúbrica (ascendente por at_id).
+# El humano lo archiva como runs/<id>/no-automatizables/pasada-<n>.yaml; tras
+# arbitrar las dos pasadas firma veredicto-final.yaml con el mismo esquema de items.
+# Estos veredictos alimentan sólo la fila `no_automatizado` del dataset (nunca se
+# mezclan con los pasa/falla de la suite black-box).
+
+metadatos:
+  celda: "celda-en-evaluacion"   # ANONIMIZADA: el agente no sabe (ni intenta saber) qué celda es
+  fecha:                          # AAAA-MM-DD de la pasada
+  pasada:                         # 1 | 2 (dos sesiones frescas independientes por celda)
+  modelo_evaluador: "claude-opus-4-8"   # pinneado por ADR-007 §1
+  briefing_version: "v1.0"        # versión de evaluacion/agente-evaluador/briefing.md usada
+  rubrica_version: "v1.0"         # versión de evaluacion/agente-evaluador/rubrica-white-box.md usada
+
+# Por item:
+#   at_id         — ID estable del catálogo (no renombrar, no reordenar).
+#   veredicto     — PASA | FALLA | NO_EVALUABLE (definiciones cerradas en briefing.md §4).
+#   causa         — presente SOLO si veredicto = NO_EVALUABLE (tabla del briefing).
+#   evidencia     — lista NO vacía de objetos { tipo, ref, detalle }:
+#                     tipo: archivo  -> ref = ruta:líneas relativa a la copia de evaluación
+#                     tipo: comando  -> ref = comando ejecutado; detalle = salida relevante recortada
+#                     tipo: corpus   -> ref = corpus/documentos/<archivo> §sección citada
+#                   Un veredicto sin evidencia es inválido (se trata como no emitido).
+#   justificacion — 2 a 3 líneas conectando la evidencia con el criterio de la rúbrica.
+#   duracion_min  — minutos dedicados al AT (tope: 15, briefing §5).
+#
+# Ejemplo de un item completo (ilustrativo; NO agregarlo al resultado):
+#   - at_id: AT-06-01-02
+#     veredicto: PASA
+#     evidencia:
+#       - { tipo: archivo, ref: "src/wallet/bip39.ts:41-58", detalle: "PBKDF2-HMAC-SHA512, 2048 iter, dkLen 64" }
+#       - { tipo: comando, ref: "node /tmp/eval-wb/driver-kat.js", detalle: "seed=c55257c360c07c72...e7463b04" }
+#       - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §From mnemonic to seed", detalle: "parámetros del KDF" }
+#     justificacion: >-
+#       La seed derivada con el vector canónico y passphrase TREZOR coincide byte a
+#       byte con la esperada por HU-06-01; parámetros del KDF conformes al corpus.
+#     duracion_min: 9
+
+resultados:
+  - at_id: AT-01-02-13
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-01-03-04
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-01-03-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-01
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-02
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-03
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-04
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-05
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-06
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-08
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-03-11
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-04-02
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-02-04-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-03-02-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-03-05-08
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-03-07-04
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-03-07-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-04-01-11
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-04-04-12
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-04-05-13
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-04-05-14
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-05-01-06
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-05-01-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-05-01-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-05-03-05
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-05-03-06
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-05-03-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-01
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-02
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-03
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-04
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-05
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-08
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-10
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-11
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-12
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-01-13
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-02-01
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-02-02
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-02-04
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-02-05
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-02-06
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-02-08
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-02-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-03-03
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-03-06
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-03-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-03-08
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-03-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-06-03-10
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-07-03-03
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-07-04-01
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-07-04-02
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-07-04-03
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-07-04-07
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-07-04-11
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-08-03-08
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-08-03-09a
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-08-03-09b
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-08-03-09c
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-09-04-11
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:
+
+  - at_id: AT-09-05-09
+    veredicto:            # PASA | FALLA | NO_EVALUABLE
+    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
+    evidencia: []
+    justificacion:
+    duracion_min:

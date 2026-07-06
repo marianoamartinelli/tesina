@@ -23,6 +23,14 @@ evaluador) y del hito H2 (protocolo experimental pre-registrado).
   directas, cobertura de tests propios) y `medir.sh` que vuelca
   `runs/<id>/metricas-estaticas.csv`. El linting específico de framework y las métricas
   estéticas quedan explícitamente fuera (ver su README §3).
+- **`agente-evaluador/`** — framework del **agente evaluador white-box**
+  ([ADR-007](../decisiones/ADR-007-agente-evaluador-white-box.md)) para los 66 ATs
+  de las épicas 01–09 declarados no automatizables: `briefing.md` (instrucciones
+  congeladas, pasadas verbatim en cada celda), `rubrica-white-box.md` (checklist
+  operativo 66/66: familias de procedimiento, pasos, evidencia mínima y criterio
+  cerrado por AT) y `plantilla-resultados.yaml` (formato de salida obligatorio).
+  Doble pasada por celda; resultados en `runs/<id>/no-automatizables/`, nunca
+  mezclados con la suite; el veredicto de registro lo firma el humano (ADR-004 §2.5).
 - **`suite-at/`** — suite de tests de aceptación **black-box** contra el contrato
   HTTP/WebSocket de la épica 09. Se escribe una sola vez y corre idéntica contra las
   4 implementaciones; reporta por **AT-id** (`resultados-at.csv`). Cubre backend

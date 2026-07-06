@@ -83,12 +83,12 @@
   motivo: >-
     La estructura del asiento DEPOSIT (type, reference {txHash, logIndex},
     postings CREDIT available / DEBIT EXTERNAL, balanceo por activo) no es
-    observable: el contrato de la épica 09 no expone el ledger (el historial de
-    HU-02-05 no tiene endpoint en HU-09-01) y EXTERNAL es una cuenta técnica
-    interna. El efecto observable (acreditación exacta y única, con identidad
-    txHash/logIndex visible en GET /deposits) se verifica en AT-02-04-08 y en
-    los ATs de la épica 07. La estructura del asiento se evalúa
-    white-box/rúbrica en H8.
+    observable: GET /movements (HU-09-01 RN-22) expone el movimiento cara al
+    usuario, no la partida doble interna, y EXTERNAL es una cuenta técnica
+    interna. El efecto observable (movimiento DEPOSIT visible con su reference,
+    acreditación exacta y única) se verifica en AT-02-04-08, en los ATs de la
+    épica 07 y en los tests de HU-02-05. La estructura del asiento (postings y
+    contraparte EXTERNAL) se evalúa white-box en H8.
   referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
 
 - at_id: AT-02-03-02
@@ -197,17 +197,9 @@
     reinicio) se verifica en AT-02-04-06. Se evalúa white-box/inspección en H8.
   referencia: spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md
 
-# ---------------------------------------------------------------------------
-# HU-02-05 — Historial de movimientos
-#
-# TODO-REVISAR (hueco de spec): HU-02-05 especifica la consulta del historial y
-# delega la ruta/los parámetros/la paginación en la épica 09 (RN-4, RN-7), pero
-# el mapa de endpoints de HU-09-01 no incluye ese recurso ni fija su contrato de
-# respuesta. Sin ruta ni esquema normativos, ningún test black-box puede apuntar
-# al recurso de forma determinista y equitativa entre implementaciones. Los 14
-# ATs se evalúan en H8 contra la ruta que cada SUT documente (manual/rúbrica),
-# verificando la semántica fijada por HU-02-05.
-# ---------------------------------------------------------------------------
+# Nota histórica: los 14 ATs de HU-02-05 estuvieron declarados acá mientras la
+# épica 09 no definía el endpoint del historial; con GET /movements (spec-v1.1,
+# ADR-006 D6) ganaron tests black-box y salieron de esta lista.
 
 - at_id: AT-03-02-07
   motivo: >-
