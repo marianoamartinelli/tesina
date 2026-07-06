@@ -19,17 +19,25 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   registra y cómo. Se congela como ADR + documento en `evaluacion/`.
   *(2026-07-05 — `evaluacion/protocolo.md` v1.0 + ADR-004; presupuestos
   provisionales hasta la piloto.)*
-- [ ] **H3 — Corpus RAG.** Curaduría de BIPs 32/39/44, EIP-155 y estándares de soporte
+- [x] **H3 — Corpus RAG.** Curaduría de BIPs 32/39/44, EIP-155 y estándares de soporte
   (ERC-20/EIP-20, EIP-55, gas/JSON-RPC según se decida). Manifest con fuente, versión
-  y hash de cada documento. Congelado antes de las corridas.
-- [ ] **H4 — Pipeline/harness de agentes.** Instalación y configuración de los dos
+  y hash de cada documento. Congelado antes de las corridas. *(2026-07-05 — 9
+  documentos con manifest y SHA-256; EIP-681 incluido, EIP-1559 excluido
+  deliberadamente; ver journal.)*
+- [x] **H4 — Pipeline/harness de agentes.** Instalación y configuración de los dos
   harness (Claude Agent SDK y OpenAI Agents SDK), pinneo de model IDs exactos,
   integración RAG conmutable, paridad de prompts/etapas entre condiciones.
-- [ ] **H5 — Harness de evaluación.** Suite de tests de aceptación **black-box**
+  *(2026-07-05 — ADR-005: paridad por equivalencia funcional, RAG BM25 determinista,
+  `claude-opus-4-8` vs `gpt-5.5`; verificador de paridad con 39 chequeos; ejecución
+  end-to-end con API keys pendiente para la piloto.)*
+- [x] **H5 — Harness de evaluación.** Suite de tests de aceptación **black-box**
   contra el contrato HTTP/WS de la épica 09, escrita una sola vez y reutilizable
   contra las 4 implementaciones; rúbricas para clientes web/mobile; procedimiento de
   detección de alucinaciones de dominio; tooling de métricas estáticas. Construida
-  **antes** de las corridas para eliminar sesgo del evaluador.
+  **antes** de las corridas para eliminar sesgo del evaluador. *(2026-07-05 — 431
+  tests / 521 ATs backend cubiertos (439 con test + 82 no-automatizables
+  justificados); rúbricas 78+94 ATs; entorno on-chain local determinista; ~15
+  hallazgos de spec documentados como TODO-REVISAR, ver journal.)*
 
 ## Fase de ejecución comparativa
 
