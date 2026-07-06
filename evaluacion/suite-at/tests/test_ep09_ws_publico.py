@@ -461,19 +461,22 @@ def test_heartbeat_ping_pong_cierra_sin_pong_y_mantiene_con_pong(ws):
     - Entonces el servidor cierra la conexión (RN-14)
     - Y un cliente que sí responde pong mantiene la conexión y sus suscripciones
 
-    Nota: RN-14 admite alternativamente el ping/pong de control RFC 6455; en ese
-    caso el ping JSON nunca llega y este test se salta (la biblioteca cliente
-    responde los pings de control automáticamente y no permite suprimirlos).
+    Nota: el ping JSON de aplicación es OBLIGATORIO (RN-14, ADR-006 D14): los
+    frames de control ping/pong de RFC 6455 quedan permitidos sólo como
+    mecanismo adicional, nunca como sustituto. Si el ping JSON no llega en la
+    ventana, el test FALLA.
     """
-    # Cuando: esperar un ping JSON sin responderlo (intervalo recomendado: 30 s)
+    # Cuando: esperar el ping JSON obligatorio sin responderlo (intervalo
+    # recomendado: 30 s; ventana holgada de 75 s)
     try:
         ws.recibir_hasta(
             lambda m: m.get("type") == "ping", timeout=75, descartar_ping=False
         )
     except TimeoutError:
-        pytest.skip(
-            "el SUT no emitió {type: ping} JSON en 75 s: heartbeat por frames de "
-            "control RFC 6455 (permitido por RN-14), no verificable con este cliente"
+        pytest.fail(
+            "el SUT no emitió el ping JSON de aplicación {type: ping} en 75 s: "
+            "RN-14 lo exige como mecanismo normativo del contrato (los frames "
+            "de control RFC 6455 no lo sustituyen; ADR-006 D14)"
         )
 
     # Entonces: sin pong, el servidor cierra dentro de la ventana de 10 s (+margen)

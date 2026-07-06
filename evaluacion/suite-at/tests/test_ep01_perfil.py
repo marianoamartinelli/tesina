@@ -4,10 +4,9 @@ Spec: spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md
 Contrato de transporte: GET /api/v1/me (HU-09-01, mapa de endpoints).
 
 Notas de interpretación:
-- TODO-REVISAR: HU-01-04 RN-4 fija que el perfil incluye "exactamente"
-  `accountId`, `email`, `status`, `createdAt`; HU-09-01 Escenario 3 lista
-  `{accountId, email, createdAt}` sin `status`. 00-fundaciones no fija este
-  contrato: prevalece la épica 01 (dueña del recurso) y se asserta el set exacto.
+- El perfil incluye exactamente `accountId`, `email`, `status`, `createdAt`
+  (HU-01-04 RN-4); desde spec-v1.1 el ejemplo de HU-09-01 (AT-09-01-03) incluye
+  `status` y ambas épicas coinciden (ADR-006 D12). Se asserta el set exacto.
 - HU-01-04 RN-3 es condicional ("si la API expone el perfil por identificador,
   p. ej. /accounts/{accountId}"): la épica 09 no lista esa ruta, así que
   AT-01-04-05/06 sondean su existencia y se saltan si no está expuesta.
@@ -248,8 +247,8 @@ def test_el_perfil_no_expone_balances(usuario):
     # Cuando
     resp = usuario.api.get("/me")
 
-    # Entonces: exactamente los campos de identidad (RN-4/RN-6; ver TODO-REVISAR
-    # del docstring del módulo sobre `status` vs HU-09-01 Escenario 3)
+    # Entonces: exactamente los campos de identidad (RN-4/RN-6; la 09 coincide
+    # desde spec-v1.1: AT-09-01-03 incluye `status`, ADR-006 D12)
     assert resp.status_code == 200, resp.text
     assert set(resp.json()) == CAMPOS_IDENTIDAD, (
         f"el perfil debe exponer exactamente {sorted(CAMPOS_IDENTIDAD)}, "

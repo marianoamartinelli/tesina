@@ -61,7 +61,7 @@ def test_alta_de_compra_limit_que_descansa_en_el_libro(usuario, rpc, api, limpia
     assert_balances(usuario, "USDC", disp=3_000_000_000, blk=2_000_000_000)
     # Y total(USDC) no cambia (INV-3, validado dentro de assert_balances)
 
-    # Y la orden aparece como abierta con executedQty = "0" y remainingQty = quantityWei
+    # Y la orden aparece como abierta con filledWei = "0" y remainingWei = quantityWei
     item = next(i for i in abiertas(usuario) if i["orderId"] == orden["orderId"])
     assert ejecutado_wei(item) == 0
     assert remanente_wei(item) == ETH_1
@@ -276,12 +276,12 @@ def test_notional_exactamente_igual_al_minimo_es_valido(usuario, rpc, api, limpi
 
 
 @pytest.mark.at("AT-04-01-12")
-def test_quote_order_qty_no_se_admite_en_limit(usuario):
-    """HU-04-01 Escenario 12 (error): `quoteOrderQty` no se admite en limit."""
-    # Cuando coloca BUY LIMIT con priceMin, quantityWei y ademas quoteOrderQty
+def test_quote_order_qty_min_no_se_admite_en_limit(usuario):
+    """HU-04-01 Escenario 12 (error): `quoteOrderQtyMin` no se admite en limit."""
+    # Cuando coloca BUY LIMIT con priceMin, quantityWei y ademas quoteOrderQtyMin
     resp = post_orden(
         usuario,
-        cuerpo_orden("BUY", "LIMIT", P2000, ETH_1, quote_order_qty=2_000_000_000),
+        cuerpo_orden("BUY", "LIMIT", P2000, ETH_1, quote_order_qty_min=2_000_000_000),
     )
 
     # Entonces se rechaza con VALIDATION_ERROR (422); details.issues lo indica (RN-1)
@@ -333,7 +333,7 @@ def test_orden_propia_dentro_del_rango_consumible_rechazo_integro(
     assert detalle(usuario, ask_propio["orderId"])["status"] == "OPEN"
     assert cantidad_en_nivel(api, "asks", P2000) == ETH_1
 
-    # Y la orden queda REJECTED con executedQty = "0" (RE-12)
+    # Y la orden queda REJECTED con filledWei = "0" (RE-12)
     rechazada = buscar_por_client_id(items_por_estado(usuario, "REJECTED"), cid)
     assert rechazada is not None and rechazada["status"] == "REJECTED"
     assert ejecutado_wei(rechazada) == 0

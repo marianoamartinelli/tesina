@@ -4,19 +4,19 @@ Spec: spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md
 Contrato de transporte: POST /api/v1/auth/login (HU-09-01, mapa de endpoints).
 
 AT-01-02-13 (log de auditoría interno) se declara no automatizable en
-tests/no_automatizables_ep01.yaml: la propia HU lo marca como "no observable
-por caja negra en la respuesta de la API" (RNE-9).
+no-automatizables.yaml: la propia HU lo marca como "no observable por caja
+negra en la respuesta de la API" (RNE-9).
 
 Los tests de carga (AT-01-02-09/10/11) están definidos al final del archivo
-para que su presión sobre la ventana de rate limiting por IP (HU-09-02 RN-12)
-no afecte a los escenarios livianos; además cada uno espera la liberación de
-la ventana antes de terminar, así el orden de ejecución no importa.
+para que su presión sobre el rate limiting opcional de /auth/* (HU-01-02 RN-9;
+60 req/min si el entorno lo activa, entorno/README.md) no afecte a los
+escenarios livianos; además cada uno espera la liberación de la ventana antes
+de terminar, así el orden de ejecución no importa.
 """
 
 import os
 import time
 from datetime import datetime, timezone
-from itertools import combinations
 
 import pytest
 
@@ -293,9 +293,10 @@ def test_indistinguibilidad_temporal_anti_timing_attack(api, usuario):
         assert_error(resp, "INVALID_CREDENTIALS")
         return ms
 
-    # Cuando: muestras intercaladas, a ritmo < 60 req/min por endpoint para no
-    # disparar RATE_LIMITED (HU-09-02 RN-12). El sleep es control de tasa del
-    # propio test (carga controlada del AT), no una espera de estado del SUT.
+    # Cuando: muestras intercaladas, a ritmo < 60 req/min para no disparar el
+    # rate limiting opcional de /auth/login (HU-01-02 RN-9; 60/min si el entorno
+    # lo activa). El sleep es control de tasa del propio test (carga controlada
+    # del AT), no una espera de estado del SUT.
     paso = 1.05
     inicio = time.monotonic()
     lat_inexistente: list[float] = []
@@ -321,26 +322,26 @@ def test_indistinguibilidad_temporal_anti_timing_attack(api, usuario):
 
 
 @pytest.mark.at("AT-01-02-10")
-def test_heuristica_de_entropia_cien_tokens_sin_prefijo_comun(api, usuario):
-    """HU-01-02 Escenario 10 (seguridad): heurística de entropía del token.
+def test_heuristica_de_impredecibilidad_del_token(api, usuario):
+    """HU-01-02 Escenario 10 (seguridad): heurística de impredecibilidad del token.
 
     - Cuando se emiten cien tokens para la misma cuenta (cien logins exitosos)
-    - Entonces los cien son distintos entre sí
-    - Y ningún par comparte un prefijo de más de 4 caracteres (heurística
-      observable mínima de RN-3; la verificación formal es del DoD)
-
-    TODO-REVISAR: RN-3 admite JWT como esquema de token, pero todo JWT firmado
-    con el mismo algoritmo comparte el prefijo del encabezado base64
-    ("eyJhbGciOi..."), con lo cual un SUT con JWT falla esta heurística tal como
-    está redactada en el AT. Se implementa literal al texto del AT (holdout).
+    - Entonces los cien tokens son distintos entre sí (en particular, dos
+      logins consecutivos con las mismas credenciales producen tokens distintos)
+    - Y ningún token contiene en claro (como substring literal del token) el
+      `email` ni el `accountId` de la cuenta
+      (heurística mínima observable de RN-3, satisfacible tanto por tokens
+      opacos como por JWT — ADR-006 D13; la verificación de ≥128 bits / CSPRNG /
+      firma es del DoD por inspección de código)
     """
 
     def login_ok():
         resp = _login(api, usuario.email, usuario.password)
         return resp if resp.status_code == 200 else False
 
-    # Cuando: cien logins exitosos; si la ventana de 60 req/min por IP
-    # (HU-09-02 RN-12) responde 429, se sondea hasta que se libere y se sigue.
+    # Cuando: cien logins exitosos; si el rate limiting opcional de /auth/login
+    # (HU-01-02 RN-9; 60/min si el entorno lo activa) responde 429, se sondea
+    # hasta que la ventana se libere y se sigue.
     tokens: list[str] = []
     try:
         while len(tokens) < 100:
@@ -354,7 +355,7 @@ def test_heuristica_de_entropia_cien_tokens_sin_prefijo_comun(api, usuario):
                 )
             tokens.append(resp.json()["token"])
     finally:
-        # Higiene entre tests: no dejar la ventana por IP al borde del límite
+        # Higiene entre tests: no dejar la ventana del endpoint al borde del límite
         esperar_rate_limit_liberado(
             login_ok, "el endpoint de login no se recuperó tras los cien logins"
         )
@@ -362,35 +363,41 @@ def test_heuristica_de_entropia_cien_tokens_sin_prefijo_comun(api, usuario):
     # Entonces: todos distintos (RN-6 emite tokens distintos; RN-3 no adivinables)
     assert len(set(tokens)) == 100, "hay tokens repetidos entre cien emisiones"
 
-    # Y: ningún par comparte prefijo de más de 4 caracteres
-    for a, b in combinations(tokens, 2):
-        comun = os.path.commonprefix([a, b])
-        assert len(comun) <= 4, (
-            f"dos tokens comparten un prefijo de {len(comun)} caracteres "
-            f"({comun[:16]!r}…): viola la heurística de entropía del AT"
+    # Y: ningún token expone en claro el email ni el accountId (RN-3)
+    for token in tokens:
+        assert usuario.email not in token, (
+            "el token contiene el email en claro como substring "
+            "(viola la heurística de RN-3)"
+        )
+        assert usuario.account_id not in token, (
+            "el token contiene el accountId en claro como substring "
+            "(viola la heurística de RN-3)"
         )
 
 
 @pytest.mark.at("AT-01-02-09")
 def test_rate_limiting_de_login_tras_multiples_fallos(api, usuario):
-    """HU-01-02 Escenario 9 (error): rate limiting tras múltiples fallos.
+    """HU-01-02 Escenario 9 (error, condicional a config): rate limiting de login.
 
-    - Dado el rate limiting del entorno (N=60, W=60 s; HU-09-02 RN-12) y N
-      intentos fallidos dentro de la ventana hacia el mismo email/origen
+    - Dado rate limiting de login activo con umbral N y ventana W determinables
+      desde la configuración del entorno (60 req/min y 60 s si la implementación
+      lo expone, entorno/README.md) y N intentos fallidos dentro de la ventana
+      hacia el mismo email/origen
     - Cuando realiza el intento N+1 dentro de la ventana
     - Entonces RATE_LIMITED (429) con details.retryAfterSeconds
     - Y el comportamiento es uniforme y no revela si el email existe
 
-    TODO-REVISAR: HU-01-02 RN-9 habla de límite "por email/origen" y lo declara
-    opcional por config; HU-09-02 RN-12 fija una política única por IP en
-    endpoints públicos (60 req/min). Se asserta el comportamiento por IP de la
-    09 (la política del entorno); si no se observa 429 el test se salta (RN-9).
+    HU-01-02 RN-9 (ADR-006 D4): el rate limiting de /auth/login es OPCIONAL por
+    config y, si existe, usa RATE_LIMITED; la política determinista de HU-09-02
+    RN-12 (60/min por cuenta y endpoint) aplica solo a endpoints autenticados y
+    NO a este endpoint público. Si no se observa un 429, el Dado del AT no se
+    cumple y el test se salta.
     """
     respuesta_429 = None
     try:
         # Dado/Cuando: intentos fallidos consecutivos hasta exceder la ventana.
-        # La ventana por IP es compartida con el resto de la suite ⇒ el 429
-        # puede llegar antes del intento 61 (ventana deslizante, HU-09-02 RN-12).
+        # La ventana por origen es compartida con el resto de la suite ⇒ el 429
+        # puede llegar antes del intento 61 (ventana deslizante de 60 s).
         for _ in range(N_RATE_LIMIT + 1):
             resp = _login(api, usuario.email, "Incorrecta-999")
             if resp.status_code == 429:
@@ -408,7 +415,7 @@ def test_rate_limiting_de_login_tras_multiples_fallos(api, usuario):
         # Entonces (catálogo 3.1: RATE_LIMITED = 429, details = { retryAfterSeconds })
         err = assert_error(respuesta_429, "RATE_LIMITED")
         retry = err["details"]["retryAfterSeconds"]
-        # conteo ⇒ entero JSON ≥ 0 (HU-09-02 RN-12; convenciones §5)
+        # conteo ⇒ entero JSON ≥ 0 (HU-01-02 RN-9; convenciones §5)
         assert isinstance(retry, int) and not isinstance(retry, bool) and retry >= 0
 
         # Y: uniforme, sin revelar existencia del email — con la ventana

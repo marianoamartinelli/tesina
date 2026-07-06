@@ -2,11 +2,11 @@
 
 Spec: spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md
 
-TODO-REVISAR (ruta de logout): HU-01-03 exige un "endpoint de logout" pero el
-mapa de endpoints de HU-09-01 no lo lista y 00-fundaciones no lo resuelve. Estos
-tests usan POST /api/v1/auth/logout (ver comunes_ep01.RUTA_LOGOUT).
+Ruta de logout: POST /api/v1/auth/logout, canónica en el mapa de endpoints de
+HU-09-01 (fila Logout, éxito 204; ADR-006 D5); el comportamiento lo fija
+HU-01-03. Estos tests la toman de comunes_ep01.RUTA_LOGOUT.
 
-No automatizables (declarados en tests/no_automatizables_ep01.yaml):
+No automatizables (declarados en no-automatizables.yaml):
 - AT-01-03-04 y AT-01-03-09 requieren un token expirado por TTL; el entorno de
   evaluación fija el TTL en 3600 s (entorno/README.md) y no hay vía black-box
   para acortarlo ni adelantar el reloj del SUT.

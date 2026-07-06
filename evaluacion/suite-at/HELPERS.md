@@ -73,6 +73,11 @@ class ClienteApi:
 
 - Las rutas son **relativas a `/api/v1`**: `api.get("/balances")`, nunca
   `api.get("/api/v1/balances")`.
+- El mapa de endpoints de HU-09-01 (spec-v1.1, ADR-006 D1/D5/D6) incluye también
+  `POST /auth/logout`, `GET /movements` (RN-22) y
+  `POST /withdrawals/{withdrawalId}/cancel` (RN-21): se invocan directo con
+  `api.post(...)`/`api.get(...)` (para la cancelación de retiros hay helper
+  `cancelar_retiro` en `tests/comunes_ep08.py`).
 - **No lanza** en 4xx/5xx: el test asserta status y envelope explícitamente.
 - `post(..., content=b"crudo")` manda un cuerpo no-JSON con
   `Content-Type: application/json` (para `VALIDATION_ERROR` de esquema).
@@ -287,16 +292,30 @@ def test_crear_retiro_responde_202_asincrono(usuario, rpc):
     - Y un amountMinUnit mayor al disponible produce INSUFFICIENT_FUNDS (422)
     """
     # Dado: balance disponible suficiente (30 USDC vía depósito on-chain real)
-    direccion_deposito = usuario.api.get(
+    # + ETH disponible para la previsión de fee de red del retiro USDC
+    # (HU-08-01 RN-9: un retiro USDC sin ETH disponible para el gas se rechaza
+    # con INSUFFICIENT_FUNDS y details.asset = "ETH")
+    direccion_usdc = usuario.api.get(
         "/deposit-address", params={"asset": "USDC"}
     ).json()["address"]
-    rpc.depositar_usdc(direccion_deposito, 30_000_000)     # 30 USDC + 12 confirmaciones
+    direccion_eth = usuario.api.get(
+        "/deposit-address", params={"asset": "ETH"}
+    ).json()["address"]
+    rpc.depositar_usdc(direccion_usdc, 30_000_000)            # 30 USDC + 12 confirmaciones
+    rpc.depositar_eth(direccion_eth, 10_000_000_000_000_000)  # 0.01 ETH (gas del retiro)
     esperar_hasta(
         lambda: any(
             b["asset"] == "USDC" and a_int(b["available"]) >= 30_000_000
             for b in usuario.api.get("/balances").json()
         ),
         mensaje="el depósito USDC no se acreditó al balance interno",
+    )
+    esperar_hasta(
+        lambda: any(
+            b["asset"] == "ETH" and a_int(b["available"]) >= 10_000_000_000_000_000
+            for b in usuario.api.get("/balances").json()
+        ),
+        mensaje="el depósito ETH no se acreditó al balance interno",
     )
 
     # Cuando: retiro de 25 USDC (unidad mínima) a una dirección externa válida

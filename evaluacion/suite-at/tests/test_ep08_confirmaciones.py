@@ -1,10 +1,14 @@
 """Épica 08 — HU-08-04 (seguimiento de confirmaciones): estados
-PENDING/BROADCAST/CONFIRMED/FAILED, 12 confirmaciones y reconciliación del balance.
+PENDING/BROADCAST/CONFIRMED/FAILED, 12 confirmaciones, reconciliación del
+balance y cancelación de retiros PENDING (RN-13, vía POST
+/withdrawals/{id}/cancel — ruta fijada por HU-09-01 RN-21, ADR-006 D1).
 
 Control determinista del mundo on-chain (anvil del entorno):
 - minado a demanda (`anvil_mine`) para avanzar confirmaciones exactas;
-- `evm_setAutomine(false)` para observar la tx en mempool (sin receipt);
-- `anvil_setBalance` para hacer rechazar broadcasts (BROADCAST_FAILED agotado);
+- `evm_setAutomine(false)` para observar la tx en mempool (sin receipt) o
+  mantener un retiro en BROADCAST (no cancelable);
+- `anvil_setBalance` para hacer rechazar broadcasts (BROADCAST_FAILED
+  agotado; también mantiene un retiro en PENDING cancelable);
 - destino con código que revierte para provocar receipt status = 0;
 - `anvil_dropTransaction` + tx competidora en el mismo nonce para provocar la
   tx descartada (TX_DROPPED, HU-08-04 RN-9);
@@ -21,12 +25,15 @@ from helpers.montos import CONFIRMACIONES_REQUERIDAS, a_int, es_monto_valido
 
 from comunes_ep08 import (
     CODE_RETORNA_TRUE,
+    FEE_RED_ERC20,
     FEE_RED_ETH,
+    GAS_LIMIT_ERC20,
     GAS_LIMIT_ETH,
     GAS_PRICE_WEI,
     MAX_BLOCKS_PENDING,
     automine,
     balance_de,
+    cancelar_retiro,
     confirmar_retiro,
     crear_retiro,
     descubrir_emisora,
@@ -94,48 +101,63 @@ def test_retiro_eth_confirmado_consume_principal_mas_gas(usuario, rpc):
 
 @pytest.mark.at("AT-08-04-02")
 def test_gas_usado_menor_que_la_prevision_libera_la_diferencia(usuario, rpc):
-    """HU-08-04 Escenario 2 (borde): gas usado < previsión, se libera la diferencia.
+    """HU-08-04 Escenario 2 (borde): gas usado < previsión, se libera la
+    diferencia (pata ERC-20).
 
-    - Dado un retiro en BROADCAST con gas_price_wei_snapshot = 20 gwei; el receipt
-      reporta gasUsed < gas_limit, por lo que gas_usado_wei = gasUsed × 20 gwei
-      < fee_red_wei
-    - Cuando alcanza 12 confirmaciones con status = 1
-    - Entonces se consume amount + gas_usado_wei (WITHDRAWAL_SETTLE) y se LIBERA
-      a disponible fee_red_wei − gas_usado_wei (WITHDRAWAL_RELEASE) (RN-3)
-    - Y la suma total baja solo en lo realmente salido (RN-4)
-
-    Nota de realización: el Gherkin ilustra con una tx ETH y gasUsed = 15000; una
-    transferencia de ETH nativo real consume exactamente su límite (21000), sin
-    sobrante posible. El caso "gas usado < previsión" se materializa on-chain con
-    la tx ERC-20 de un retiro USDC (gas_limit = 100000, gasUsed real ≈ 50k); la
-    regla verificada (RN-3, común a ambos activos) es la misma.
+    - Dado un retiro de USDC (ERC-20) en BROADCAST con amount_usdc = "25000000"
+      (25 USDC) y gas_limit = GAS_LIMIT_ERC20 = 100000: una llamada ERC-20
+      consume gas variable ≤ gas_limit (a diferencia de una transferencia de
+      ETH nativo, que consume exactamente 21000 = GAS_LIMIT_ETH y no genera
+      sobrante). El AT ilustra con gas_price_wei_snapshot = 5 gwei,
+      gasUsed = 60000 y sobrante "200000000000000"; el entorno fija
+      GAS_PRICE_WEI = 20 gwei y el gasUsed real lo reporta el receipt: las
+      fórmulas de RN-3 se asertan EXACTAS con los valores observados
+    - Cuando alcanza 12 confirmaciones con status = 1 y el evento Transfer
+      esperado (RN-2)
+    - Entonces se consume amount_usdc = "25000000" en USDC y
+      gas_usado_wei = gasUsed × precio_efectivo_wei en ETH (WITHDRAWAL_SETTLE)
+      y se LIBERA a disponible fee_red_wei − gas_usado_wei en ETH
+      (WITHDRAWAL_RELEASE) (RN-3)
+    - Y la suma total de USDC disminuye en "25000000" y la de ETH SOLO en
+      gas_usado_wei (lo realmente salido, RN-4)
     """
     # Dado
     fondear_usdc(usuario, rpc, 50_000_000)
     fondear_eth(usuario, rpc, 10**16)  # 0.01 ETH para el gas
     usdc_del_entorno(rpc)
-    resp = crear_retiro(usuario, "USDC", "25000000", destino_fresco())
+    destino = destino_fresco()
+    resp = crear_retiro(usuario, "USDC", "25000000", destino)
     assert resp.status_code == 202, resp.text
     wid = resp.json()["withdrawalId"]
 
     # Cuando
     retiro, tx, receipt = confirmar_retiro(usuario, rpc, wid)
+    assert hex_int(tx["gas"]) == GAS_LIMIT_ERC20            # gas_limit de la previsión
     gas_usado = hex_int(receipt["gasUsed"]) * GAS_PRICE_WEI
-    assert hex_int(receipt["gasUsed"]) < 100_000, (
+    assert hex_int(receipt["gasUsed"]) < GAS_LIMIT_ERC20, (
         "premisa del escenario: gasUsed < gas_limit (si no, no hay sobrante que liberar)"
     )
-    # precio_efectivo_wei = gas_price_wei para tx legacy (README §precio_efectivo_wei)
+    # precio_efectivo_wei = effectiveGasPrice del receipt = snapshot (Type-0, RN-3)
     if receipt.get("effectiveGasPrice") is not None:
         assert hex_int(receipt["effectiveGasPrice"]) == GAS_PRICE_WEI
+    sobrante = FEE_RED_ERC20 - gas_usado
+    assert sobrante > 0  # fee_red_wei − gas_usado_wei, la liberación de RN-3
 
-    # Entonces: liberación exacta del sobrante de gas
+    # Entonces: liberación exacta del sobrante de gas en ETH
     eth = balance_de(usuario, "ETH")
     assert a_int(eth["available"]) == 10**16 - gas_usado, (
         "disponible(ETH) debe ser fondeo − gas_usado_wei: el sobrante "
-        "fee_red − gas_usado fue liberado (RN-3)"
+        f"fee_red − gas_usado = {sobrante} fue liberado (RN-3)"
     )
     assert a_int(eth["locked"]) == 0
-    assert a_int(eth["total"]) == 10**16 - gas_usado  # INV-1: baja sólo el gas usado
+    assert a_int(eth["total"]) == 10**16 - gas_usado  # RN-4: ETH baja sólo el gas usado
+
+    # Y: la pata USDC consume exactamente el principal (RN-3/RN-4)
+    usdc_bal = balance_de(usuario, "USDC")
+    assert a_int(usdc_bal["available"]) == 25_000_000
+    assert a_int(usdc_bal["locked"]) == 0
+    assert a_int(usdc_bal["total"]) == 25_000_000       # 50 − 25 USDC (INV-1)
+    assert rpc.balance_usdc(destino) == 25_000_000      # llegó al destino una sola vez
 
 
 @pytest.mark.at("AT-08-04-03")
@@ -540,6 +562,37 @@ def test_consulta_en_mempool_sin_receipt_confirmaciones_cero(usuario, rpc):
     esperar_retiro(usuario, wid, ("CONFIRMED",), prohibidos=("FAILED",))
 
 
+@pytest.mark.at("AT-08-04-10")
+def test_transicion_invalida_sobre_retiro_terminal_es_conflict(usuario, rpc):
+    """HU-08-04 Escenario 10 (error): transición de estado inválida.
+
+    - Dado un retiro ya CONFIRMED (terminal)
+    - Cuando se intenta forzar una transición a FAILED — la única mutación de
+      estado invocable por el contrato es la cancelación de RN-13
+      (POST /withdrawals/{id}/cancel, ruta de HU-09-01 RN-21, ADR-006 D1),
+      cuya semántica es exactamente esa transición
+    - Entonces se rechaza con CONFLICT (409) (RN-1) y el estado no cambia
+    - Y no hay reconciliación nueva: los balances quedan idénticos (RN-7)
+    """
+    # Dado: un retiro llevado a CONFIRMED (terminal)
+    fondear_eth(usuario, rpc, 2 * ETH_1)
+    resp = crear_retiro(usuario, "ETH", str(ETH_1), destino_fresco())
+    assert resp.status_code == 202, resp.text
+    wid = resp.json()["withdrawalId"]
+    confirmar_retiro(usuario, rpc, wid)
+    balances_previos = foto_balances(usuario)
+
+    # Cuando: se intenta forzar CONFIRMED → FAILED vía la cancelación
+    resp_cancel = cancelar_retiro(usuario, wid)
+
+    # Entonces: CONFLICT (409) y el estado terminal no cambia
+    assert_error(resp_cancel, "CONFLICT")
+    assert retiro_de(usuario, wid)["status"] == "CONFIRMED"
+
+    # Y: sin efecto contable alguno (no se libera ni consume de nuevo)
+    assert foto_balances(usuario) == balances_previos
+
+
 @pytest.mark.at("AT-08-04-11")
 def test_usdc_status_1_sin_evento_transfer_esperado_es_failed(usuario, rpc):
     """HU-08-04 Escenario 11 (USDC con status = 1 pero sin el evento Transfer → FAILED).
@@ -594,3 +647,106 @@ def test_usdc_status_1_sin_evento_transfer_esperado_es_failed(usuario, rpc):
     assert a_int(eth["total"]) == 10**16 - gas_usado
     # Y: el token nunca llegó al destino
     assert rpc.balance_usdc(destino) == 0
+
+
+@pytest.mark.at("AT-08-04-12")
+def test_cancelacion_de_retiro_pending_por_el_usuario(usuario, usuario_b, rpc):
+    """HU-08-04 Escenario 12 (cancelación de un retiro PENDING por el usuario).
+
+    - Dado un retiro de ETH de acc-1 en PENDING sin txHash (se mantiene PENDING
+      dejando a la emisora sin ETH on-chain: el nodo rechaza el broadcast y el
+      retiro queda reintentable, HU-08-03 RN-8/RN-13)
+    - Cuando acc-1 lo cancela vía POST /withdrawals/{id}/cancel (RN-13; ruta y
+      superficie de HU-09-01 RN-21, ADR-006 D1)
+    - Entonces 200 con el objeto retiro (RN-18) en FAILED con failureReason
+      USER_CANCELLED: PENDING → FAILED con gas_usado_wei = 0 y liberación TOTAL
+      de la reserva (WITHDRAWAL_RELEASE)
+    - Y la suma total de ETH no cambia (nada salió; INV-1)
+    - Y cancelar un retiro ya en BROADCAST/FAILED → CONFLICT (409) sin efecto
+      (el caso CONFIRMED se cubre en AT-08-04-10); cancelar el de otra cuenta o
+      un id inexistente → NOT_FOUND (404) con details {resource, id},
+      indistinguibles (RN-13)
+    """
+    # Dado: emisora conocida y drenada — el broadcast se rechaza y el retiro
+    # permanece PENDING (reintentable) sin txHash
+    emisora = descubrir_emisora(usuario, rpc)
+    fondear_eth(usuario, rpc, 3 * ETH_1)
+    disponible_previo = a_int(balance_de(usuario, "ETH")["available"])
+    total_previo = a_int(balance_de(usuario, "ETH")["total"])
+    saldo_emisora = rpc.balance_eth(emisora)
+
+    set_balance(rpc, emisora, 0)
+    try:
+        resp = crear_retiro(usuario, "ETH", str(ETH_1), destino_fresco())
+        assert resp.status_code == 202, resp.text
+        wid = resp.json()["withdrawalId"]
+
+        # Cuando: cancelación inmediata del retiro PENDING
+        resp_cancel = cancelar_retiro(usuario, wid)
+
+        # (la spec no fija la cadencia de reintentos de broadcast: si el SUT
+        # agotó sus 5 reintentos sin delay antes de que llegara la cancelación,
+        # el retiro ya es FAILED/BROADCAST_FAILED y la ventana PENDING no fue
+        # observable — se distingue ese caso de una falla real de RN-13)
+        if (
+            resp_cancel.status_code == 409
+            and retiro_de(usuario, wid).get("failureReason") == "BROADCAST_FAILED"
+        ):
+            pytest.skip(
+                "el SUT agotó MAX_BROADCAST_RETRIES antes de la cancelación: "
+                "la ventana PENDING no fue observable (cadencia de reintentos "
+                "no fijada por la spec)"
+            )
+
+        # Entonces: 200 con el objeto retiro FAILED / USER_CANCELLED (RN-21)
+        assert resp_cancel.status_code == 200, resp_cancel.text
+        retiro = resp_cancel.json()
+        assert retiro["withdrawalId"] == wid
+        assert retiro["status"] == "FAILED"
+        assert retiro["failureReason"] == "USER_CANCELLED"
+        assert retiro["txHash"] is None            # nunca hubo broadcast
+        assert es_monto_valido(retiro["amountMinUnit"])
+        assert retiro_de(usuario, wid)["status"] == "FAILED"  # persistido
+
+        # Y: liberación total de la reserva; la suma total de ETH no cambia
+        eth = balance_de(usuario, "ETH")
+        assert a_int(eth["available"]) == disponible_previo
+        assert a_int(eth["locked"]) == 0
+        assert a_int(eth["total"]) == total_previo             # INV-1
+
+        # Y: re-cancelar el retiro ya FAILED (terminal) ⇒ CONFLICT, sin doble
+        # liberación (idempotencia respecto del terminal, RN-13/RN-7)
+        resp_re = cancelar_retiro(usuario, wid)
+        assert_error(resp_re, "CONFLICT")
+        assert a_int(balance_de(usuario, "ETH")["available"]) == disponible_previo
+
+        # Y: cancelar el retiro de otra cuenta ⇒ NOT_FOUND indistinguible
+        # (nunca UNAUTHORIZED ni CONFLICT: no se revela la existencia, RN-13)
+        err = assert_error(cancelar_retiro(usuario_b, wid), "NOT_FOUND")
+        assert (err.get("details") or {}).get("resource") == "withdrawal"
+        assert (err.get("details") or {}).get("id") == wid
+
+        # Y: cancelar un id inexistente ⇒ NOT_FOUND con el mismo shape
+        err = assert_error(cancelar_retiro(usuario, "w-inexistente-ep08"), "NOT_FOUND")
+        assert (err.get("details") or {}).get("resource") == "withdrawal"
+    finally:
+        set_balance(rpc, emisora, saldo_emisora)
+
+    # Y: un retiro en BROADCAST no es cancelable ⇒ CONFLICT y el estado no
+    # cambia (automine off: la tx queda en mempool y el retiro en BROADCAST)
+    automine(rpc, False)
+    try:
+        resp = crear_retiro(usuario, "ETH", str(ETH_1), destino_fresco())
+        assert resp.status_code == 202, resp.text
+        wid2 = resp.json()["withdrawalId"]
+        esperar_broadcast(usuario, rpc, wid2)      # BROADCAST estable, sin minar
+
+        assert_error(cancelar_retiro(usuario, wid2), "CONFLICT")
+        assert retiro_de(usuario, wid2)["status"] == "BROADCAST"
+        assert a_int(balance_de(usuario, "ETH")["locked"]) == RESERVA_1ETH
+    finally:
+        automine(rpc, True)
+
+    # limpieza determinista: se mina la tx y el retiro queda terminal
+    rpc.minar_bloques(13)
+    esperar_retiro(usuario, wid2, ("CONFIRMED",), prohibidos=("FAILED",))

@@ -50,7 +50,7 @@ def test_limit_sin_match_queda_open(usuario, rpc, api, limpiador):
     orden = alta_ok(usuario, cuerpo_orden("BUY", "LIMIT", P2000, Q_MIN))
     limpiador.registrar(usuario, orden["orderId"])
 
-    # Entonces la orden queda OPEN con executedQty="0" y remainingQty=quantityWei
+    # Entonces la orden queda OPEN con filledWei="0" y remainingWei=quantityWei
     # (NEW es transitorio interno y no observable, RN-11)
     assert orden["status"] == "OPEN", orden
     assert ejecutado_wei(orden) == 0
@@ -87,7 +87,7 @@ def test_limit_marketable_total_queda_filled(usuario, usuario_b, rpc, api):
     # Cuando el trader coloca una limit que ejecuta completamente al entrar
     orden = crear_filled(usuario, usuario_b, rpc, api)
 
-    # Entonces la orden queda FILLED con executedQty == quantityWei, sin remanente
+    # Entonces la orden queda FILLED con filledWei == quantityWei, sin remanente
     assert orden["status"] == "FILLED"
     assert ejecutado_wei(orden) == Q_MIN
     assert remanente_wei(orden) == 0
@@ -129,7 +129,7 @@ def test_market_parcial_queda_cancelled_con_remanente_descartado(usuario, usuari
     orden = alta_ok(usuario, cuerpo_orden("BUY", "MARKET", quantity_wei=ETH_1))
 
     # Entonces ejecuta lo disponible, descarta el remanente y queda CANCELLED
-    # con executedQty > 0 (RN-6)
+    # con filledWei > 0 (RN-6)
     assert orden["status"] == "CANCELLED", orden
     assert ejecutado_wei(orden) == 400_000_000_000_000_000
     assert abiertas(usuario) == []
@@ -193,7 +193,7 @@ def test_resting_open_a_partially_filled_a_filled(usuario, usuario_b, rpc, api):
         estado="FILLED",
     )
 
-    # Entonces transiciona OPEN → PARTIALLY_FILLED → FILLED con executedQty
+    # Entonces transiciona OPEN → PARTIALLY_FILLED → FILLED con filledWei
     # monótona creciente hasta quantityWei (RN-7)
     final = esperar_orden(usuario, orden["orderId"], "FILLED")
     assert ejecutado_wei(final) == ETH_1
@@ -234,7 +234,7 @@ def test_cancelacion_partially_filled_a_cancelled(usuario, usuario_b, rpc, api):
     # Cuando el dueño la cancela
     cancelada = cancelar_ok(usuario, orden["orderId"])
 
-    # Entonces queda CANCELLED con executedQty preservado y se libera el remanente
+    # Entonces queda CANCELLED con filledWei preservado y se libera el remanente
     assert ejecutado_wei(cancelada) == 400_000_000_000_000_000
     assert_balances(usuario, "USDC", disp=1_200_000_000, blk=0)
 

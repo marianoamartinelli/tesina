@@ -13,6 +13,7 @@ bloqueado.
 import pytest
 
 from comunes_ep02 import (
+    FEE_RED_ERC20_WEI,
     PRECIO_BANDA_BAJA,
     PRECIO_MATCHING,
     balance,
@@ -25,7 +26,7 @@ from comunes_ep02 import (
     orden_resting,
 )
 from helpers.errores import assert_error, validar_envelope
-from helpers.montos import WEI_POR_ETH, es_monto_valido
+from helpers.montos import WEI_POR_ETH, a_str, es_monto_valido
 
 
 @pytest.mark.at("AT-02-01-01")
@@ -121,12 +122,15 @@ def test_particion_total_igual_disponible_mas_bloqueado(usuario, rpc):
     for item in por_activo.values():
         assert int(item["total"]) == int(item["available"]) + int(item["locked"]), item
 
-    # TODO-REVISAR: el bloqueo en ETH difiere entre épicas — HU-02-02 RN-10 (épica 02)
-    # bloquea solo el monto retirado; HU-08-02 RN-1 (épica 08) bloquea además la
-    # previsión de gas en ETH (reserva dual). 00-fundaciones no fija la previsión de
-    # gas, por lo que este test solo asserta la partición (INV-3) en ETH, no su
-    # distribución exacta entre buckets. El total de ETH sí es invariante al bloqueo.
-    assert por_activo["ETH"]["total"] == "10000000000000000"
+    # Y: la reserva dual del retiro USDC bloquea además la previsión de gas en
+    # ETH (HU-02-02 RN-10 según el modelo de la épica 08 — ADR-006 D2; HU-08-02
+    # RN-1: fee_red_wei = GAS_LIMIT_ERC20 × gas_price = 100000 × 20 gwei,
+    # valores del entorno). El total de ETH es invariante al bloqueo (INV-3).
+    eth = por_activo["ETH"]
+    assert eth["locked"] == a_str(FEE_RED_ERC20_WEI)
+    assert eth["locked"] == "2000000000000000"
+    assert eth["available"] == a_str(10_000_000_000_000_000 - FEE_RED_ERC20_WEI)
+    assert eth["total"] == "10000000000000000"
 
 
 @pytest.mark.at("AT-02-01-04")

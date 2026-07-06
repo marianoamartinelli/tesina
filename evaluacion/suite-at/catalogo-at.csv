@@ -32,7 +32,7 @@ AT-01-02-06,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesio
 AT-01-02-07,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 7 (precedencia): Esquema inválido tiene prioridad sobre credenciales,backend
 AT-01-02-08,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 8 (borde): Sesiones múltiples concurrentes,backend
 AT-01-02-09,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 9 (error): Rate limiting tras múltiples fallos,backend
-AT-01-02-10,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 10 (seguridad): Heurística de entropía del token,backend
+AT-01-02-10,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 10 (seguridad): Heurística de impredecibilidad del token,backend
 AT-01-02-11,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 11 (seguridad): Indistinguibilidad temporal — anti timing attack,backend
 AT-01-02-12,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 12 (no enumeración): Email con formato inválido en login,backend
 AT-01-02-13,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 13 (auditoría): Registro de intentos de autenticación,backend
@@ -183,7 +183,7 @@ AT-04-01-08,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.
 AT-04-01-09,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 9 (error): Precio fuera de tick,backend
 AT-04-01-10,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 10 (borde): Notional exactamente igual al mínimo es válido,backend
 AT-04-01-11,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 11 (persistencia): La orden abierta y su reserva sobreviven al reinicio,backend
-AT-04-01-12,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 12 (error): `quoteOrderQty` no se admite en limit,backend
+AT-04-01-12,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 12 (error): `quoteOrderQtyMin` no se admite en limit,backend
 AT-04-01-13,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 13 (borde): Orden propia dentro del rango consumible ⇒ rechazo íntegro,backend
 AT-04-01-14,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 14 (idempotencia): `clientOrderId` no reutilizable tras estado terminal,backend
 AT-04-01-15,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 15 (rate limiting): Exceso de solicitudes,backend
@@ -257,7 +257,7 @@ AT-04-06-05,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-ab
 AT-04-06-06,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 6 (error): No autenticado,backend
 AT-04-06-07,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 7 (serialización): Montos como string entero,backend
 AT-04-06-08,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 8 (solo lectura): La consulta no altera estado,backend
-AT-04-06-09,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 9 (precio promedio): `avgExecutionPrice` refleja el precio ponderado real,backend
+AT-04-06-09,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 9 (precio promedio): `avgPriceMin` refleja el precio ponderado real,backend
 AT-04-07-01,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 1: Listar historial sin filtros,backend
 AT-04-07-02,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 2 (filtro): Solo FILLED,backend
 AT-04-07-03,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 3 (filtro): Por período,backend
@@ -425,7 +425,7 @@ AT-08-03-09a,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadc
 AT-08-03-09b,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 9b (error): intentar firmar un retiro ya `CONFIRMED`,backend
 AT-08-03-09c,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 9c (error): intentar firmar un retiro ya `FAILED`,backend
 AT-08-04-01,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 1: retiro de ETH confirmado con gas sobrante liberado (feliz),backend
-AT-08-04-02,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,"Escenario 2 (borde): gas usado menor que la previsión, se libera la diferencia",backend
+AT-08-04-02,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,"Escenario 2 (borde): gas usado menor que la previsión, se libera la diferencia (pata ERC-20)",backend
 AT-08-04-03,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 3 (borde): aún no alcanza 12 confirmaciones,backend
 AT-08-04-04,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 4 (FAILED por broadcast definitivamente imposible),backend
 AT-08-04-05,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 5 (FAILED revertida): tx minada con status = 0,backend

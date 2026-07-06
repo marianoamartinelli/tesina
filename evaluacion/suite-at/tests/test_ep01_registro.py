@@ -4,15 +4,15 @@ Spec: spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md
 Contrato de transporte: POST /api/v1/auth/register (HU-09-01, mapa de endpoints).
 
 Notas de interpretación (ver también tests/comunes_ep01.py):
-- TODO-REVISAR: HU-01-01 RN-6 fija que la respuesta de registro expone
-  `accountId`, `email`, `status`, `createdAt`; HU-09-01 Escenario 1 lista
-  `{accountId, email, createdAt}` sin `status`. 00-fundaciones no fija este
-  contrato: acá prevalece la épica 01 (dueña del recurso) y se asserta `status`.
-- TODO-REVISAR: HU-01-01 RN-10 declara el rate limiting de registro como
-  "configurable / cuando está activo", mientras HU-09-02 RN-12 fija la política
-  del entorno de evaluación como única y determinista (60 req/min por IP y
-  endpoint). AT-01-01-20 usa N=60/T=60 s y se salta si no observa RATE_LIMITED
-  (la propia AT dice "si el rate limiting no está activo, este AT no aplica").
+- La respuesta de registro expone `accountId`, `email`, `status`, `createdAt`
+  (HU-01-01 RN-6); desde spec-v1.1 el ejemplo de HU-09-01 (AT-09-01-01) incluye
+  `status` y ambas épicas coinciden (ADR-006 D12). Se asserta el set con `status`.
+- El rate limiting de registro es OPCIONAL por config (HU-01-01 RN-10) y, si
+  existe, usa RATE_LIMITED; la política determinista de HU-09-02 RN-12 aplica
+  solo a endpoints autenticados, no a /auth/* (ADR-006 D4). AT-01-01-20 sondea
+  N=60/T=60 s (el valor que el entorno fija si la implementación lo expone) y
+  se salta si no observa RATE_LIMITED (la propia AT dice "si el rate limiting
+  no está activo, este AT no aplica").
 """
 
 import json
@@ -90,7 +90,7 @@ def test_registro_exitoso_con_credenciales_validas(api):
     cuerpo = resp.json()
     assert isinstance(cuerpo["accountId"], str) and cuerpo["accountId"]  # RN-6
     assert cuerpo["email"] == email  # RN-1 (email ya normalizado)
-    assert cuerpo["status"] == "ACTIVE"  # RN-6 (ver TODO-REVISAR del docstring del módulo)
+    assert cuerpo["status"] == "ACTIVE"  # RN-6 (la 09 coincide: AT-09-01-01 incluye status)
     parsear_iso8601_utc(cuerpo["createdAt"], "createdAt")  # RN-6 / RNE-8
 
     # Y: sin contraseña/hash/sal ni token (RN-5, RN-7, RNE-2)
@@ -574,8 +574,10 @@ def test_account_id_opaco_y_no_secuencial(api):
 def test_anti_flood_de_registro_responde_rate_limited(api):
     """HU-01-01 Escenario 20 (seguridad, condicional a config): Anti-flood de registro.
 
-    - Dado rate limiting de registro activo con umbral N=60 por origen en
-      ventana T=60 s (política del entorno de evaluación, HU-09-02 RN-12)
+    - Dado rate limiting de registro activo con umbral N y ventana T declarados
+      en la configuración del entorno (60 req/min y 60 s si la implementación lo
+      expone, entorno/README.md; HU-01-01 RN-10 — ADR-006 D4: opcional en este
+      endpoint público, fuera de la política por cuenta de HU-09-02 RN-12)
     - Cuando se hacen N+1 solicitudes desde el mismo origen dentro de la ventana
     - Entonces la N+1 se rechaza con RATE_LIMITED (429) y
       details.retryAfterSeconds ≥ 0
@@ -584,9 +586,9 @@ def test_anti_flood_de_registro_responde_rate_limited(api):
     respuesta_429 = None
     try:
         # Cuando: hasta N+1 registros desde el mismo origen dentro de la ventana.
-        # Nota: la ventana por IP es compartida con el resto de la suite, por lo
-        # que el 429 puede llegar antes de la solicitud 61 — sigue siendo el
-        # comportamiento especificado (ventana deslizante, HU-09-02 RN-12).
+        # Nota: la ventana por origen es compartida con el resto de la suite,
+        # por lo que el 429 puede llegar antes de la solicitud 61 — sigue siendo
+        # el comportamiento especificado (ventana deslizante de 60 s).
         for _ in range(N_RATE_LIMIT + 1):
             resp = _registrar(api, email_unico("flood"))
             if resp.status_code == 429:

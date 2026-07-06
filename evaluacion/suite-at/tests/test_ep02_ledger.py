@@ -1,11 +1,12 @@
 """Épica 02 — HU-02-03 Libro contable de movimientos: tests black-box.
 
-El ledger de doble entrada NO tiene superficie propia en el contrato de la
-épica 09 (el mapa de endpoints de HU-09-01 no incluye el historial de
-movimientos de HU-02-05): la mayoría de los escenarios de HU-02-03 se declaran
-en no_automatizables_ep02.yaml. Acá se automatiza el único cuyo contenido
-distintivo es íntegramente observable por balances y trades: el consumo
-parcial del locked del maker (AT-02-03-10).
+GET /movements (HU-09-01 RN-22, espejo de HU-02-05) expone la proyección de los
+postings PROPIOS de cada cuenta — verificada en test_ep02_movimientos.py —,
+pero los asientos completos de HU-02-03 (postings de la contraparte, de EX y de
+EXTERNAL, unicidad/estructura interna del asiento) siguen sin superficie
+black-box: esos escenarios se declaran en no-automatizables.yaml. Acá se
+automatiza el que sí es íntegramente observable por balances y trades: el
+consumo parcial del locked del maker (AT-02-03-10).
 """
 
 import pytest

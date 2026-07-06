@@ -320,40 +320,39 @@ def test_fills_sucesivos_sobre_mismo_maker_consumen_sin_solaparse(usuario, usuar
 def test_market_buy_consume_quote_min_por_fill_sin_surplus(usuario, usuario_b, rpc):
     """HU-05-01 Escenario 10 (borde): Taker BUY market — consumo sin surplus por fill.
 
-    - Dado un comprador taker MARKET BUY (sin price_limit_taker) con USDC disponible
-      2010000000 y dos makers SELL: M1 0.5 ETH @ 2000.00 y M2 0.5 ETH @ 2001.00
+    - Dado un comprador taker MARKET BUY por 1 ETH (sin price_limit_taker) para
+      la cual la épica 04 bloqueó 2000500000: el COSTO EXACTO de barrer el
+      snapshot de asks (1000000000 + 1000500000; HU-04-02 RN-5, RE-1 de la
+      épica 04), y dos makers SELL: M1 0.5 ETH @ 2000.00 y M2 0.5 ETH @ 2001.00
     - Cuando el matching emite F1 (0.5 @ 2000.00) y F2 (0.5 @ 2001.00)
-    - Entonces F1 consume 1000000000 y F2 consume 1000500000 del bloqueado del comprador
-    - Y ningún fill libera surplus (RN-6): el settlement solo consume quote_min
-    - Y la liberación del excedente bloqueado es responsabilidad de la épica 04 al
-      terminar la orden market (no de esta épica)
+    - Entonces F1 consume 1000000000 y F2 consume 1000500000 del bloqueado del
+      comprador
+    - Y ningún fill libera surplus (RN-6): el settlement solo consume quote_min;
+      tras ambos fills bloqueado(comprador, USDC) = 2000500000 − 1000000000 −
+      1000500000 = 0 queda agotado EXACTAMENTE por los consumos
 
-    Observabilidad black-box: la orden MARKET termina de forma atómica respecto del
-    contrato REST (el 201 ya trae el estado terminal, HU-09-01 RN-5), por lo que el
-    remanente bloqueado *entre* los fills y su liberación por la épica 04 no son
-    snapshots alcanzables desde afuera. Lo verificable es el estado final: el total
-    de USDC del comprador disminuye EXACTAMENTE en quote_f1 + quote_f2 = 2000500000
-    (si el settlement hubiera liberado surplus por fill o consumido el bloqueado
-    estimado, el número no cerraría) y el bloqueado termina en 0.
-
-    TODO-REVISAR: la premisa del AT ("la épica 04 bloqueó 2010000000, estimación por
-    mejor ask") no coincide con épica 04 README RE-1, que fija para MARKET BUY por
-    cantidad R = costo exacto de barrer el snapshot de asks (= 2000500000 aquí). El
-    estado final observable asertado abajo es el mismo bajo ambas lecturas.
+    Observabilidad black-box: el fondeo es exactamente el costo del sweep
+    (2000500000). Si la épica 04 bloquease más que el costo exacto (p. ej. una
+    estimación con margen), el alta fallaría por INSUFFICIENT_FUNDS; si el
+    settlement liberase surplus por fill o consumiese un bloqueado distinto de
+    quote_min por fill, los enteros finales (USDC total 0, bloqueado 0) no
+    cerrarían.
     """
     q_m = 500_000_000_000_000_000                   # 0.5 ETH por maker
     quote_f1 = quote_min(q_m, PRECIO_2000)
     quote_f2 = quote_min(q_m, PRECIO_2001)
     assert quote_f1 == 1_000_000_000 and quote_f2 == 1_000_500_000  # literales del AT
-    disponible_inicial = 2_010_000_000              # el disponible del AT
+    bloqueo_exacto = quote_f1 + quote_f2            # costo exacto del sweep (RE-1)
+    assert bloqueo_exacto == 2_000_500_000          # literal del AT
 
-    # Dado
+    # Dado: el disponible es exactamente el bloqueo del AT (costo del sweep)
     fondear_eth(usuario_b, rpc, 2 * q_m)
-    fondear_usdc(usuario, rpc, disponible_inicial)
+    fondear_usdc(usuario, rpc, bloqueo_exacto)
     crear_maker(usuario_b, "SELL", PRECIO_2000, q_m)   # M1
     crear_maker(usuario_b, "SELL", PRECIO_2001, q_m)   # M2
 
-    # Cuando: MARKET BUY por 1 ETH (sin priceMin)
+    # Cuando: MARKET BUY por 1 ETH (sin priceMin); la reserva R = 2000500000
+    # cabe justo en el disponible (bloqueo por el costo exacto, no estimado)
     orden = crear_market(usuario, "BUY", 2 * q_m)
     assert orden["priceMin"] is None, orden
     items = esperar_trades(usuario, 2)
@@ -364,11 +363,11 @@ def test_market_buy_consume_quote_min_por_fill_sin_surplus(usuario, usuario_b, r
         (PRECIO_2001, quote_f2),
     }, items
 
-    # Y: estado final exacto — total USDC del comprador bajó en quote_f1+quote_f2 y
-    # el bloqueado quedó en 0 (excedente liberado por la épica 04 al terminar la orden)
+    # Y: estado final exacto — los consumos agotaron el bloqueado por completo:
+    # bloqueado final 0 y disponible 0 (2000500000 − 1000000000 − 1000500000 = 0)
     consumido = quote_f1 + quote_f2
-    assert_balance(usuario, "USDC", available=disponible_inicial - consumido, locked=0)
-    assert disponible_inicial - consumido == 9_500_000
+    assert consumido == bloqueo_exacto
+    assert_balance(usuario, "USDC", available=0, locked=0)
     # La orden market terminó FILLED por la cantidad completa
     assert orden["status"] == "FILLED", orden
     assert a_int(orden["filledWei"]) == 2 * q_m

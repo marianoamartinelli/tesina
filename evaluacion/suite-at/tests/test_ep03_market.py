@@ -4,9 +4,10 @@ Una MARKET siempre es taker, no lleva precio y nunca descansa (RN-1, RN-7). El
 presupuesto `B` de una `MARKET BUY` es un parámetro interno motor⇄épica 04
 (RN-14): black-box, la épica 04 reserva el costo del barrido del snapshot para
 la forma `quantityWei` (HU-04-02 RN-5) —por lo que esa forma nunca agota `B`— y
-para la forma `quoteOrderQty` el presupuesto ES el objetivo. Los escenarios de
-presupuesto se construyen por la única vía observable: `quoteOrderQty`
-(AT-03-04-05) y un best ask cuyo lot cuesta más que el presupuesto (AT-03-04-09).
+para la forma `quoteOrderQtyMin` el presupuesto ES el objetivo: agotarlo es
+completarlo ⇒ `FILLED` (RN-9, HU-04-02 RN-7). Los escenarios de presupuesto se
+construyen con `quoteOrderQtyMin` (AT-03-04-05) y un best ask cuyo lot cuesta
+más que el presupuesto (AT-03-04-09).
 
 Los tests MARKET exigen que el lado opuesto contenga sólo la liquidez del
 escenario (una MARKET consume el mejor precio global): se verifica el Dado y se
@@ -38,6 +39,7 @@ from tests.comunes_ep03 import (
     orden_por_client_id,
     requerir_lado_vacio,
     requerir_libro_vacio,
+    requerir_sin_bids_cruzables,
     snapshot_balances,
     trades_propios,
     ultimo_trade_id,
@@ -205,69 +207,69 @@ def test_market_sin_liquidez_lado_opuesto_vacio(api, usuario):
 def test_market_buy_detenida_por_presupuesto(api, usuario, usuario_b, rpc):
     """HU-03-04 Escenario 5 (borde): MARKET BUY detenida por presupuesto.
 
-    - Dado asks: A1 SELL 1 ETH @ 2135.00, A2 SELL 1 ETH @ 2135.50 y presupuesto
-      B = quote(A1) + 500 USDC
-    - Cuando ingresa una MARKET BUY acotada por ese presupuesto
-    - Entonces ejecuta A1 completo y de A2 toma la máxima cantidad múltiplo de
-      lot cuyo quote_min ≤ B_rem: q' = max_lots × lot (fórmula RN-5)
-    - Y la ejecución se detiene por presupuesto (A2 conserva liquidez); A2 queda
-      PARTIALLY_FILLED con remainingWei = 1 ETH − q', conservando su nivel
-
-    TODO-REVISAR: el AT estipula un B entregado al motor menor al costo del
-    barrido y estado terminal CANCELLED + reason MARKET_BUDGET_EXHAUSTED. Ese B
-    no es construible black-box: para la forma `quantityWei` la épica 04 reserva
-    SIEMPRE el costo del barrido del snapshot (HU-04-02 RN-5) y la forma
-    `quoteOrderQty` completa su objetivo al agotar el presupuesto ⇒ FILLED
-    (HU-04-02 RN-7, AT-04-02-01). Aquí se verifica la mecánica normativa de
-    HU-03-04 RN-5 (max_lots, q', detención por presupuesto) vía `quoteOrderQty`;
-    el estado CANCELLED por presupuesto queda para evaluación white-box.
+    - Dado asks: A1 SELL 1 ETH @ 2000.00, A2 SELL 1 ETH @ 2000.50
+    - Cuando ingresa una MARKET BUY por monto con quoteOrderQtyMin="2500000000"
+      (2500 USDC; presupuesto reservado B = 2500000000, HU-04-02 RN-5)
+    - Entonces ejecuta A1 completo (quote_min = 2000000000; B_rem = 500000000)
+      y de A2 toma la máxima cantidad múltiplo de lot cuyo quote_min ≤ B_rem:
+      q' = 249900000000000000 (max_lots = 2499, fórmula RN-5), con
+      quote_min = 499924950
+    - Y la ejecución se detiene por presupuesto (RN-6 c) con el objetivo
+      completado (agotar B): la orden queda terminal FILLED con
+      filledWei = "1249900000000000000", quote gastado 2499924950 y el residuo
+      sub-lot 75050 liberado (RN-9, RN-10, HU-04-02 RN-7)
+    - Y A2 permanece en el libro PARTIALLY_FILLED con
+      remainingWei = 750100000000000000, conservando su posición como best ask
+      del nivel @ 2000.50
     """
-    p1, p2 = 2_135_000_000, 2_135_500_000
+    p1, p2 = 2_000_000_000, 2_000_500_000
+    presupuesto = 2_500_000_000
     requerir_lado_vacio(api, "asks")
+    requerir_sin_bids_cruzables(api, p1)  # los asks del Dado deben quedar resting
     fondear(usuario_b, rpc, eth_wei=2 * ETH)
     fondeo = 2_700_000_000
     fondear(usuario, rpc, usdc_min=fondeo)
-
-    presupuesto = quote_min(ETH, p1) + 500_000_000  # consume A1 y deja B_rem = 500 USDC
     try:
         # Dado
         a1 = colocar_limit(usuario_b, "SELL", p1, ETH, esperado="OPEN")
         a2 = colocar_limit(usuario_b, "SELL", p2, ETH, esperado="OPEN")
 
-        # Cuando: MARKET BUY con techo de gasto = presupuesto (RN-5, RN-14)
-        taker = colocar_market(usuario, "BUY", quote_order_qty=presupuesto)
-        # TODO-REVISAR: para la forma quoteOrderQty detenida por presupuesto con
-        # residuo sub-lot, HU-04-02 RN-7/AT-04-02-01 sugiere FILLED (objetivo
-        # gastado) y HU-03-04 RN-9 sugiere CANCELLED (presupuesto agotado con
-        # filledWei > 0); la spec no fija cuál prevalece ⇒ se aceptan ambos
-        # estados terminales y se verifica la mecánica cuantitativa, que es única.
-        assert taker["status"] in ("FILLED", "CANCELLED"), taker
+        # Cuando: MARKET BUY por monto; agotar B es completar el objetivo ⇒
+        # FILLED, sin reason (RN-5, RN-9, RN-14)
+        taker = colocar_market(usuario, "BUY", quote_order_qty_min=presupuesto,
+                               esperado="FILLED")
 
-        # Entonces: q' por la fórmula directa de RN-5 (big integers)
-        b_rem = 500_000_000
+        # Entonces: q' por la fórmula directa de RN-5 (big integers) = cifras del AT
+        b_rem = presupuesto - quote_min(ETH, p1)
+        assert b_rem == 500_000_000
         max_lots = (b_rem * ETH) // (p2 * LOT_SIZE)
         q_prima = max_lots * LOT_SIZE
-        assert quote_min(q_prima, p2) <= b_rem                       # entra en B_rem
-        assert quote_min(q_prima + LOT_SIZE, p2) > b_rem             # el siguiente lot no
+        assert (max_lots, q_prima) == (2499, 249_900_000_000_000_000)
+        assert quote_min(q_prima, p2) == 499_924_950                 # entra en B_rem
+        assert quote_min(q_prima + LOT_SIZE, p2) > b_rem             # el lot 2500 no
 
         fills = trades_propios(usuario, order_id=taker["orderId"])
         assert [(assert_monto(t["priceMin"]), assert_monto(t["quantityWei"])) for t in fills] == [
             (p1, ETH),
             (p2, q_prima),
         ], fills
-        assert taker["filledWei"] == a_str(ETH + q_prima)
+        assert taker["filledWei"] == "1249900000000000000"
 
-        # Y: se detuvo por presupuesto, no por libro (A2 conserva liquidez), y A2
-        # permanece en su nivel con el remanente exacto (RN-9)
+        # Y: se detuvo por presupuesto, no por libro: A2 permanece
+        # PARTIALLY_FILLED con el remanente exacto como best ask de su nivel (RN-9)
         estado_a2 = orden_actual(usuario_b, a2["orderId"])
         assert estado_a2["status"] == "PARTIALLY_FILLED"
+        assert estado_a2["remainingWei"] == "750100000000000000", estado_a2
         assert assert_monto(estado_a2["quantityWei"]) - assert_monto(estado_a2["filledWei"]) == ETH - q_prima
-        assert nivel(libro(api), "asks", p2) == ETH - q_prima
+        lib = libro(api)
+        assert nivel(lib, "asks", p2) == ETH - q_prima
+        assert lib["asks"] and assert_monto(lib["asks"][0][0]) == p2  # best ask = A2
         assert orden_actual(usuario_b, a1["orderId"])["status"] == "FILLED"
 
-        # Y: el gasto respetó el techo y el resto quedó liberado (RN-10)
+        # Y: quote gastado exacto y residuo sub-lot liberado (RN-10)
         gastado = quote_min(ETH, p1) + quote_min(q_prima, p2)
-        assert gastado <= presupuesto
+        assert gastado == 2_499_924_950
+        assert presupuesto - gastado == 75_050
         balances = balances_por_activo(usuario)
         assert assert_monto(balances["USDC"]["locked"]) == 0
         assert assert_monto(balances["USDC"]["available"]) == fondeo - gastado
@@ -297,17 +299,15 @@ def test_precio_en_market_rechazado_antes_del_motor(usuario):
 def test_market_de_un_lot_exacto(api, usuario, usuario_b, rpc):
     """HU-03-04 Escenario 7 (borde): MARKET de 1 lot exacto contra liquidez suficiente.
 
-    - Dado un libro con profundidad ≥ 1 lot en el best ask
+    - Dado un libro con best_ask = 100000.00 (price_min = 100000000000, múltiplo
+      de tick) y profundidad ≥ 1 lot: a ese precio 1 lot vale exactamente el
+      mínimo notional (floor(10^14 × 100000000000 / 10^18) = 10000000 =
+      10 USDC), por lo que la épica 04 admite la orden (RN-13, HU-04-02 RN-3)
     - Cuando ingresa MARKET BUY de exactamente 1 lot (10^14 wei) con presupuesto
       suficiente
     - Entonces ejecuta q_fill = 1 lot al precio del maker con
-      quote_min = floor(10^14 × P / 10^18) y queda FILLED (RN-4)
-
-    TODO-REVISAR: el Dado del AT (best_ask = 2000.00) hace que 1 lot valga
-    0.2 USDC < mínimo notional, y la épica 04 rechazaría la MARKET con
-    BELOW_MIN_NOTIONAL antes del motor (HU-04-02 RN-3). Para observar la regla
-    del motor black-box se usa un precio que satisface el mínimo:
-    P = 100000.00 USDC/ETH ⇒ 1 lot = 10 USDC exactos (≥ mínimo).
+      quote_min = floor(10^14 × 100000000000 / 10^18) = "10000000" y queda
+      FILLED (RN-4)
     """
     precio = 100_000_000_000  # 100000.00 USDC/ETH, múltiplo de tick
     requerir_libro_vacio(api)  # el best ask debe ser el del escenario
@@ -378,7 +378,7 @@ def test_market_buy_sin_presupuesto_para_un_lot(api, usuario, usuario_b, rpc):
     - Y NO se reporta MARKET_NO_LIQUIDITY (sí hay liquidez)
 
     Construcción black-box del caso defensivo: el presupuesto observable es un
-    `quoteOrderQty` (HU-04-02 RN-5) que debe ser ≥ mínimo notional (10 USDC);
+    `quoteOrderQtyMin` (HU-04-02 RN-5) que debe ser ≥ mínimo notional (10 USDC);
     con un best ask a 100001.00 USDC/ETH, 1 lot cuesta 10.0001 USDC > 10 USDC.
     """
     precio = 100_001_000_000  # 100001.00 USDC/ETH
@@ -397,7 +397,7 @@ def test_market_buy_sin_presupuesto_para_un_lot(api, usuario, usuario_b, rpc):
         cid = "ep03-mkt-budget"
         resp = usuario.api.post(
             "/orders",
-            json={**cuerpo_market("BUY", quote_order_qty=presupuesto), "clientOrderId": cid},
+            json={**cuerpo_market("BUY", quote_order_qty_min=presupuesto), "clientOrderId": cid},
         )
 
         # Entonces: MARKET_BUDGET_INSUFFICIENT con los montos del caso (RN-9)

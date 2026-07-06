@@ -6,9 +6,12 @@ HU-09-01) y los retiros (épica 08 vía HU-09-01). Las fees que el settlement
 acredita a EX se observan por la pata propia de GET /trades (HU-09-01 RN-20).
 
 Los asientos de ledger que estas transiciones generan (ORDER_LOCK,
-ORDER_RELEASE, TRADE_FILL, WITHDRAWAL_*) no tienen superficie propia en el
-contrato de la épica 09: acá se verifica su efecto observable sobre los buckets;
-la estructura de los asientos se evalúa por otra vía (no_automatizables_ep02.yaml).
+ORDER_RELEASE, TRADE_FILL, WITHDRAWAL_*) se proyectan sobre los postings
+propios en GET /movements (HU-09-01 RN-22; tests de HU-02-05 en
+test_ep02_movimientos.py): acá se verifica su efecto sobre los buckets y, donde
+el AT lo pide, la presencia/ausencia del asiento vía esa proyección. La
+estructura completa del asiento (postings de contraparte/EX/EXTERNAL) se evalúa
+por otra vía (no-automatizables.yaml).
 """
 
 from concurrent.futures import ThreadPoolExecutor
@@ -16,12 +19,14 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 from comunes_ep02 import (
+    FEE_RED_ETH_WEI,
     PRECIO_BANDA_BAJA,
     PRECIO_MATCHING,
     SIMBOLO,
     balance,
     balances_por_activo,
     cancelar_orden,
+    cancelar_retiro,
     cancelar_si_posible,
     crear_orden,
     crear_retiro,
@@ -29,6 +34,7 @@ from comunes_ep02 import (
     detalle_retiro,
     fondear_eth,
     fondear_usdc,
+    movimientos_ok,
     nuevo_client_order_id,
     orden_creada,
     orden_resting,
@@ -222,11 +228,10 @@ def test_liberacion_de_excedente_por_ejecucion_a_mejor_precio(usuario, usuario_b
     - Cuando ejecuta totalmente contra un ask resting a price_exec 2000000000
     - Entonces paga floor(1e18 × 2000000000 / 1e18) = 2000000000 (consumido)
     - Y se libera el excedente release = 2010000000 − 2000000000 = 10000000 (RN-6)
+    - Y se generan exactamente dos asientos — un TRADE_FILL y un ORDER_RELEASE —
+      observados por la proyección de postings propios de GET /movements
+      (HU-09-01 RN-22)
     - Y tras el fill el bloqueo asociado a la orden es "0"
-
-    La cláusula "exactamente dos asientos (TRADE_FILL + ORDER_RELEASE)" no es
-    observable black-box (sin superficie de ledger en la épica 09); acá se
-    verifica su efecto: el excedente vuelve a disponible en la misma operación.
     """
     # Dado: ask maker resting a 2000.00
     fondear_eth(usuario_b, rpc, WEI_POR_ETH)
@@ -248,6 +253,14 @@ def test_liberacion_de_excedente_por_ejecucion_a_mejor_precio(usuario, usuario_b
         # Y: recibió 1 ETH neto de fee taker (consumo del fill, RN-5)
         eth = balance(usuario, "ETH")
         assert eth["available"] == "998000000000000000"
+
+        # Y: exactamente dos asientos, un TRADE_FILL y un ORDER_RELEASE con
+        # release = 10000000 (proyección de GET /movements, HU-09-01 RN-22)
+        items = movimientos_ok(usuario)["items"]
+        tipos = [item["type"] for item in items]
+        assert tipos.count("TRADE_FILL") == 1 and tipos.count("ORDER_RELEASE") == 1, tipos
+        release = next(item for item in items if item["type"] == "ORDER_RELEASE")
+        assert all(p["amount"] == "10000000" for p in release["postings"]), release
     finally:
         cancelar_si_posible(usuario_b, maker["orderId"])
 
@@ -367,10 +380,14 @@ def test_dos_bloqueos_concurrentes_que_exceden_el_disponible(usuario, rpc):
 def test_retiro_sin_fondos_suficientes(usuario, rpc):
     """HU-02-02 Escenario 10 (error): Retiro sin fondos suficientes.
 
-    - Dado un trader con ETH disponible 500000000000000000 (0.5 ETH) y bloqueado 0
+    - Dado un trader con ETH disponible 500000000000000000 (0.5 ETH) y bloqueado
+      0, y la previsión de fee de red fee_red_wei = gas_limit × gas_price =
+      21000 × 20 gwei = "420000000000000" (snapshot de HU-08-02 RN-7; el entorno
+      fija GAS_PRICE_WEI y GAS_LIMIT_ETH, entorno/README.md)
     - Cuando solicita un retiro de 600000000000000000 wei (0.6 ETH)
-    - Entonces se rechaza con INSUFFICIENT_FUNDS (422) y details con
-      asset/required/available (RN-10; catálogo modelo-de-errores §3.4)
+    - Entonces se rechaza con INSUFFICIENT_FUNDS (422) y details = { asset,
+      required = amount_wei + fee_red_wei = "600420000000000000", available }
+      (RN-10 según el modelo de la épica 08 — ADR-006 D2; HU-08-01 RN-9)
     - Y los balances quedan intactos (no se crea WITHDRAWAL_LOCK)
     """
     # Dado
@@ -378,64 +395,67 @@ def test_retiro_sin_fondos_suficientes(usuario, rpc):
 
     # Cuando (dirección EIP-55 válida y monto ≥ mínimo, para que la precedencia
     # llegue al paso de fondos)
-    resp = crear_retiro(usuario, "ETH", 600_000_000_000_000_000)
+    monto = 600_000_000_000_000_000
+    resp = crear_retiro(usuario, "ETH", monto)
 
-    # Entonces
+    # Entonces: required = amount_wei + fee_red_wei (fórmula de HU-08-01 RN-9;
+    # con los valores del entorno da la cifra literal del AT)
     err = assert_error(resp, "INSUFFICIENT_FUNDS")
     detalles = err["details"]
     assert_montos_en_details(detalles, "required", "available")
     assert detalles["asset"] == "ETH"
     assert detalles["available"] == "500000000000000000"
-    # TODO-REVISAR: discrepancia entre épicas sobre `required` — HU-02-02 RN-10 y
-    # este AT (épica 02) fijan required = monto ("600000000000000000"); HU-08-01
-    # RN-9 (épica 08) exige required = monto + fee_red_wei (21000 × 20 gwei) =
-    # "600420000000000000". 00-fundaciones no fija la previsión de gas, así que
-    # se aceptan ambos valores.
-    assert detalles["required"] in ("600000000000000000", "600420000000000000"), detalles
+    assert detalles["required"] == a_str(monto + FEE_RED_ETH_WEI)
+    assert detalles["required"] == "600420000000000000", detalles
 
     # Y: balances intactos
     eth = balance(usuario, "ETH")
     assert eth["available"] == "500000000000000000"
     assert eth["locked"] == "0"
 
+    # Y: no se creó ningún WITHDRAWAL_LOCK (proyección de GET /movements)
+    assert movimientos_ok(usuario, {"type": "WITHDRAWAL_LOCK"})["items"] == []
+
 
 @pytest.mark.at("AT-02-02-11")
 def test_bloqueo_y_consumo_de_retiro_confirmado(usuario, rpc):
-    """HU-02-02 Escenario 11 (retiro): Bloqueo, consumo y liberación de retiro.
+    """HU-02-02 Escenario 11 (retiro): Bloqueo y consumo de retiro confirmado.
 
-    - Dado un trader con ETH disponible 1000000000000000000 (1 ETH)
+    - Dado un trader con ETH disponible 1000000000000000000 (1 ETH) y una
+      previsión de fee de red fee_red_wei = "420000000000000" (21000 × 20 gwei,
+      snapshot de HU-08-02 RN-7)
     - Cuando solicita un retiro de 400000000000000000 wei aceptado
-    - Entonces se bloquea (WITHDRAWAL_LOCK): total constante, bloqueado > 0
-    - Y al confirmarse on-chain el bloqueado se consume y total(ETH) baja
-      (WITHDRAWAL_SETTLE: los fondos salen del sistema)
+    - Entonces se bloquea reserva_eth = amount_wei + fee_red_wei =
+      "400420000000000000": disponible "599580000000000000", bloqueado
+      "400420000000000000" (WITHDRAWAL_LOCK, HU-08-02 RN-1 — el modelo de la
+      épica 08 rige, ADR-006 D2)
+    - Y al confirmarse on-chain con gas_usado_wei = "420000000000000" (una
+      transferencia ETH consume exactamente 21000 gas) el bloqueado se consume
+      por amount_wei + gas_usado_wei y total(ETH) baja a "599580000000000000"
+      (WITHDRAWAL_SETTLE); el sobrante fee_red_wei − gas_usado_wei = "0" no
+      genera liberación (HU-08-04 RN-3)
 
-    TODO-REVISAR: discrepancia entre épicas sobre el monto bloqueado/consumido —
-    la épica 02 (README §5.1, RN-10 y este AT) bloquea y consume exactamente el
-    monto (gas a cargo de la reserva operativa del exchange); la épica 08
-    (HU-08-02 RN-1, HU-08-04 RN-3) bloquea monto + fee_red_wei (420000000000000)
-    y consume monto + gas_usado. 00-fundaciones no lo fija: se aceptan ambos.
-
-    La rama de aborto (WITHDRAWAL_RELEASE) no es provocable determinísticamente
-    black-box: exige un fallo de broadcast o la cancelación de HU-08-04 RN-13,
-    cuya ruta no está en el contrato REST de la épica 09.
+    La rama de aborto del AT (liberación total de la reserva) se verifica en
+    test_liberacion_total_de_la_reserva_al_abortar_un_retiro.
     """
     # Dado
     fondear_eth(usuario, rpc, WEI_POR_ETH)
+    monto = 400_000_000_000_000_000
+    reserva = monto + FEE_RED_ETH_WEI  # 400420000000000000
 
     # Cuando
-    resp = crear_retiro(usuario, "ETH", 400_000_000_000_000_000)
+    resp = crear_retiro(usuario, "ETH", monto)
     assert resp.status_code == 202, resp.text
     retiro = resp.json()
     assert retiro["status"] == "PENDING"
 
-    # Entonces: bloqueo aplicado, total constante (INV-3; ambos modelos coinciden
-    # en que el bloqueo NO cambia el total)
+    # Entonces: se bloquea amount + fee_red_wei; el total no cambia (INV-3)
     eth = balance(usuario, "ETH")
     assert eth["total"] == "1000000000000000000"
-    assert (eth["available"], eth["locked"]) in (
-        ("600000000000000000", "400000000000000000"),  # épica 02: bloquea el monto
-        ("599580000000000000", "400420000000000000"),  # épica 08: monto + fee_red_wei
-    ), eth
+    assert eth["locked"] == a_str(reserva)
+    assert eth["locked"] == "400420000000000000"
+    assert eth["available"] == a_str(WEI_POR_ETH - reserva)
+    assert eth["available"] == "599580000000000000"
 
     # Y: confirmación on-chain — esperar el broadcast, minar 12 confirmaciones
     # y esperar la transición a CONFIRMED (HU-08-04)
@@ -451,14 +471,62 @@ def test_bloqueo_y_consumo_de_retiro_confirmado(usuario, rpc):
         mensaje="el retiro no llegó a CONFIRMED tras 12 confirmaciones",
     )
 
-    # Y: el bloqueado se consumió y el total bajó (los fondos salieron del sistema)
+    # Y: el bloqueado se consumió por amount + gas_usado (21000 × 20 gwei) y el
+    # total bajó exactamente eso (los fondos salieron del sistema)
     eth = balance(usuario, "ETH")
     assert eth["locked"] == "0"
     assert eth["available"] == eth["total"]
-    assert eth["total"] in (
-        "600000000000000000",  # épica 02: total baja exactamente el monto
-        "599580000000000000",  # épica 08: baja monto + gas_usado (21000 × 20 gwei)
-    ), eth
+    assert eth["total"] == a_str(WEI_POR_ETH - reserva)
+    assert eth["total"] == "599580000000000000"
+
+    # Y: el sobrante de gas es "0" ⇒ no se genera WITHDRAWAL_RELEASE
+    # (HU-08-04 RN-3; proyección de GET /movements, HU-09-01 RN-22)
+    assert movimientos_ok(usuario, {"type": "WITHDRAWAL_RELEASE"})["items"] == []
+
+
+@pytest.mark.at("AT-02-02-11")
+def test_liberacion_total_de_la_reserva_al_abortar_un_retiro(usuario, rpc):
+    """HU-02-02 Escenario 11 (retiro), rama de aborto: liberación total.
+
+    - Dado un trader con 1 ETH disponible y un retiro de 400000000000000000 wei
+      aceptado (reserva "400420000000000000" bloqueada)
+    - Cuando el retiro se aborta antes del débito definitivo (cancelación de
+      HU-08-04 RN-13 vía POST /withdrawals/{id}/cancel — ruta canónica de
+      HU-09-01 RN-21, ADR-006 D1)
+    - Entonces se libera TODA la reserva al disponible y total(ETH) permanece
+      "1000000000000000000" (WITHDRAWAL_RELEASE: nada salió del sistema,
+      HU-08-04 RN-5)
+
+    La cancelación solo procede sobre un retiro PENDING sin broadcast; si el SUT
+    ya lo broadcasteó (CONFLICT 409), la rama no es reproducible en esta corrida
+    y el test se salta (la ventana depende del scheduler interno del SUT).
+    """
+    # Dado
+    fondear_eth(usuario, rpc, WEI_POR_ETH)
+    monto = 400_000_000_000_000_000
+    reserva = monto + FEE_RED_ETH_WEI
+    resp = crear_retiro(usuario, "ETH", monto)
+    assert resp.status_code == 202, resp.text
+    retiro = resp.json()
+    assert balance(usuario, "ETH")["locked"] == a_str(reserva)
+
+    # Cuando: aborto inmediato (carrera contra el broadcast del SUT)
+    resp = cancelar_retiro(usuario, retiro["withdrawalId"])
+    if resp.status_code == 409:
+        assert_error(resp, "CONFLICT")
+        pytest.skip(
+            "el SUT broadcasteó el retiro antes de poder cancelarlo: la rama de "
+            "aborto de AT-02-02-11 no es reproducible en esta corrida "
+            "(HU-08-04 RN-13: sólo PENDING sin txHash es cancelable)"
+        )
+    assert resp.status_code == 200, resp.text
+    assert resp.json()["status"] == "FAILED"  # HU-09-01 RN-21
+
+    # Entonces: toda la reserva vuelve a disponible; nada salió del sistema
+    eth = balance(usuario, "ETH")
+    assert eth["available"] == "1000000000000000000"
+    assert eth["locked"] == "0"
+    assert eth["total"] == "1000000000000000000"
 
 
 @pytest.mark.at("AT-02-02-12")
@@ -474,8 +542,8 @@ def test_ejecucion_exactamente_al_precio_limite_no_libera_excedente(usuario, usu
 
     Observación black-box: con release = 0, el disponible de quote del comprador
     tras el fill es exactamente 0 (nada volvió a disponible) y el bloqueado es 0
-    (todo consumido). La ausencia del asiento ORDER_RELEASE en sí no es
-    observable (sin superficie de ledger); se verifica su efecto nulo.
+    (todo consumido). La ausencia del asiento ORDER_RELEASE se observa además
+    por la proyección de GET /movements (HU-09-01 RN-22).
     """
     # Dado: ask maker resting a 2000.00
     fondear_eth(usuario_b, rpc, WEI_POR_ETH)
@@ -499,6 +567,10 @@ def test_ejecucion_exactamente_al_precio_limite_no_libera_excedente(usuario, usu
         assert eth["available"] == "998000000000000000"
         vendedor_usdc = balance(usuario_b, "USDC")
         assert vendedor_usdc["available"] == "1998000000"
+
+        # Y: NO existe ningún asiento ORDER_RELEASE (RN-6: solo si release > 0;
+        # proyección de GET /movements, HU-09-01 RN-22)
+        assert movimientos_ok(usuario, {"type": "ORDER_RELEASE"})["items"] == []
     finally:
         cancelar_si_posible(usuario_b, maker["orderId"])
 

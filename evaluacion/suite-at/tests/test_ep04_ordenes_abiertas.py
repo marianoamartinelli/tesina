@@ -2,12 +2,9 @@
 
 Spec: spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md
 La consulta semántica "abiertas" se implementa sobre GET /orders con filtro
-status en {OPEN, PARTIALLY_FILLED} (ver TODO-REVISAR 5 en comunes_ep04.py).
-
-TODO-REVISAR: el desempate del orden por defecto difiere entre épicas
-(HU-04-06 RN-4: orderId ascendente; HU-09-01 RN-8: orderId descendente); los
-tests no assertan la dirección del desempate, solo createdAt descendente y la
-estabilidad de la paginación.
+status en {OPEN, PARTIALLY_FILLED} (ver el docstring de comunes_ep04.py).
+Orden por defecto: `createdAt` descendente con desempate por `orderId`
+descendente (HU-04-06 RN-4, alineado con HU-09-01 RN-8; ADR-006 D10).
 """
 
 import pytest
@@ -23,6 +20,7 @@ from comunes_ep04 import (  # noqa: F401 (limpiador es fixture)
     abiertas,
     alta_ok,
     assert_montos_de_orden,
+    assert_orden_por_defecto,
     balances,
     cantidad_en_nivel,
     construir_trio_terminal,
@@ -41,7 +39,7 @@ from comunes_ep04 import (  # noqa: F401 (limpiador es fixture)
 def test_listar_abiertas_con_estado_y_remanente(usuario, usuario_b, rpc, api, limpiador):
     """HU-04-06 Escenario 1: Listar órdenes abiertas con estado y remanente."""
     # Dado un trader con una orden OPEN (1 ETH) y una PARTIALLY_FILLED
-    # (1 ETH con executedQty=0.4 ETH, llenada por un taker ajeno)
+    # (1 ETH con filledWei=0.4 ETH, llenada por un taker ajeno)
     requerir_zona_limpia(api, P2000)
     requerir_sin_asks_hasta(api, 1_900_000_000)
     fondear(usuario, rpc, usdc_min=3_900_000_000)  # 1900 + 2000 USDC de reservas
@@ -61,12 +59,12 @@ def test_listar_abiertas_con_estado_y_remanente(usuario, usuario_b, rpc, api, li
     # Cuando consulta sus órdenes abiertas
     items = {i["orderId"]: i for i in abiertas(usuario)}
 
-    # Entonces recibe ambas órdenes con status, executedQty y remainingQty correctos
+    # Entonces recibe ambas órdenes con status, filledWei y remainingWei correctos
     assert set(items) == {abierta["orderId"], parcial["orderId"]}
     assert items[abierta["orderId"]]["status"] == "OPEN"
     assert ejecutado_wei(items[abierta["orderId"]]) == 0
     assert remanente_wei(items[abierta["orderId"]]) == ETH_1
-    # Y la PARTIALLY_FILLED muestra remainingQty="600000000000000000" (RN-3)
+    # Y la PARTIALLY_FILLED muestra remainingWei="600000000000000000" (RN-3)
     assert items[parcial["orderId"]]["status"] == "PARTIALLY_FILLED"
     assert ejecutado_wei(items[parcial["orderId"]]) == 400_000_000_000_000_000
     assert remanente_wei(items[parcial["orderId"]]) == 600_000_000_000_000_000
@@ -137,8 +135,7 @@ def test_abiertas_paginadas_sin_duplicados_ni_omisiones(usuario, rpc, api, limpi
         esperadas.add(orden["orderId"])
 
     # Cuando consulta página por página con el orden por defecto
-    vistos: list[str] = []
-    creados: list[str] = []
+    items: list[dict] = []
     cursor = None
     for _ in range(10):
         params = {"status": "OPEN", "limit": 2}
@@ -148,17 +145,19 @@ def test_abiertas_paginadas_sin_duplicados_ni_omisiones(usuario, rpc, api, limpi
         assert resp.status_code == 200, resp.text
         cuerpo = resp.json()
         assert len(cuerpo["items"]) <= 2
-        vistos.extend(i["orderId"] for i in cuerpo["items"])
-        creados.extend(i["createdAt"] for i in cuerpo["items"])
+        items.extend(cuerpo["items"])
         cursor = cuerpo.get("nextCursor")
         if not cursor:
             break
 
     # Entonces cada orden aparece exactamente una vez, sin duplicados ni
-    # omisiones (RN-4, RN-5), con createdAt descendente (más reciente primero)
+    # omisiones (RN-4, RN-5), con el orden por defecto: createdAt descendente
+    # (más reciente primero) y desempate por orderId descendente (RN-4,
+    # HU-09-01 RN-8)
+    vistos = [i["orderId"] for i in items]
     assert sorted(vistos) == sorted(esperadas)
     assert len(vistos) == len(set(vistos)) == 3
-    assert creados == sorted(creados, reverse=True)
+    assert_orden_por_defecto(items)
 
 
 @pytest.mark.at("AT-04-06-06")
@@ -189,10 +188,10 @@ def test_abiertas_serializa_montos_como_string_entero(usuario, rpc, api, limpiad
     assert item["priceMin"] == "2000000000"
     assert item["quantityWei"] == "1000000000000000000"
     assert_montos_de_orden(item)
-    # Y la única excepción es avgExecutionPrice = null cuando executedQty="0"
+    # Y la única excepción es avgPriceMin = null cuando filledWei="0"
     # (RN-10; serialización única: nunca "0")
-    if "avgExecutionPrice" in item:
-        assert item["avgExecutionPrice"] is None, item
+    assert item["filledWei"] == "0", item
+    assert item["avgPriceMin"] is None, item
 
 
 @pytest.mark.at("AT-04-06-08")
@@ -218,14 +217,14 @@ def test_consultar_abiertas_es_de_solo_lectura(usuario, rpc, api, limpiador):
 
 
 @pytest.mark.at("AT-04-06-09")
-def test_avg_execution_price_refleja_el_precio_ponderado_real(
+def test_avg_price_min_refleja_el_precio_ponderado_real(
     usuario, usuario_b, rpc, api, limpiador
 ):
-    """HU-04-06 Escenario 9 (precio promedio): avgExecutionPrice ponderado real.
+    """HU-04-06 Escenario 9 (precio promedio): avgPriceMin ponderado real.
 
-    TODO-REVISAR: `executedQuoteQty` y `avgExecutionPrice` los exige HU-04-06
-    RN-10 con esos nombres; el objeto orden de HU-09-01 RN-5 no los lista. El AT
-    asserta sus valores exactos, así que el campo es obligatorio acá.
+    `executedQuoteMin` y `avgPriceMin` son campos obligatorios del objeto
+    orden (HU-04-06 RN-10, HU-09-01 RN-5; ADR-006 D7): el AT asserta sus
+    valores exactos.
     """
     # Dado dos asks ajenos: 0.4 ETH a 1980000000 y 0.6 ETH a 1990000000
     requerir_zona_limpia(api, P2000)
@@ -250,13 +249,13 @@ def test_avg_execution_price_refleja_el_precio_ponderado_real(
     # Cuando consulta sus órdenes abiertas
     item = next(i for i in abiertas(usuario) if i["orderId"] == orden["orderId"])
 
-    # Entonces executedQty=1 ETH y executedQuoteQty = 792000000 + 1194000000 =
+    # Entonces filledWei=1 ETH y executedQuoteMin = 792000000 + 1194000000 =
     # "1986000000" (floor por fill, RN-10)
     assert ejecutado_wei(item) == ETH_1
-    assert item["executedQuoteQty"] == "1986000000", item
+    assert item["executedQuoteMin"] == "1986000000", item
 
-    # Y avgExecutionPrice = floor(1986000000 x 10^18 / 10^18) = "1986000000",
+    # Y avgPriceMin = floor(1986000000 x 10^18 / 10^18) = "1986000000",
     # distinto del priceMin límite "2000000000" (RN-10)
-    assert item["avgExecutionPrice"] == "1986000000", item
-    assert es_monto_valido(item["avgExecutionPrice"])
-    assert item["avgExecutionPrice"] != item["priceMin"]
+    assert item["avgPriceMin"] == "1986000000", item
+    assert es_monto_valido(item["avgPriceMin"])
+    assert item["avgPriceMin"] != item["priceMin"]

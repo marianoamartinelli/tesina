@@ -6,12 +6,10 @@ No es un módulo de tests (pytest no lo colecta). Lo importan los
 Convenciones tomadas de la spec:
 
 - Rutas según el mapa de endpoints de HU-09-01: ``/auth/register``,
-  ``/auth/login``, ``/me`` (el cliente agrega ``/api/v1``).
-- TODO-REVISAR: HU-01-03 exige un "endpoint de logout" pero el mapa de
-  endpoints de HU-09-01 no lo lista y 00-fundaciones no lo resuelve. Se asume
-  ``POST /api/v1/auth/logout`` (la única ruta consistente con el prefijo
-  ``/auth/*`` que la épica 09 usa para register/login), sin inventar un
-  contrato alternativo. Si la spec congela otra ruta, cambiar ``RUTA_LOGOUT``.
+  ``/auth/login``, ``/auth/logout`` y ``/me`` (el cliente agrega ``/api/v1``).
+  La ruta de logout es canónica desde spec-v1.1 (ADR-006 D5): ``POST
+  /api/v1/auth/logout``, fila Logout del mapa de HU-09-01; el comportamiento lo
+  fija HU-01-03.
 
 Env vars propias de estos tests (las provee el evaluador, no el SUT):
 
@@ -41,8 +39,7 @@ from helpers.espera import esperar_hasta
 RUTA_REGISTRO = "/auth/register"
 RUTA_LOGIN = "/auth/login"
 RUTA_PERFIL = "/me"
-# TODO-REVISAR: ruta no fijada por HU-09-01 (ver docstring del módulo).
-RUTA_LOGOUT = "/auth/logout"
+RUTA_LOGOUT = "/auth/logout"  # canónica en el mapa de HU-09-01 (comportamiento: HU-01-03)
 
 # Contenido exacto del perfil/registro (HU-01-04 RN-4, HU-01-01 RN-6: sólo identidad).
 CAMPOS_IDENTIDAD = {"accountId", "email", "status", "createdAt"}
@@ -57,9 +54,13 @@ CLAVES_DE_PASSWORD = (
     "secret",
 )
 
-# Rate limiting del entorno de evaluación (HU-09-02 RN-12 y entorno/README.md):
-# 60 requests por minuto por sujeto (IP en endpoints públicos) y endpoint,
-# ventana deslizante de 60 s.
+# Rate limiting: la política determinista de HU-09-02 RN-12 (60 req/min por
+# cuenta y endpoint, ventana deslizante de 60 s) aplica SOLO a endpoints
+# autenticados. En los endpoints públicos /auth/* el rate limiting es OPCIONAL
+# y lo rige la épica 01 (HU-01-01 RN-10, HU-01-02 RN-9): si existe, responde
+# RATE_LIMITED. El entorno de evaluación deja el umbral en 60 req/min cuando la
+# implementación lo expone (entorno/README.md), así que los tests condicionales
+# de /auth/* sondean N+1 = 61 intentos y se saltan si no observan un 429.
 N_RATE_LIMIT = 60
 VENTANA_RATE_LIMIT_SEGUNDOS = 60
 
@@ -178,7 +179,8 @@ def esperar_rate_limit_liberado(intento_ok, mensaje: str):
 
     ``intento_ok()`` debe devolver truthy cuando el endpoint volvió a aceptar.
     Se sondea cada 5 s (12 req/min << 60 req/min) para que el propio sondeo no
-    mantenga saturada la ventana deslizante de 60 s (HU-09-02 RN-12).
+    mantenga saturada la ventana deslizante de 60 s del rate limiting opcional
+    de /auth/* (HU-01-01 RN-10 / HU-01-02 RN-9; valor del entorno: 60/min).
     """
     return esperar_hasta(
         intento_ok,

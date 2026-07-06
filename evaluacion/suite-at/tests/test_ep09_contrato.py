@@ -11,6 +11,8 @@ Gherkin de la spec mapeado como comentarios Dado/Cuando/Entonces (HELPERS.md).
 El "Dado" lo construye cada test sobre el libro compartido (comunes_ep09).
 """
 
+import json
+
 import pytest
 
 from comunes_ep09 import (
@@ -38,7 +40,14 @@ from helpers.cuentas import PASSWORD_DEFECTO, email_unico, registrar
 from helpers.eip55 import RE_TXHASH, assert_direccion, romper_checksum
 from helpers.errores import assert_error, assert_montos_en_details
 from helpers.espera import esperar_hasta
-from helpers.montos import SIMBOLO, a_int, a_str, es_monto_valido, quote_min
+from helpers.montos import (
+    SIMBOLO,
+    WEI_POR_ETH,
+    a_int,
+    a_str,
+    es_monto_valido,
+    quote_min,
+)
 
 
 @pytest.mark.at("AT-09-01-01")
@@ -47,7 +56,8 @@ def test_registro_de_cuenta_devuelve_201_sin_secretos(api):
 
     - Dado un email no registrado y una contraseña válida
     - Cuando el cliente hace POST /api/v1/auth/register con {email, password}
-    - Entonces la respuesta es 201 con cuerpo {accountId, email, createdAt}
+    - Entonces la respuesta es 201 con cuerpo {accountId, email, status, createdAt},
+      con status: "ACTIVE" (estado inicial de la cuenta, HU-01-01 RN-6)
     - Y no se expone la contraseña ni hash alguno en la respuesta
     """
     # Dado
@@ -59,8 +69,9 @@ def test_registro_de_cuenta_devuelve_201_sin_secretos(api):
     # Entonces
     assert resp.status_code == 201, resp.text
     cuerpo = resp.json()
-    assert set(cuerpo) >= {"accountId", "email", "createdAt"}, cuerpo
+    assert set(cuerpo) >= {"accountId", "email", "status", "createdAt"}, cuerpo
     assert cuerpo["email"] == email
+    assert cuerpo["status"] == "ACTIVE", cuerpo  # estado inicial (ADR-006 D12)
 
     # Y (la contraseña o cualquier derivado no aparece en la respuesta)
     assert PASSWORD_DEFECTO not in resp.text
@@ -109,7 +120,8 @@ def test_perfil_propio_devuelve_los_datos_de_la_cuenta_del_token(usuario):
 
     - Dado un token válido
     - Cuando el cliente hace GET /api/v1/me
-    - Entonces 200 con {accountId, email, createdAt} de la cuenta dueña del token
+    - Entonces 200 con {accountId, email, status, createdAt} de la cuenta dueña
+      del token, con status: "ACTIVE" (HU-01-04 RN-4)
     """
     # Cuando
     resp = usuario.api.get("/me")
@@ -117,9 +129,10 @@ def test_perfil_propio_devuelve_los_datos_de_la_cuenta_del_token(usuario):
     # Entonces
     assert resp.status_code == 200, resp.text
     cuerpo = resp.json()
-    assert set(cuerpo) >= {"accountId", "email", "createdAt"}, cuerpo
+    assert set(cuerpo) >= {"accountId", "email", "status", "createdAt"}, cuerpo
     assert cuerpo["accountId"] == usuario.account_id
     assert cuerpo["email"] == usuario.email
+    assert cuerpo["status"] == "ACTIVE", cuerpo  # ADR-006 D12
     assert es_timestamp_utc(cuerpo["createdAt"]), cuerpo["createdAt"]
 
 
@@ -162,13 +175,24 @@ def test_alta_de_orden_limit_feliz_devuelve_201_con_montos_string(usuario, rpc):
     assert orden["quantityWei"] == "1000000000000000000"
 
     # Y: montos siempre string entero; fees según fills (BUY acumula en feeWei)
-    for campo in ("priceMin", "quantityWei", "filledWei", "feeWei", "feeUsdcMin"):
+    for campo in ("priceMin", "quantityWei", "filledWei", "remainingWei",
+                  "executedQuoteMin", "feeWei", "feeUsdcMin"):
         assert es_monto_valido(orden[campo]), (campo, orden[campo])
     assert orden["feeUsdcMin"] == "0"  # BUY recibe ETH: la fee jamás va en USDC
     if orden["status"] == "OPEN" and orden["filledWei"] == "0":
         assert orden["feeWei"] == "0"
     if a_int(orden["filledWei"]) == 0:
         assert orden["feeWei"] == "0"
+
+    # Y: campos de ejecución acumulada (RN-5, ADR-006 D7): remainingWei =
+    # quantityWei − filledWei; avgPriceMin es null (nunca "0") sii filledWei = "0"
+    filled = a_int(orden["filledWei"])
+    assert orden["remainingWei"] == a_str(10**18 - filled), orden
+    if filled == 0:
+        assert orden["executedQuoteMin"] == "0", orden
+        assert orden["avgPriceMin"] is None, orden
+    else:
+        assert es_monto_valido(orden["avgPriceMin"]), orden
 
     # (higiene del libro compartido: retirar el remanente)
     cancelar_silencioso(usuario, orden["orderId"])
@@ -265,8 +289,15 @@ def test_detalle_de_orden_devuelve_el_objeto_completo(api, usuario, rpc):
     assert set(detalle) >= CAMPOS_ORDEN, detalle
     assert detalle["orderId"] == orden["orderId"]
     assert detalle["symbol"] == SIMBOLO
-    for campo in ("priceMin", "quantityWei", "filledWei", "feeWei", "feeUsdcMin"):
+    for campo in ("priceMin", "quantityWei", "filledWei", "remainingWei",
+                  "executedQuoteMin", "feeWei", "feeUsdcMin"):
         assert es_monto_valido(detalle[campo]), (campo, detalle[campo])
+    # campos de ejecución acumulada (RN-5, ADR-006 D7), consistentes entre sí
+    assert a_int(detalle["remainingWei"]) == a_int(detalle["quantityWei"]) - a_int(detalle["filledWei"])
+    if detalle["filledWei"] == "0":
+        assert detalle["avgPriceMin"] is None, detalle   # null, nunca "0"
+    else:
+        assert es_monto_valido(detalle["avgPriceMin"]), detalle
     assert es_timestamp_utc(detalle["createdAt"]) and es_timestamp_utc(detalle["updatedAt"])
 
     cancelar_silencioso(usuario, orden["orderId"])
@@ -283,6 +314,8 @@ def test_listado_de_ordenes_paginado_con_cursor_estable(api, usuario, rpc):
     - Y ?cursor=<cursor> da la página siguiente sin solapamiento
     - Y una orden creada entre páginas NO aparece al paginar con el cursor previo (RN-8)
     - Y limit=0 o limit=500 (> máx) produce VALIDATION_ERROR (422)
+    - Y ?status=FOO (fuera del enum de estados) produce VALIDATION_ERROR (422):
+      validación estricta de enums en query params (RN-8, ADR-006 D11)
     """
     # Dado: 3 órdenes OPEN propias (bids resting que no cruzan)
     p = precio_bid_seguro(api)
@@ -328,6 +361,12 @@ def test_listado_de_ordenes_paginado_con_cursor_estable(api, usuario, rpc):
         # Y: limit inválido ⇒ VALIDATION_ERROR (422)
         assert_error(usuario.api.get("/orders", params={"limit": 0}), "VALIDATION_ERROR")
         assert_error(usuario.api.get("/orders", params={"limit": 500}), "VALIDATION_ERROR")
+
+        # Y: valor fuera del enum de estados ⇒ VALIDATION_ERROR (422), validación
+        # estricta de enums en query params (RN-8, HU-04-07 RN-3; ADR-006 D11)
+        assert_error(
+            usuario.api.get("/orders", params={"status": "FOO"}), "VALIDATION_ERROR"
+        )
     finally:
         for o in ordenes:
             cancelar_silencioso(usuario, o["orderId"])
@@ -689,7 +728,9 @@ def test_cuerpo_no_json_y_montos_mal_serializados_son_validation_error(usuario):
     - Entonces la respuesta es VALIDATION_ERROR (422) con details.issues
     - Y montos que violan ^(0|[1-9][0-9]*)$ (número JSON, decimal, negativo,
       cero a la izquierda) también producen VALIDATION_ERROR (422)
-    - Y un clientOrderId vacío produce VALIDATION_ERROR (422) en el paso de esquema
+    - Y un clientOrderId ausente (obligatorio, RN-4/RN-19; ADR-006 D3), vacío,
+      de más de 64 caracteres o con caracteres de control produce
+      VALIDATION_ERROR (422) en el paso de esquema
     """
     # Cuando: cuerpo que no es JSON válido
     resp = usuario.api.post("/orders", content=b"esto no es json {")
@@ -716,9 +757,19 @@ def test_cuerpo_no_json_y_montos_mal_serializados_son_validation_error(usuario):
         resp = usuario.api.post("/orders", json={**orden_base, **cambio})
         assert_error(resp, "VALIDATION_ERROR")
 
-    # Y: clientOrderId vacío se rechaza en el paso de esquema (RN-19)
-    resp = usuario.api.post("/orders", json={**orden_base, "clientOrderId": ""})
-    assert_error(resp, "VALIDATION_ERROR")
+    # Y: clientOrderId AUSENTE se rechaza en el paso de esquema, con
+    # details.issues identificando el campo (obligatorio: RN-4/RN-19, ADR-006 D3)
+    sin_cid = {k: v for k, v in orden_base.items() if k != "clientOrderId"}
+    err = assert_error(usuario.api.post("/orders", json=sin_cid), "VALIDATION_ERROR")
+    issues = (err.get("details") or {}).get("issues")
+    assert issues, err
+    assert "clientOrderId" in json.dumps(issues), issues
+
+    # Y: clientOrderId vacío, de más de 64 caracteres o con caracteres de
+    # control también se rechaza en el paso de esquema (RN-19)
+    for cid in ("", "x" * 65, "id-con-control-\x01"):
+        resp = usuario.api.post("/orders", json={**orden_base, "clientOrderId": cid})
+        assert_error(resp, "VALIDATION_ERROR")
 
 
 @pytest.mark.at("AT-09-01-17")
@@ -929,8 +980,12 @@ def test_market_buy_sin_liquidez_es_422_y_no_muta_estado(api, usuario, rpc):
     - Dado un orderbook con el lado SELL (asks) vacío
     - Cuando envía una MARKET BUY válida en esquema y con fondos suficientes
     - Entonces MARKET_NO_LIQUIDITY (422) con el envelope de error estándar
-    - Y los balances quedan idénticos (INV-1, INV-2) y no se crea ninguna orden
-      ni queda remanente en el libro
+    - Y los balances quedan idénticos (INV-1, INV-2); no queda orden abierta ni
+      efecto alguno en el libro (sin remanente; orderbook idéntico) ni en los
+      balances
+    - Y la orden se persiste como REJECTED y figura en el historial de órdenes
+      (HU-04-02 RN-4, HU-04-07 RN-12; ADR-006 D17); no aparece en el listado de
+      órdenes abiertas
     """
     # Dado: asks vacíos + fondos suficientes
     barrer_asks(api, rpc)
@@ -954,16 +1009,22 @@ def test_market_buy_sin_liquidez_es_422_y_no_muta_estado(api, usuario, rpc):
     # Entonces
     assert_error(resp, "MARKET_NO_LIQUIDITY")
 
-    # Y: balances idénticos, libro intacto y sin orden abierta ni remanente.
-    # (TODO-REVISAR: AT-09-01-21 dice "no se crea ninguna orden" pero HU-04-02
-    # RN-4 persiste la orden como REJECTED en el historial; acá se verifica lo
-    # observable no contradictorio: nada abierto, nada resting, balances iguales.)
+    # Y: balances idénticos, libro intacto, sin orden abierta ni remanente
     assert balances_por_activo(usuario) == balances_previos
     libro_ = libro(api)
     assert libro_["asks"] == [], libro_
     assert libro_["bids"] == bids_previos, "el rechazo no debe tocar el libro"
     abiertas = usuario.api.get("/orders", params={"status": "OPEN"}).json()["items"]
     assert not any(o["clientOrderId"] == cid for o in abiertas)
+
+    # Y: la MARKET rechazada se persiste como REJECTED y figura en el historial
+    # (HU-04-02 RN-4, HU-04-07 RN-12; ADR-006 D17) — se recupera por su
+    # clientOrderId (RN-8: 0 o 1 item por unicidad)
+    resp = usuario.api.get("/orders", params={"clientOrderId": cid})
+    assert resp.status_code == 200, resp.text
+    items = resp.json()["items"]
+    assert len(items) == 1, f"la orden rechazada debe figurar en el historial: {items!r}"
+    assert items[0]["status"] == "REJECTED", items[0]
 
 
 @pytest.mark.at("AT-09-01-22")
@@ -1003,6 +1064,12 @@ def test_market_con_fill_parcial_y_liquidez_agotada_queda_cancelled(api, usuario
     filled = a_int(orden["filledWei"])
     assert 0 < filled < q_pedida, orden
     assert filled == q_disponible, "debió consumir exactamente la liquidez disponible"
+
+    # Y: campos de ejecución acumulada exactos (RN-5, fórmulas de la 04; ADR-006 D7)
+    assert orden["remainingWei"] == a_str(q_pedida - q_disponible), orden
+    executed = quote_min(q_disponible, p)  # un único fill a precio p
+    assert orden["executedQuoteMin"] == a_str(executed), orden
+    assert orden["avgPriceMin"] == a_str(executed * WEI_POR_ETH // q_disponible), orden
 
     # Y: sin remanente en el libro ni orden abierta (remanente descartado)
     assert libro(api)["asks"] == []

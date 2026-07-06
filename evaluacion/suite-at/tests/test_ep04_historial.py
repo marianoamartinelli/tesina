@@ -2,14 +2,13 @@
 
 Spec: spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md
 La consulta semántica "historial" se implementa sobre GET /orders con filtro
-status en {FILLED, CANCELLED, REJECTED} y filtros de período `from`/`to`
-(ver TODO-REVISAR 4 y 5 en comunes_ep04.py: la épica 09 no define parámetros
-temporales para GET /orders; los nombres se toman de HU-09-01 RN-20).
+status en {FILLED, CANCELLED, REJECTED} y los filtros de período `from`/`to`
+del endpoint (ISO-8601 UTC, HU-09-01 RN-8 / HU-04-07 RN-4; ADR-006 D9).
 
-TODO-REVISAR (AT-04-07-09): HU-04-07 RN-3 exige VALIDATION_ERROR para un filtro
-`status=OPEN` en el historial, pero AT-09-01-07 usa GET /orders?status=OPEN con
-respuesta 200 (misma ruta). Se asserta solo el caso no contradictorio
-(status fuera de todo enum, p. ej. "FOO").
+Validación de enums (ADR-006 D11): un `status` fuera del enum de estados de
+orden ⇒ VALIDATION_ERROR (422). `status=OPEN` es un valor válido del endpoint
+compartido GET /orders (AT-09-01-07): el 422 de HU-04-07 RN-3 se ejercita con
+un valor fuera de todo enum ("FOO").
 """
 
 import pytest
@@ -23,6 +22,7 @@ from comunes_ep04 import (  # noqa: F401 (limpiador es fixture)
     abiertas,
     alta_ok,
     assert_montos_de_orden,
+    assert_orden_por_defecto,
     buscar_por_client_id,
     buscar_por_id,
     cancelar_ok,
@@ -62,7 +62,7 @@ def test_listar_historial_sin_filtros(usuario, usuario_b, rpc, api):
     # Cuando consulta su historial (sin filtro de período; estados terminales)
     items = {i["orderId"]: i for i in historial(usuario)}
 
-    # Entonces recibe las tres órdenes con su status, executedQty y marcas temporales
+    # Entonces recibe las tres órdenes con su status, filledWei y marcas temporales
     assert set(items) == {orden["orderId"] for orden in trio.values()}
     for clave, orden in trio.items():
         item = items[orden["orderId"]]
@@ -191,8 +191,9 @@ def test_historial_paginado_sin_duplicados_ni_omisiones(usuario, rpc, api):
         cancelar_ok(usuario, orden["orderId"])
         esperadas.add(orden["orderId"])
 
-    # Cuando pagina con el orden por defecto (finalización desc)
-    vistos: list[str] = []
+    # Cuando pagina con el orden por defecto (createdAt desc, orderId desc en
+    # empate, RN-6)
+    items: list[dict] = []
     cursor = None
     for _ in range(10):
         params = {"status": "CANCELLED", "limit": 2}
@@ -202,15 +203,17 @@ def test_historial_paginado_sin_duplicados_ni_omisiones(usuario, rpc, api):
         assert resp.status_code == 200, resp.text
         cuerpo = resp.json()
         assert len(cuerpo["items"]) <= 2
-        vistos.extend(i["orderId"] for i in cuerpo["items"])
+        items.extend(cuerpo["items"])
         cursor = cuerpo.get("nextCursor")
         if not cursor:
             break
 
     # Entonces cada orden aparece exactamente una vez, sin duplicados ni
-    # omisiones entre páginas (RN-6, RN-7)
+    # omisiones entre páginas, bajo el orden por defecto (RN-6, RN-7)
+    vistos = [i["orderId"] for i in items]
     assert sorted(vistos) == sorted(esperadas)
     assert len(vistos) == len(set(vistos)) == 3
+    assert_orden_por_defecto(items)
 
 
 @pytest.mark.at("AT-04-07-08")
@@ -228,11 +231,12 @@ def test_historial_con_filtro_de_estado_invalido(usuario):
     # Cuando consulta con status=FOO (fuera de todo enum de estados)
     resp = usuario.api.get("/orders", params={"status": "FOO"})
 
-    # Entonces se rechaza con VALIDATION_ERROR (422) y details.issues (RN-3)
+    # Entonces se rechaza con VALIDATION_ERROR (422) y details.issues (RN-3):
+    # validación estricta de enums en query params (HU-09-01 RN-8, ADR-006 D11).
+    # `status=OPEN` es un valor válido del endpoint compartido (AT-09-01-07) y
+    # no se asserta acá.
     err = assert_error(resp, "VALIDATION_ERROR")
     assert err.get("details", {}).get("issues"), err
-    # (el caso status=OPEN contradice AT-09-01-07 y no se asserta acá; ver
-    # TODO-REVISAR en el docstring del módulo)
 
 
 @pytest.mark.at("AT-04-07-10")
@@ -271,7 +275,7 @@ def test_consultar_historial_sin_autenticacion(api):
 @pytest.mark.at("AT-04-07-12")
 def test_historial_montos_string_y_resultado_estable(usuario, usuario_b, rpc, api):
     """HU-04-07 Escenario 12 (serialización + inmutabilidad): Montos string y estable."""
-    # Dado una orden FILLED con executedQty = 0.005 ETH
+    # Dado una orden FILLED con filledWei = 0.005 ETH
     filled = crear_filled(usuario, usuario_b, rpc, api)
 
     # Cuando consulta el historial dos veces en momentos distintos

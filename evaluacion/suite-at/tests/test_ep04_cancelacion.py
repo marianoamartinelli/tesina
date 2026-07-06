@@ -39,7 +39,7 @@ from comunes_ep04 import (  # noqa: F401 (limpiador es fixture)
 @pytest.mark.at("AT-04-04-01")
 def test_cancelar_orden_open_libera_toda_la_reserva(usuario, rpc, api):
     """HU-04-04 Escenario 1: Cancelar una orden OPEN libera toda la reserva."""
-    # Dado una orden BUY LIMIT OPEN de 1 ETH @ 2000 con executedQty="0"
+    # Dado una orden BUY LIMIT OPEN de 1 ETH @ 2000 con filledWei="0"
     # y bloqueado(USDC) = 2000000000, disponible(USDC) = 3000000000
     requerir_sin_asks_hasta(api, P2000)
     fondear(usuario, rpc, usdc_min=5_000_000_000)
@@ -63,7 +63,7 @@ def test_cancelar_orden_open_libera_toda_la_reserva(usuario, rpc, api):
 @pytest.mark.at("AT-04-04-02")
 def test_cancelar_partially_filled_libera_solo_el_remanente(usuario, usuario_b, rpc, api):
     """HU-04-04 Escenario 2: Cancelar una orden PARTIALLY_FILLED libera solo el remanente."""
-    # Dado una orden BUY LIMIT de 1 ETH @ 2000 con executedQty=0.4 ETH:
+    # Dado una orden BUY LIMIT de 1 ETH @ 2000 con filledWei=0.4 ETH:
     # bid resting de `usuario` + venta parcial de `usuario_b` como taker
     requerir_zona_limpia(api, P2000)
     fondear(usuario, rpc, usdc_min=2_000_000_000)
@@ -82,7 +82,7 @@ def test_cancelar_partially_filled_libera_solo_el_remanente(usuario, usuario_b, 
     # Cuando cancela la orden
     cancelada = cancelar_ok(usuario, orden["orderId"])
 
-    # Entonces queda CANCELLED con executedQty preservado
+    # Entonces queda CANCELLED con filledWei preservado
     assert ejecutado_wei(cancelada) == 400_000_000_000_000_000
 
     # Y se liberan 1200000000 USDC-min del remanente; lo ejecutado no se revierte
@@ -92,7 +92,7 @@ def test_cancelar_partially_filled_libera_solo_el_remanente(usuario, usuario_b, 
 @pytest.mark.at("AT-04-04-03")
 def test_cancelar_sell_libera_eth_del_remanente(usuario, usuario_b, rpc, api):
     """HU-04-04 Escenario 3 (venta): Cancelar SELL libera ETH del remanente."""
-    # Dado una orden SELL LIMIT de 1 ETH con executedQty=0.3 ETH y bloqueado(ETH)=0.7
+    # Dado una orden SELL LIMIT de 1 ETH con filledWei=0.3 ETH y bloqueado(ETH)=0.7
     requerir_zona_limpia(api, 2_100_000_000)
     fondear(usuario, rpc, eth_wei=ETH_1)
     orden = alta_ok(
@@ -250,7 +250,7 @@ def test_cancelar_tras_fill_parcial_libera_el_remanente_vigente(usuario, usuario
     # Cuando se procesa la cancelación
     cancelada = cancelar_ok(usuario, orden["orderId"])
 
-    # Entonces la orden queda CANCELLED con executedQty="400000000000000000"
+    # Entonces la orden queda CANCELLED con filledWei="400000000000000000"
     assert ejecutado_wei(cancelada) == 400_000_000_000_000_000
 
     # Y se libera la reserva del remanente vigente (reservaOrden post-fill = 1200000000),

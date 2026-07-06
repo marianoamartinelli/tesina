@@ -1,8 +1,8 @@
 """Épica 04 — HU-04-02 Colocar orden market: tests de aceptación black-box.
 
 Spec: spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md
-La forma de tamaño `quoteOrderQty` la fija la épica 04 (ver TODO-REVISAR 3 en
-comunes_ep04.py: HU-09-01 RN-4 no la lista en el body de POST /orders).
+La forma de tamaño por monto es `quoteOrderQtyMin` (nombre canónico del body de
+POST /orders, HU-09-01 RN-4; adoptado por la épica 04 en spec-v1.1, ADR-006 D8).
 """
 
 import pytest
@@ -50,15 +50,15 @@ def test_compra_market_por_monto_que_ejecuta_totalmente(usuario, usuario_b, rpc,
     # Y un trader con disponible(USDC) = 5000000000
     fondear(usuario, rpc, usdc_min=5_000_000_000)
 
-    # Cuando coloca BUY MARKET quoteOrderQty="2000000000" (gastar 2000 USDC)
-    orden = alta_ok(usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty=2_000_000_000))
+    # Cuando coloca BUY MARKET quoteOrderQtyMin="2000000000" (gastar 2000 USDC)
+    orden = alta_ok(usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty_min=2_000_000_000))
 
     # Entonces bloquea R = 2000000000, ejecuta como taker y queda FILLED (RN-5, RN-7)
     assert orden["status"] == "FILLED", orden
-    # Y executedQty reporta la base comprada (2000 USDC a 2000.00 = 1 ETH) y
-    # executedQuoteQty el USDC efectivamente gastado (RN-14)
+    # Y filledWei reporta la base comprada (2000 USDC a 2000.00 = 1 ETH) y
+    # executedQuoteMin el USDC efectivamente gastado (RN-14)
     assert ejecutado_wei(orden) == ETH_1
-    assert orden["executedQuoteQty"] == "2000000000", orden
+    assert orden["executedQuoteMin"] == "2000000000", orden
     assert_montos_de_orden(orden)
     # Y todo USDC reservado no gastado se libera a disponible (RN-8)
     assert_balances(usuario, "USDC", disp=3_000_000_000, blk=0)
@@ -128,7 +128,7 @@ def test_ejecucion_parcial_por_liquidez_agotada_descarta_remanente(usuario, usua
     orden = alta_ok(usuario, cuerpo_orden("BUY", "MARKET", quantity_wei=ETH_1))
 
     # Entonces ejecuta 0.4 ETH, agota la liquidez y el remanente se descarta:
-    # queda CANCELLED con executedQty = 0.4 ETH (RN-7, HU-04-05 RN-6)
+    # queda CANCELLED con filledWei = 0.4 ETH (RN-7, HU-04-05 RN-6)
     assert orden["status"] == "CANCELLED", orden
     assert ejecutado_wei(orden) == 400_000_000_000_000_000
     assert abiertas(usuario) == []  # no descansa
@@ -143,10 +143,10 @@ def test_market_buy_sin_asks_es_rechazada_sin_reservar(usuario, rpc, api):
     requerir_lado_vacio(api, "asks")
     fondear(usuario, rpc, usdc_min=5_000_000_000)
 
-    # Cuando coloca BUY MARKET quoteOrderQty="2000000000"
+    # Cuando coloca BUY MARKET quoteOrderQtyMin="2000000000"
     cid = client_order_id("noliq")
     resp = post_orden(
-        usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty=2_000_000_000, client_id=cid)
+        usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty_min=2_000_000_000, client_id=cid)
     )
 
     # Entonces se rechaza con MARKET_NO_LIQUIDITY (422) y la orden queda REJECTED
@@ -184,10 +184,10 @@ def test_market_sell_sin_bids_es_rechazada_sin_reservar(usuario, rpc, api):
 @pytest.mark.at("AT-04-02-06")
 def test_market_con_precio_especificado_es_rechazada(usuario):
     """HU-04-02 Escenario 6 (error): Market con precio especificado."""
-    # Cuando coloca BUY MARKET con quoteOrderQty y priceMin a la vez
+    # Cuando coloca BUY MARKET con quoteOrderQtyMin y priceMin a la vez
     resp = post_orden(
         usuario,
-        cuerpo_orden("BUY", "MARKET", price_min=P2000, quote_order_qty=2_000_000_000),
+        cuerpo_orden("BUY", "MARKET", price_min=P2000, quote_order_qty_min=2_000_000_000),
     )
 
     # Entonces se rechaza con PRICE_NOT_ALLOWED (422) (RN-1)
@@ -201,10 +201,10 @@ def test_market_con_precio_especificado_es_rechazada(usuario):
 @pytest.mark.at("AT-04-02-07")
 def test_market_con_ambos_tamanos_es_rechazada(usuario):
     """HU-04-02 Escenario 7 (error): Ambos tamaños presentes."""
-    # Cuando coloca BUY MARKET con quantityWei y quoteOrderQty a la vez
+    # Cuando coloca BUY MARKET con quantityWei y quoteOrderQtyMin a la vez
     resp = post_orden(
         usuario,
-        cuerpo_orden("BUY", "MARKET", quantity_wei=ETH_1, quote_order_qty=2_000_000_000),
+        cuerpo_orden("BUY", "MARKET", quantity_wei=ETH_1, quote_order_qty_min=2_000_000_000),
     )
 
     # Entonces se rechaza con VALIDATION_ERROR (422): se exige exactamente uno (RN-1)
@@ -219,7 +219,7 @@ def test_market_con_ambos_tamanos_es_rechazada(usuario):
 @pytest.mark.at("AT-04-02-08")
 def test_market_sin_ningun_tamano_es_rechazada(usuario):
     """HU-04-02 Escenario 8 (error): Ningún tamaño presente."""
-    # Cuando coloca BUY MARKET sin quantityWei ni quoteOrderQty
+    # Cuando coloca BUY MARKET sin quantityWei ni quoteOrderQtyMin
     resp = post_orden(usuario, cuerpo_orden("BUY", "MARKET"))
 
     # Entonces se rechaza con VALIDATION_ERROR (422) (RN-1)
@@ -238,8 +238,8 @@ def test_market_con_fondos_insuficientes_es_rechazada(usuario, usuario_b, rpc, a
     # Y un trader con disponible(USDC) = 1000000000
     fondear(usuario, rpc, usdc_min=1_000_000_000)
 
-    # Cuando coloca BUY MARKET quoteOrderQty="2000000000"
-    resp = post_orden(usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty=2_000_000_000))
+    # Cuando coloca BUY MARKET quoteOrderQtyMin="2000000000"
+    resp = post_orden(usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty_min=2_000_000_000))
 
     # Entonces se rechaza con INSUFFICIENT_FUNDS (422) y details exactos (RN-5)
     err = assert_error(resp, "INSUFFICIENT_FUNDS")
@@ -259,8 +259,8 @@ def test_market_por_monto_debajo_del_minimo_notional(usuario):
 
     Sin fondeo: las reglas del par (paso 4) preceden a fondos (paso 7, RN-11).
     """
-    # Cuando coloca BUY MARKET quoteOrderQty="9999999" (9.999999 USDC < 10 USDC)
-    resp = post_orden(usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty=9_999_999))
+    # Cuando coloca BUY MARKET quoteOrderQtyMin="9999999" (9.999999 USDC < 10 USDC)
+    resp = post_orden(usuario, cuerpo_orden("BUY", "MARKET", quote_order_qty_min=9_999_999))
 
     # Entonces se rechaza con BELOW_MIN_NOTIONAL (422) y details exactos (RN-3)
     err = assert_error(resp, "BELOW_MIN_NOTIONAL")
@@ -298,16 +298,16 @@ def test_venta_market_por_monto_que_completa_el_objetivo(usuario, usuario_b, rpc
     # Y un trader con disponible(ETH) = 2 ETH
     fondear(usuario, rpc, eth_wei=2 * ETH_1)
 
-    # Cuando coloca SELL MARKET quoteOrderQty="2000000000" (recibir ~2000 USDC)
-    orden = alta_ok(usuario, cuerpo_orden("SELL", "MARKET", quote_order_qty=2_000_000_000))
+    # Cuando coloca SELL MARKET quoteOrderQtyMin="2000000000" (recibir ~2000 USDC)
+    orden = alta_ok(usuario, cuerpo_orden("SELL", "MARKET", quote_order_qty_min=2_000_000_000))
 
     # Entonces reserva por snapshot q = ceil(2000000000 x 10^18 / 1500000000) =
     # 1333333333333333334 wei y ejecuta esa base (RN-5); queda FILLED
     assert orden["status"] == "FILLED", orden
     assert ejecutado_wei(orden) == 1_333_333_333_333_333_334
     # Y el USDC recibido cumple el objetivo exacto por el ceil de +1 wei (RN-5):
-    # executedQuoteQty = floor(1333333333333333334 x 1500000000 / 10^18) = 2000000000
-    assert orden["executedQuoteQty"] == "2000000000", orden
+    # executedQuoteMin = floor(1333333333333333334 x 1500000000 / 10^18) = 2000000000
+    assert orden["executedQuoteMin"] == "2000000000", orden
     # Y el sobrante de ETH reservado no vendido se libera (RN-8)
     assert_balances(usuario, "ETH", disp=2 * ETH_1 - 1_333_333_333_333_333_334, blk=0)
 
@@ -327,15 +327,15 @@ def test_venta_market_por_monto_con_liquidez_insuficiente(usuario, usuario_b, rp
     # Y un trader con disponible(ETH) = 2 ETH
     fondear(usuario, rpc, eth_wei=2 * ETH_1)
 
-    # Cuando coloca SELL MARKET quoteOrderQty="2000000000"
-    orden = alta_ok(usuario, cuerpo_orden("SELL", "MARKET", quote_order_qty=2_000_000_000))
+    # Cuando coloca SELL MARKET quoteOrderQtyMin="2000000000"
+    orden = alta_ok(usuario, cuerpo_orden("SELL", "MARKET", quote_order_qty_min=2_000_000_000))
 
     # Entonces el snapshot solo cubre 0.4 ETH: vende todo, agota la liquidez y el
     # remanente del objetivo se descarta: CANCELLED (RN-7, RN-14)
     assert orden["status"] == "CANCELLED", orden
     assert ejecutado_wei(orden) == 400_000_000_000_000_000
-    # executedQuoteQty = floor(4e17 x 1.5e9 / 1e18) = 600000000
-    assert orden["executedQuoteQty"] == "600000000", orden
+    # executedQuoteMin = floor(4e17 x 1.5e9 / 1e18) = 600000000
+    assert orden["executedQuoteMin"] == "600000000", orden
     # Y el ETH reservado no vendido se libera a disponible (RN-8)
     assert_balances(usuario, "ETH", disp=2 * ETH_1 - 400_000_000_000_000_000, blk=0)
     assert abiertas(usuario) == []
@@ -415,7 +415,7 @@ def test_market_con_orden_propia_dentro_del_rango_consumible(
     assert detalle(usuario, bid_propio["orderId"])["status"] == "OPEN"
     assert cantidad_en_nivel(api, "bids", P2000) == ETH_1
 
-    # Y la orden queda REJECTED con executedQty = "0" (RE-12)
+    # Y la orden queda REJECTED con filledWei = "0" (RE-12)
     rechazada = buscar_por_client_id(items_por_estado(usuario, "REJECTED"), cid)
     assert rechazada is not None and rechazada["status"] == "REJECTED"
     assert ejecutado_wei(rechazada) == 0

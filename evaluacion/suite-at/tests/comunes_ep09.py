@@ -37,10 +37,13 @@ DESTINO_RETIRO = "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc"
 # Timestamps: string ISO-8601 UTC (HU-09-01 RN-15). Se aceptan sufijos Z o +00:00.
 RE_ISO8601_UTC = re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|\+00:00)$")
 
-# Campos del objeto orden del contrato REST (HU-09-01 RN-5).
+# Campos del objeto orden del contrato REST (HU-09-01 RN-5, incl. los campos de
+# ejecución acumulada fijados por ADR-006 D7: remainingWei, executedQuoteMin,
+# avgPriceMin — presentes en TODA respuesta que devuelva el objeto orden).
 CAMPOS_ORDEN = {
     "orderId", "clientOrderId", "symbol", "side", "type", "priceMin",
-    "quantityWei", "filledWei", "feeWei", "feeUsdcMin", "status",
+    "quantityWei", "remainingWei", "filledWei", "executedQuoteMin",
+    "avgPriceMin", "feeWei", "feeUsdcMin", "status",
     "createdAt", "updatedAt",
 }
 

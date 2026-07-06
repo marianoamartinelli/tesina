@@ -170,6 +170,15 @@ def retiro_de(usuario, withdrawal_id: str) -> dict:
     return resp.json()
 
 
+def cancelar_retiro(usuario, withdrawal_id: str):
+    """POST /withdrawals/{id}/cancel, sin body (HU-09-01 RN-21, HU-08-04 RN-13).
+
+    Devuelve la Response cruda: el test asserta 200 (objeto retiro FAILED /
+    USER_CANCELLED), CONFLICT (409, no cancelable) o NOT_FOUND (404, ajeno).
+    """
+    return usuario.api.post(f"/withdrawals/{withdrawal_id}/cancel")
+
+
 def listar_retiros(usuario) -> list[dict]:
     resp = usuario.api.get("/withdrawals")
     assert resp.status_code == 200, resp.text

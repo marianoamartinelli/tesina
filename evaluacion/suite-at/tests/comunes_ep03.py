@@ -168,7 +168,7 @@ def colocar_limit(usuario, side: str, price_min: int, q_wei: int, esperado: str 
     return orden
 
 
-def colocar_market(usuario, side: str, q_wei: int | None = None, quote_order_qty: int | None = None,
+def colocar_market(usuario, side: str, q_wei: int | None = None, quote_order_qty_min: int | None = None,
                    esperado: str | None = None) -> dict:
     """POST /orders MARKET (201, sin priceMin) por cantidad base o por monto quote."""
     cuerpo: dict = {
@@ -179,8 +179,8 @@ def colocar_market(usuario, side: str, q_wei: int | None = None, quote_order_qty
     }
     if q_wei is not None:
         cuerpo["quantityWei"] = a_str(q_wei)
-    if quote_order_qty is not None:
-        cuerpo["quoteOrderQty"] = a_str(quote_order_qty)
+    if quote_order_qty_min is not None:
+        cuerpo["quoteOrderQtyMin"] = a_str(quote_order_qty_min)
     resp = usuario.api.post("/orders", json=cuerpo)
     assert resp.status_code == 201, f"alta MARKET {side} falló: {resp.text[:300]}"
     orden = resp.json()
@@ -215,7 +215,7 @@ def post_orden_reintentando_429(usuario, cuerpo: dict):
     return resultado["resp"]
 
 
-def cuerpo_market(side: str, q_wei: int | None = None, quote_order_qty: int | None = None) -> dict:
+def cuerpo_market(side: str, q_wei: int | None = None, quote_order_qty_min: int | None = None) -> dict:
     """Cuerpo de una MARKET para los tests de error (que assertan el envelope)."""
     cuerpo: dict = {
         "clientOrderId": client_order_id(),
@@ -225,8 +225,8 @@ def cuerpo_market(side: str, q_wei: int | None = None, quote_order_qty: int | No
     }
     if q_wei is not None:
         cuerpo["quantityWei"] = a_str(q_wei)
-    if quote_order_qty is not None:
-        cuerpo["quoteOrderQty"] = a_str(quote_order_qty)
+    if quote_order_qty_min is not None:
+        cuerpo["quoteOrderQtyMin"] = a_str(quote_order_qty_min)
     return cuerpo
 
 

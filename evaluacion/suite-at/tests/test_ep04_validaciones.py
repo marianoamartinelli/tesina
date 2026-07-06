@@ -82,10 +82,10 @@ def test_limit_sin_precio(usuario):
 @pytest.mark.at("AT-04-03-05")
 def test_market_con_precio(usuario):
     """HU-04-03 Escenario 5 (error): Market con precio."""
-    # Cuando coloca BUY MARKET con quoteOrderQty y priceMin
+    # Cuando coloca BUY MARKET con quoteOrderQtyMin y priceMin
     resp = post_orden(
         usuario,
-        cuerpo_orden("BUY", "MARKET", price_min=P2000, quote_order_qty=2_000_000_000),
+        cuerpo_orden("BUY", "MARKET", price_min=P2000, quote_order_qty_min=2_000_000_000),
     )
 
     # Entonces se rechaza con PRICE_NOT_ALLOWED (422) (RN-5)
@@ -142,6 +142,31 @@ def test_montos_no_enteros_o_con_patron_invalido(usuario):
     issues = err.get("details", {}).get("issues")
     assert isinstance(issues, list) and issues, err
     # (que ningún monto cruce la API como float lo garantiza el propio rechazo)
+
+
+@pytest.mark.at("AT-04-03-09")
+def test_alta_sin_client_order_id_es_rechazada_en_esquema(usuario):
+    """HU-04-03 RN-1 paso 2: `clientOrderId` ausente ⇒ VALIDATION_ERROR (esquema).
+
+    `clientOrderId` es obligatorio en el alta (HU-04-01/02 RN-1, HU-09-01
+    RN-19; ADR-006 D3): su ausencia se rechaza en el paso de esquema (RE-4
+    paso 2) con `details.issues` señalando `clientOrderId`.
+    """
+    # Cuando coloca un alta válida en todo lo demás pero SIN clientOrderId
+    cuerpo = cuerpo_orden("BUY", "LIMIT", P2000, ETH_1)
+    del cuerpo["clientOrderId"]
+    resp = post_orden(usuario, cuerpo)
+
+    # Entonces se rechaza con VALIDATION_ERROR (422) y details.issues señala
+    # el campo clientOrderId (RN-1 paso 2, HU-09-01 RN-19)
+    err = assert_error(resp, "VALIDATION_ERROR")
+    issues = err.get("details", {}).get("issues")
+    assert isinstance(issues, list) and issues, err
+    assert any("clientOrderId" in str(issue) for issue in issues), err
+
+    # Y no se crea ninguna orden ni se persiste el rechazo (RN-11, RE-12)
+    assert abiertas(usuario) == []
+    assert historial(usuario) == []
 
 
 @pytest.mark.at("AT-04-03-10")

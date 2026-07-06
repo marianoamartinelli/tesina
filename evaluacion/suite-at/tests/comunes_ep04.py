@@ -5,25 +5,13 @@ Todo acceso al SUT es black-box por el contrato REST de la épica 09:
 El fondeo usa el único camino permitido: depósito on-chain acreditado
 (``helpers/onchain.py`` + ``esperar_hasta``; ver HELPERS.md).
 
-TODO-REVISAR — discrepancias entre la épica 04 y la épica 09 que estos helpers
-absorben (la épica 04 fija la semántica; la 09, la forma; no siempre coinciden):
-
-1. HU-04-* llama ``executedQty`` a la cantidad ejecutada en base (wei); el objeto
-   orden de HU-09-01 RN-5 la llama ``filledWei``. ``ejecutado_wei()`` acepta
-   cualquiera de los dos nombres (mismo significado normativo).
-2. HU-04-06/HU-04-07 exigen ``remainingQty``, ``executedQuoteQty`` y
-   ``avgExecutionPrice`` en las consultas; HU-09-01 RN-5 no los incluye en el
-   objeto orden. ``remanente_wei()`` usa ``remainingQty`` si está presente y si
-   no lo deriva de ``quantityWei − ejecutado``. Los ATs que assertan un *valor*
-   de ``executedQuoteQty``/``avgExecutionPrice`` exigen el campo (AT-04-06-09).
-3. HU-04-02 define la forma de tamaño ``quoteOrderQty`` para MARKET; el body de
-   HU-09-01 RN-4 no la lista. Se envía con ese nombre (el único que la spec usa).
-4. HU-04-07 RN-4 exige filtros de período en el historial; HU-09-01 RN-8 no
-   define parámetros temporales para ``GET /orders``. Se usan ``from``/``to``
-   por analogía con HU-09-01 RN-20 (``GET /trades``).
-5. La épica 04 separa "órdenes abiertas" (HU-04-06) de "historial" (HU-04-07),
-   pero la épica 09 expone un único ``GET /orders`` con filtro ``status``. Las
-   consultas semánticas se implementan como unión de consultas por estado.
+Nombres y contrato (spec-v1.1, ADR-006 D7/D8/D9): la épica 04 adopta los
+nombres canónicos del objeto orden de HU-09-01 RN-4/RN-5 — ``filledWei``,
+``remainingWei``, ``executedQuoteMin``, ``avgPriceMin`` y la forma de tamaño
+``quoteOrderQtyMin`` — y ``GET /orders`` define ``from``/``to`` (ISO-8601 UTC,
+HU-09-01 RN-8). La épica 04 separa "órdenes abiertas" (HU-04-06) de
+"historial" (HU-04-07) sobre el único ``GET /orders`` con filtro ``status``:
+las consultas semánticas se implementan como unión de consultas por estado.
 """
 
 import secrets
@@ -44,16 +32,15 @@ NOTIONAL_MIN = 10_000_000      # 10 USDC en USDC-min (mínimo notional del par)
 ESTADOS_ABIERTOS = ("OPEN", "PARTIALLY_FILLED")
 ESTADOS_TERMINALES = ("FILLED", "CANCELLED", "REJECTED")
 
-# Campos monetarios que puede traer un objeto orden (unión épica 04 + épica 09).
+# Campos monetarios del objeto orden (nombres canónicos, HU-09-01 RN-4/RN-5).
 CAMPOS_MONETARIOS_ORDEN = (
     "priceMin",
     "quantityWei",
-    "quoteOrderQty",
+    "quoteOrderQtyMin",
     "filledWei",
-    "executedQty",
-    "remainingQty",
-    "executedQuoteQty",
-    "avgExecutionPrice",
+    "remainingWei",
+    "executedQuoteMin",
+    "avgPriceMin",
     "feeWei",
     "feeUsdcMin",
 )
@@ -134,15 +121,16 @@ def cuerpo_orden(
     tipo,
     price_min=None,
     quantity_wei=None,
-    quote_order_qty=None,
+    quote_order_qty_min=None,
     client_id: str | None = None,
     symbol: str = SIMBOLO,
 ) -> dict:
-    """Body de POST /orders (HU-09-01 RN-4; clientOrderId obligatorio por RN-19).
+    """Body de POST /orders (HU-09-01 RN-4).
 
-    Nota: HU-04-01/02 RN-1 dicen que `clientOrderId` es opcional, pero HU-09-01
-    RN-19 lo exige (ausente => VALIDATION_ERROR). TODO-REVISAR: discrepancia;
-    los tests siempre lo envían (único por cuenta).
+    `clientOrderId` es obligatorio (HU-04-01/02 RN-1, HU-09-01 RN-19: ausente
+    => VALIDATION_ERROR con details.issues): los tests siempre lo envían
+    (único por cuenta), salvo los que ejercitan su ausencia (que lo remueven
+    del body).
     """
     cuerpo = {
         "clientOrderId": client_id or client_order_id(),
@@ -154,8 +142,8 @@ def cuerpo_orden(
         cuerpo["priceMin"] = _monto(price_min)
     if quantity_wei is not None:
         cuerpo["quantityWei"] = _monto(quantity_wei)
-    if quote_order_qty is not None:
-        cuerpo["quoteOrderQty"] = _monto(quote_order_qty)
+    if quote_order_qty_min is not None:
+        cuerpo["quoteOrderQtyMin"] = _monto(quote_order_qty_min)
     return cuerpo
 
 
@@ -210,7 +198,7 @@ def historial(usuario, periodo: dict | None = None) -> list[dict]:
     """Órdenes terminales (HU-04-07 RN-1): {FILLED, CANCELLED, REJECTED}.
 
     `periodo` (opcional): {"from": iso, "to": iso} aplicado a cada consulta
-    (TODO-REVISAR 4 del docstring del módulo).
+    (filtros temporales de GET /orders, HU-09-01 RN-8 / HU-04-07 RN-4).
     """
     return [i for e in ESTADOS_TERMINALES for i in items_por_estado(usuario, e, periodo)]
 
@@ -249,28 +237,69 @@ def cancelar_ok(usuario, order_id: str) -> dict:
     return orden
 
 
-# --- Campos del objeto orden (ver TODO-REVISAR 1 y 2 del docstring) ------------------
+# --- Campos del objeto orden (nombres canónicos de HU-09-01 RN-5) --------------------
 
 def ejecutado_wei(orden: dict) -> int:
-    """Cantidad ejecutada en base (wei): `executedQty` (ep. 04) o `filledWei` (ep. 09)."""
-    if orden.get("executedQty") is not None:
-        return a_int(orden["executedQty"])
+    """Cantidad ejecutada en base (wei): `filledWei` (HU-09-01 RN-5, HU-04-05 RN-7)."""
     return a_int(orden["filledWei"])
 
 
 def remanente_wei(orden: dict) -> int:
-    """Remanente en base: `remainingQty` si está; si no, quantityWei − ejecutado."""
-    if orden.get("remainingQty") is not None:
-        return a_int(orden["remainingQty"])
-    return a_int(orden["quantityWei"]) - ejecutado_wei(orden)
+    """Remanente en base (wei): `remainingWei = quantityWei − filledWei` (RN-5)."""
+    return a_int(orden["remainingWei"])
 
 
 def assert_montos_de_orden(orden: dict) -> None:
-    """Todo campo monetario presente y no nulo es string ^(0|[1-9][0-9]*)$ (RE-8)."""
+    """Serialización y campos de ejecución exigidos del objeto orden (HU-09-01 RN-5).
+
+    - Todo campo monetario presente y no nulo es string ^(0|[1-9][0-9]*)$ (RE-8).
+    - `filledWei`, `remainingWei`, `executedQuoteMin` y `avgPriceMin` son
+      obligatorios en toda respuesta que devuelva el objeto orden.
+    - `avgPriceMin` es null si y solo si `filledWei = "0"` (nunca `"0"`).
+    - `remainingWei = quantityWei − filledWei`; para una MARKET por
+      `quoteOrderQtyMin` (sin `quantityWei`) es null (HU-04-07 RN-11).
+    """
     for campo in CAMPOS_MONETARIOS_ORDEN:
         if campo in orden and orden[campo] is not None:
             assert es_monto_valido(orden[campo]), (
                 f"{campo} mal serializado: {orden[campo]!r}"
+            )
+    for campo in ("filledWei", "remainingWei", "executedQuoteMin", "avgPriceMin"):
+        assert campo in orden, f"objeto orden sin {campo} (HU-09-01 RN-5): {orden}"
+    if orden["filledWei"] == "0":
+        assert orden["avgPriceMin"] is None, (
+            f"avgPriceMin debe ser null con filledWei='0' (serialización única): {orden}"
+        )
+    else:
+        assert orden["avgPriceMin"] is not None, (
+            f"avgPriceMin no puede ser null con fills (HU-04-06 RN-10): {orden}"
+        )
+    if orden.get("quantityWei") is not None:
+        assert orden["remainingWei"] is not None, orden
+        assert a_int(orden["remainingWei"]) == a_int(orden["quantityWei"]) - a_int(orden["filledWei"]), (
+            f"remainingWei != quantityWei − filledWei: {orden}"
+        )
+    else:
+        # MARKET por monto: sin quantityWei, remainingWei es null (nunca "0")
+        assert orden["remainingWei"] is None, orden
+
+
+def assert_orden_por_defecto(items: list[dict]) -> None:
+    """Orden por defecto de GET /orders: `createdAt` desc; empate por `orderId` desc.
+
+    (HU-04-06 RN-4 / HU-04-07 RN-6 / HU-09-01 RN-8; comparación numérica si los
+    `orderId` son enteros secuenciales, lexicográfica en caso contrario.)
+    """
+    creados = [i["createdAt"] for i in items]
+    assert creados == sorted(creados, reverse=True), (
+        f"items no ordenados por createdAt descendente: {creados}"
+    )
+    for previo, siguiente in zip(items, items[1:]):
+        if previo["createdAt"] == siguiente["createdAt"]:
+            a, b = str(previo["orderId"]), str(siguiente["orderId"])
+            clave_a, clave_b = (int(a), int(b)) if a.isdigit() and b.isdigit() else (a, b)
+            assert clave_a > clave_b, (
+                f"empate de createdAt sin desempate orderId descendente: {a!r} → {b!r}"
             )
 
 
