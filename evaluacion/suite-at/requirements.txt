@@ -1,0 +1,7 @@
+# Dependencias de la suite AT (pinneadas; instalar en el venv del repo):
+#   /Users/.../tesina/.venv/bin/pip install -r requirements.txt
+pytest==9.1.1
+httpx==0.28.1        # cliente HTTP black-box (helpers/api.py)
+websockets==16.0     # cliente WebSocket síncrono (helpers/ws.py)
+PyYAML==6.0.3        # no-automatizables.yaml (helpers/reporte.py)
+pycryptodome==3.23.0 # Keccak-256 para checksum EIP-55 (helpers/eip55.py)

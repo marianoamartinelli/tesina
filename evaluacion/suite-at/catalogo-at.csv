@@ -1,0 +1,694 @@
+at_id,epica,hu,archivo,titulo_escenario,tipo
+AT-01-01-01,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 1: Registro exitoso con credenciales válidas,backend
+AT-01-01-02,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 2 (borde): Normalización del email (mayúsculas y espacios),backend
+AT-01-01-03,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 3 (error): Email ya registrado,backend
+AT-01-01-04a,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 4 (error): Formato de email inválido — sin `@`,backend
+AT-01-01-04b,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 4b (error): Formato de email inválido — dominio sin punto,backend
+AT-01-01-04c,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 4c (error): Formato de email inválido — parte local vacía,backend
+AT-01-01-04d,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 4d (error): Formato de email inválido — espacio interno,backend
+AT-01-01-04e,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 4e (error): Formato de email inválido — dominio con punto inicial o puntos consecutivos,backend
+AT-01-01-05,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 5 (error): Contraseña demasiado corta,backend
+AT-01-01-06,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 6 (error): Contraseña demasiado larga,backend
+AT-01-01-07,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 7 (error): Campo requerido faltante,backend
+AT-01-01-08,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 8 (error): Tipo de dato incorrecto,backend
+AT-01-01-09,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 9 (precedencia): Email inválido y password inválida simultáneos,backend
+AT-01-01-10,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 10 (concurrencia): Dos registros simultáneos con el mismo email,backend
+AT-01-01-11,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 11 (borde): Persistencia tras reinicio,backend
+AT-01-01-12,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 12 (borde): Contraseña en el límite inferior válido (8 caracteres),backend
+AT-01-01-13,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 13 (borde): Contraseña en el límite superior válido (128 caracteres),backend
+AT-01-01-14,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 14 (borde): Email en el límite superior válido (254 caracteres),backend
+AT-01-01-15,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 15 (error): Email que excede el máximo (255 caracteres),backend
+AT-01-01-16,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 16 (precedencia): Campo faltante prevalece sobre formato de email,backend
+AT-01-01-17,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 17 (precedencia): Tipo incorrecto prevalece sobre unicidad de email,backend
+AT-01-01-18,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 18 (error): Campo desconocido en el payload,backend
+AT-01-01-19,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 19 (borde): El `accountId` es opaco y no secuencial,backend
+AT-01-01-20,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,"Escenario 20 (seguridad, condicional a config): Anti-flood de registro",backend
+AT-01-02-01,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 1: Login exitoso,backend
+AT-01-02-02,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 2 (borde): Email con distinta capitalización y espacios,backend
+AT-01-02-03,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 3 (borde): El token autentica una llamada protegida,backend
+AT-01-02-04,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 4 (error): Contraseña incorrecta,backend
+AT-01-02-05,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 5 (error): Email inexistente — respuesta indistinguible,backend
+AT-01-02-06,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 6 (error): Payload mal formado,backend
+AT-01-02-07,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 7 (precedencia): Esquema inválido tiene prioridad sobre credenciales,backend
+AT-01-02-08,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 8 (borde): Sesiones múltiples concurrentes,backend
+AT-01-02-09,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 9 (error): Rate limiting tras múltiples fallos,backend
+AT-01-02-10,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 10 (seguridad): Heurística de entropía del token,backend
+AT-01-02-11,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 11 (seguridad): Indistinguibilidad temporal — anti timing attack,backend
+AT-01-02-12,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 12 (no enumeración): Email con formato inválido en login,backend
+AT-01-02-13,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 13 (auditoría): Registro de intentos de autenticación,backend
+AT-01-03-01,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 1: Logout explícito exitoso,backend
+AT-01-03-02,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 2: Token invalidado por logout no autentica,backend
+AT-01-03-03,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 3 (borde): Token válido antes de expirar,backend
+AT-01-03-04,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 4 (error): Token expirado por TTL,backend
+AT-01-03-05,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 5 (borde): Logout afecta solo al token presentado,backend
+AT-01-03-06,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 6 (error): Logout sin token o con token inválido,backend
+AT-01-03-07,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 7 (idempotencia): Doble logout con el mismo token,backend
+AT-01-03-08,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 8 (borde): Persistencia de la invalidación tras reinicio,backend
+AT-01-03-09,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 9 (error): Token expirado no puede reactivarse,backend
+AT-01-03-10,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 10 (persistencia JWT): JWT revocado por logout sigue revocado tras reinicio,backend
+AT-01-03-11,01,HU-01-03,spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md,Escenario 11 (concurrencia): Doble logout concurrente con el mismo token,backend
+AT-01-04-01,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 1: Consulta de perfil propio exitosa,backend
+AT-01-04-02,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 2 (borde): Los datos coinciden con el registro,backend
+AT-01-04-03,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 3 (error): Consulta sin autenticación,backend
+AT-01-04-04,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 4 (error): Token expirado o invalidado,backend
+AT-01-04-05,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 5 (error): Intento de consultar el perfil de otra cuenta,backend
+AT-01-04-06,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 6 (precedencia): Sin token y recurso ajeno,backend
+AT-01-04-07,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 7 (borde): La consulta no altera la sesión ni el estado,backend
+AT-01-04-08,01,HU-01-04,spec/01-cuentas-y-autenticacion/HU-01-04-consulta-de-perfil.md,Escenario 8 (contrato): El perfil no expone balances,backend
+AT-02-01-01,02,HU-02-01,spec/02-balances-y-ledger/HU-02-01-consultar-balances.md,Escenario 1: Consulta con fondos en ambos buckets,backend
+AT-02-01-02,02,HU-02-01,spec/02-balances-y-ledger/HU-02-01-consultar-balances.md,"Escenario 2 (borde): Cuenta recién creada, sin movimientos",backend
+AT-02-01-03,02,HU-02-01,spec/02-balances-y-ledger/HU-02-01-consultar-balances.md,Escenario 3 (borde): Partición total = disponible + bloqueado,backend
+AT-02-01-04,02,HU-02-01,spec/02-balances-y-ledger/HU-02-01-consultar-balances.md,Escenario 4 (borde): Saldos grandes que exceden 2^53,backend
+AT-02-01-05,02,HU-02-01,spec/02-balances-y-ledger/HU-02-01-consultar-balances.md,Escenario 5 (error): Sin autenticación,backend
+AT-02-01-06,02,HU-02-01,spec/02-balances-y-ledger/HU-02-01-consultar-balances.md,"Escenario 6 (error, condicional): Acceso a balances ajenos",backend
+AT-02-01-07,02,HU-02-01,spec/02-balances-y-ledger/HU-02-01-consultar-balances.md,Escenario 7 (consistencia): Coincide con la reconstrucción del ledger,backend
+AT-02-02-01,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 1: Bloqueo por orden de compra limit,backend
+AT-02-02-02,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 2: Bloqueo por orden de venta limit,backend
+AT-02-02-03,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 3 (borde): Bloqueo exacto al disponible,backend
+AT-02-02-04,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 4 (error): Fondos insuficientes para bloquear,backend
+AT-02-02-05,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 5: Liberación por cancelación de orden no ejecutada,backend
+AT-02-02-06,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 6 (borde): Cancelación de orden parcialmente ejecutada,backend
+AT-02-02-07,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 7 (borde): Liberación de excedente por ejecución a mejor precio,backend
+AT-02-02-08,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 8 (consumo): Fill consume bloqueado y acredita la contraparte,backend
+AT-02-02-09,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 9 (concurrencia): Dos bloqueos que juntos exceden el disponible,backend
+AT-02-02-10,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 10 (error): Retiro sin fondos suficientes,backend
+AT-02-02-11,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,"Escenario 11 (retiro): Bloqueo, consumo y liberación de retiro",backend
+AT-02-02-12,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,Escenario 12 (borde): Ejecución exactamente al precio límite ⇒ sin ORDER_RELEASE,backend
+AT-02-02-13,02,HU-02-02,spec/02-balances-y-ledger/HU-02-02-reserva-y-liberacion-de-fondos.md,"Escenario 13 (borde): Fill parcial a mejor precio, remanente al precio original",backend
+AT-02-03-01,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 1: Asiento de depósito acreditado,backend
+AT-02-03-02,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 2: Asiento de bloqueo por orden,backend
+AT-02-03-03,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 3: Asiento de liberación por cancelación,backend
+AT-02-03-04,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 4: Asiento atómico de fill con fees hacia EX,backend
+AT-02-03-05,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 5 (consistencia): Reconstrucción de balances desde el ledger,backend
+AT-02-03-06,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 6 (inmutabilidad): Corrección vía asiento de compensación,backend
+AT-02-03-07,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 7 (idempotencia): Reprocesar el mismo depósito no duplica asiento,backend
+AT-02-03-08,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 8 (error/borde): Asiento desbalanceado es inválido,backend
+AT-02-03-09,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 9 (atomicidad): Fallo a mitad de escritura no deja asiento parcial,backend
+AT-02-03-10,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,Escenario 10 (fill parcial): TRADE_FILL consume solo una fracción del locked del maker,backend
+AT-02-03-11,02,HU-02-03,spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md,"Escenario 11 (atomicidad multi-asiento): TRADE_FILL + ORDER_RELEASE de surplus, todo o nada",backend
+AT-02-04-01,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 1: Conservación tras un fill (no se crea ni destruye valor),backend
+AT-02-04-02,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 2: Atomicidad del settlement (todo o nada),backend
+AT-02-04-03,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 3 (no-negatividad): Rechazo previo deja balances intactos,backend
+AT-02-04-04,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 4 (concurrencia): Dos operaciones que exceden el disponible,backend
+AT-02-04-05,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 5 (concurrencia): Fill y cancelación concurrentes sobre la misma orden,backend
+AT-02-04-06,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 6 (persistencia): Reconstrucción de balances tras reinicio,backend
+AT-02-04-07,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 7 (recuperación): Sin asientos parciales tras caída a mitad de operación,backend
+AT-02-04-08,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 8 (idempotencia): Reprocesar depósito no duplica efecto,backend
+AT-02-04-09,02,HU-02-04,spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md,Escenario 9 (post-condición global): Invariantes tras secuencia arbitraria,backend
+AT-02-05-01,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 1: Historial completo sin filtros,backend
+AT-02-05-02,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 2: Filtro por activo,backend
+AT-02-05-03,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 3: Filtro por tipo,backend
+AT-02-05-04,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 4: Filtro por período (inclusivo/exclusivo),backend
+AT-02-05-05,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 5: Combinación de filtros (AND),backend
+AT-02-05-06,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 6 (borde): Paginación estable,backend
+AT-02-05-07,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 7 (borde): Resultado vacío,backend
+AT-02-05-08,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 8 (error): Filtro de activo inválido,backend
+AT-02-05-09,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 9 (error): Rango de fechas inválido,backend
+AT-02-05-10,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 10 (error): Sin autenticación,backend
+AT-02-05-11,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 11 (autorización): No se filtran movimientos ajenos,backend
+AT-02-05-12,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,"Escenario 12 (borde): Rango vacío `from == to` ⇒ lista vacía, no error",backend
+AT-02-05-13,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 13 (error): `limit` fuera de rango,backend
+AT-02-05-14,02,HU-02-05,spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md,Escenario 14: Filtro por múltiples tipos (OR entre tipos),backend
+AT-03-01-01,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 1: Ordenamiento de niveles en ambos lados,backend
+AT-03-01-02,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 2: FIFO dentro de un mismo nivel de precio,backend
+AT-03-01-03,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 3 (borde): Un lado vacío — best price indefinido,backend
+AT-03-01-04,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 4 (borde): Prioridad se recomputa sobre el remanente,backend
+AT-03-01-05,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 5 (integridad): El libro nunca queda cruzado en reposo,backend
+AT-03-01-06,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 6 (integridad): Respaldo en fondos bloqueados,backend
+AT-03-01-07,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 7 (borde): Solo viven órdenes abiertas,backend
+AT-03-01-08,03,HU-03-01,spec/03-motor-de-matching/HU-03-01-estructura-del-orderbook.md,Escenario 8 (integridad): Ejecución serializada — sin interleaving,backend
+AT-03-02-01,03,HU-03-02,spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md,Escenario 1: Inserción en libro vacío,backend
+AT-03-02-02,03,HU-03-02,spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md,Escenario 2: BUY por debajo del best ask se posa (no cruza),backend
+AT-03-02-03,03,HU-03-02,spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md,Escenario 3: SELL por encima del best bid se posa (no cruza),backend
+AT-03-02-04,03,HU-03-02,spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md,Escenario 4 (borde): Inserción al final de la cola FIFO de un nivel existente,backend
+AT-03-02-05,03,HU-03-02,spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md,Escenario 5 (borde): Remanente de una orden cruzante se posa,backend
+AT-03-02-06,03,HU-03-02,spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md,"Escenario 6 (borde): Precio límite exactamente igual al best opuesto cruza, no se posa",backend
+AT-03-02-07,03,HU-03-02,spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md,Escenario 7 (integridad): Unicidad de `orderId` en el libro,backend
+AT-03-03-01,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 1: Fill total contra un único maker,backend
+AT-03-03-02,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,"Escenario 2: Fill parcial del taker, remanente se posa",backend
+AT-03-03-03,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,"Escenario 3: Fill parcial del maker, taker se completa",backend
+AT-03-03-04,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 4: Recorrido por prioridad precio-tiempo (varios makers),backend
+AT-03-03-05,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 5: Cruce a través de múltiples niveles de precio,backend
+AT-03-03-06,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 6 (borde): Precio límite igual al best opuesto sí cruza,backend
+AT-03-03-07,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,"Escenario 7 (borde): No hay contraparte cruzable, se posa completo",backend
+AT-03-03-08,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 8 (borde): SELL entrante cruza bids por prioridad descendente,backend
+AT-03-03-09,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 9 (conservación): Mejora de precio libera excedente del BUY,backend
+AT-03-03-10,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 10 (error): Auto-cruce detectado durante el recorrido,backend
+AT-03-03-11,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 11 (conservación): Liberación acumulada de excedente en BUY multi-fill,backend
+AT-03-03-12,03,HU-03-03,spec/03-motor-de-matching/HU-03-03-matching-limit-contra-libro.md,Escenario 12 (conservación): SELL con mejora de precio no libera USDC,backend
+AT-03-04-01,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 1: MARKET SELL ejecuta total contra varios bids,backend
+AT-03-04-02,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 2: MARKET BUY ejecuta total contra varios asks,backend
+AT-03-04-03,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 3 (borde): MARKET parcial por libro agotado,backend
+AT-03-04-04,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 4 (error): MARKET sin liquidez (lado opuesto vacío),backend
+AT-03-04-05,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 5 (borde): MARKET BUY detenida por presupuesto,backend
+AT-03-04-06,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 6 (borde): precio enviado en MARKET es rechazado antes del motor,backend
+AT-03-04-07,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 7 (borde): MARKET de 1 lot exacto contra liquidez suficiente,backend
+AT-03-04-08,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 8 (error): auto-cruce de una MARKET,backend
+AT-03-04-09,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 9 (error): MARKET BUY sin presupuesto para ni 1 lot,backend
+AT-03-04-10,03,HU-03-04,spec/03-motor-de-matching/HU-03-04-ejecucion-orden-market.md,Escenario 10 (error): MARKET con mezcla de liquidez propia y de terceros,backend
+AT-03-05-01,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 1: Un fill total emite un trade y dos order-updates,backend
+AT-03-05-02,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 2: Taker contra dos makers emite dos trades,backend
+AT-03-05-03,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 3: Fill parcial — order-update con remanente,backend
+AT-03-05-04,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,"Escenario 4 (borde): Posar pasiva no emite trade, sí un book-update",backend
+AT-03-05-05,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 5 (borde): Serialización entera de todos los montos,backend
+AT-03-05-06,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 6 (integridad): Unicidad de `tradeId` y `sequence` emitidos por el motor,backend
+AT-03-05-07,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 7 (integridad): Estado del libro consistente con los eventos,backend
+AT-03-05-08,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 8 (borde): order-update REJECTED por rechazo de matching,backend
+AT-03-05-09,03,HU-03-05,spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md,Escenario 9 (borde): order-update CANCELLED tras agotar el libro en MARKET,backend
+AT-03-06-01,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,Escenario 1: Cruce normal contra terceros (sin self-trade),backend
+AT-03-06-02,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,Escenario 2: Auto-cruce en el frente — rechazo atómico,backend
+AT-03-06-03,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,"Escenario 3 (borde): Orden propia dentro del rango, tras una de terceros",backend
+AT-03-06-04,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,Escenario 4 (borde): Orden propia fuera del rango consumible — no dispara STP,backend
+AT-03-06-05,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,Escenario 5 (borde): LIMIT propia no cruzable se posa con órdenes propias del otro lado,backend
+AT-03-06-06,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,Escenario 6: MARKET con contraparte propia,backend
+AT-03-06-07,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,Escenario 7 (integridad): Atomicidad e idempotencia del rechazo,backend
+AT-03-06-08,03,HU-03-06,spec/03-motor-de-matching/HU-03-06-prevencion-de-auto-cruce.md,"Escenario 8 (borde): Lado opuesto con varios niveles, todos propios — STP, no NO_LIQUIDITY",backend
+AT-03-07-01,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 1: Órdenes abiertas sobreviven al reinicio con su prioridad,backend
+AT-03-07-02,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 2: Fill parcial — remanente persistido correctamente,backend
+AT-03-07-03,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 3: Balances y respaldo consistentes tras recuperar,backend
+AT-03-07-04,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 4 (borde): Caída en medio de un fill — atomicidad,backend
+AT-03-07-05,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 5 (borde): Continuidad de sequence y tradeId,backend
+AT-03-07-06,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 6 (idempotencia): Reinicio repetido produce el mismo estado,backend
+AT-03-07-07,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 7 (integridad): No se re-emite un trade ya persistido,backend
+AT-03-07-08,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 8 (borde): Persistencia sin floats,backend
+AT-03-07-09,03,HU-03-07,spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md,Escenario 9 (borde): Recuperación del estado terminal de una MARKET,backend
+AT-04-01-01,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 1: Alta de compra limit que descansa en el libro,backend
+AT-04-01-02,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 2: Alta de venta limit que descansa en el libro,backend
+AT-04-01-03,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 3 (feliz): Compra limit que ejecuta totalmente como taker,backend
+AT-04-01-04,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 4 (borde): Compra limit con ejecución parcial; el remanente descansa,backend
+AT-04-01-05,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 5 (borde): Compra que matchea a mejor precio libera el sobrante reservado,backend
+AT-04-01-06,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 6 (error): Fondos insuficientes,backend
+AT-04-01-07,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 7 (error): Self-trade bloqueado (ask propio como única liquidez del rango),backend
+AT-04-01-08,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 8 (idempotencia): clientOrderId duplicado,backend
+AT-04-01-09,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 9 (error): Precio fuera de tick,backend
+AT-04-01-10,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 10 (borde): Notional exactamente igual al mínimo es válido,backend
+AT-04-01-11,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 11 (persistencia): La orden abierta y su reserva sobreviven al reinicio,backend
+AT-04-01-12,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 12 (error): `quoteOrderQty` no se admite en limit,backend
+AT-04-01-13,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 13 (borde): Orden propia dentro del rango consumible ⇒ rechazo íntegro,backend
+AT-04-01-14,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 14 (idempotencia): `clientOrderId` no reutilizable tras estado terminal,backend
+AT-04-01-15,04,HU-04-01,spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md,Escenario 15 (rate limiting): Exceso de solicitudes,backend
+AT-04-02-01,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 1: Compra market por monto que ejecuta totalmente,backend
+AT-04-02-02,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 2: Venta market por cantidad que ejecuta totalmente,backend
+AT-04-02-03,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,"Escenario 3 (feliz): Compra market por cantidad, sobrante reservado liberado",backend
+AT-04-02-04,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 4 (borde): Ejecución parcial por liquidez agotada ⇒ remanente descartado,backend
+AT-04-02-05a,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 5a (error): Sin liquidez — BUY con asks vacíos,backend
+AT-04-02-05b,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 5b (error): Sin liquidez — SELL con bids vacíos,backend
+AT-04-02-06,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 6 (error): Market con precio especificado,backend
+AT-04-02-07,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 7 (error): Ambos tamaños presentes,backend
+AT-04-02-08,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 8 (error): Ningún tamaño presente,backend
+AT-04-02-09,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 9 (error): Fondos insuficientes,backend
+AT-04-02-10,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 10 (error): Monto por debajo del mínimo notional,backend
+AT-04-02-11,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 11 (error): Cantidad fuera de lot size,backend
+AT-04-02-12a,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 12a (borde): Venta market por monto que completa el objetivo,backend
+AT-04-02-12b,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 12b (borde): Venta market por monto con liquidez insuficiente,backend
+AT-04-02-13,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 13 (error): Self-trade en market (bid propio como única liquidez),backend
+AT-04-02-14,04,HU-04-02,spec/04-gestion-de-ordenes/HU-04-02-colocar-orden-market.md,Escenario 14 (borde): Orden propia dentro del rango consumible ⇒ rechazo íntegro,backend
+AT-04-03-01,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 1: Precedencia — tick gana sobre fondos,backend
+AT-04-03-02,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 2 (error): Lado inválido,backend
+AT-04-03-03,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 3 (error): Tipo de orden inválido,backend
+AT-04-03-04,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 4 (error): Limit sin precio,backend
+AT-04-03-05,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 5 (error): Market con precio,backend
+AT-04-03-06,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 6 (error): Precio fuera de tick,backend
+AT-04-03-07,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 7 (error): Cantidad fuera de lot,backend
+AT-04-03-08,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 8 (error): Notional por debajo del mínimo,backend
+AT-04-03-09,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 9 (error): Monto no entero / float / patrón inválido,backend
+AT-04-03-10,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 10 (borde): Precio cero ⇒ tick,backend
+AT-04-03-11,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 11 (borde): Cero a la izquierda rechazado,backend
+AT-04-03-12,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 12 (precedencia): Idempotencia gana sobre fondos,backend
+AT-04-03-13,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 13 (precedencia): Fondos gana sobre matching,backend
+AT-04-03-14,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 14 (error): No autenticado,backend
+AT-04-03-15,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 15 (sin efectos colaterales): Rechazo no toca balances,backend
+AT-04-03-16,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 16 (borde): Cantidad cero ⇒ lot,backend
+AT-04-03-17,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 17 (borde): Monto negativo rechazado,backend
+AT-04-03-18,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,Escenario 18 (autorización): Operar sobre otra cuenta no expone `UNAUTHORIZED`,backend
+AT-04-03-19,04,HU-04-03,spec/04-gestion-de-ordenes/HU-04-03-validaciones-de-orden.md,"Escenario 19 (idempotencia, alcance por cuenta): Dos cuentas, mismo `clientOrderId`",backend
+AT-04-04-01,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 1: Cancelar una orden OPEN libera toda la reserva,backend
+AT-04-04-02,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 2: Cancelar una orden PARTIALLY_FILLED libera solo el remanente,backend
+AT-04-04-03,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 3 (venta): Cancelar SELL libera ETH del remanente,backend
+AT-04-04-04,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 4 (error): Cancelar una orden FILLED,backend
+AT-04-04-05,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 5 (error): Cancelar una orden ya CANCELLED,backend
+AT-04-04-06,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 6 (error): Cancelar una orden REJECTED,backend
+AT-04-04-07,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 7 (error): Orden inexistente,backend
+AT-04-04-08,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 8 (error): Orden de otra cuenta,backend
+AT-04-04-09,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 9 (secuencia): Cancelar pierde contra un fill total ya aplicado,backend
+AT-04-04-10,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 10 (secuencia): Cancelar tras un fill parcial ya aplicado libera el remanente vigente,backend
+AT-04-04-11,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 11 (error): No autenticado,backend
+AT-04-04-12,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 12 (persistencia): La cancelación sobrevive al reinicio,backend
+AT-04-04-13,04,HU-04-04,spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md,Escenario 13 (borde): Cancelar tras varios fills a mejor precio deja el bloqueado en 0,backend
+AT-04-05-01,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 1: Limit sin match ⇒ OPEN,backend
+AT-04-05-02,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 2: Limit con match parcial ⇒ NEW→PARTIALLY_FILLED,backend
+AT-04-05-03,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 3: Limit marketable total ⇒ NEW→FILLED,backend
+AT-04-05-04,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 4: Market total ⇒ NEW→FILLED,backend
+AT-04-05-05,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 5 (borde): Market parcial ⇒ NEW→CANCELLED (remanente descartado),backend
+AT-04-05-06,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 6 (error): Market sin liquidez ⇒ REJECTED persistido,backend
+AT-04-05-07,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 7 (error): Falla de validación ⇒ no se persiste como orden,backend
+AT-04-05-08,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 8: Resting OPEN→PARTIALLY_FILLED→FILLED,backend
+AT-04-05-09,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 9: Cancelación OPEN→CANCELLED,backend
+AT-04-05-10,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 10: Cancelación PARTIALLY_FILLED→CANCELLED,backend
+AT-04-05-11,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 11 (error): Transición prohibida desde terminal,backend
+AT-04-05-12,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 12 (invariante): Estado terminal inmutable,backend
+AT-04-05-13,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 13 (persistencia): Estados sobreviven al reinicio,backend
+AT-04-05-14,04,HU-04-05,spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md,Escenario 14 (recuperación): `NEW` nunca sobrevive a un reinicio,backend
+AT-04-06-01,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 1: Listar órdenes abiertas con estado y remanente,backend
+AT-04-06-02,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 2 (borde): Sin órdenes abiertas,backend
+AT-04-06-03,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 3 (filtro): Excluye órdenes terminales,backend
+AT-04-06-04,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 4 (aislamiento): No devuelve órdenes ajenas,backend
+AT-04-06-05,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 5 (paginación/orden): Resultado estable y paginado,backend
+AT-04-06-06,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 6 (error): No autenticado,backend
+AT-04-06-07,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 7 (serialización): Montos como string entero,backend
+AT-04-06-08,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 8 (solo lectura): La consulta no altera estado,backend
+AT-04-06-09,04,HU-04-06,spec/04-gestion-de-ordenes/HU-04-06-consultar-ordenes-abiertas.md,Escenario 9 (precio promedio): `avgExecutionPrice` refleja el precio ponderado real,backend
+AT-04-07-01,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 1: Listar historial sin filtros,backend
+AT-04-07-02,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 2 (filtro): Solo FILLED,backend
+AT-04-07-03,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 3 (filtro): Por período,backend
+AT-04-07-04,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 4 (filtro combinado): Estado + período,backend
+AT-04-07-05,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 5 (exclusión): No incluye abiertas,backend
+AT-04-07-06,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 6 (aislamiento): No devuelve órdenes ajenas,backend
+AT-04-07-07,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 7 (paginación): Resultado estable y paginado,backend
+AT-04-07-08,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 8 (borde): Historial vacío,backend
+AT-04-07-09,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 9 (error): Filtro de estado inválido,backend
+AT-04-07-10,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 10 (error): Rango temporal inválido,backend
+AT-04-07-11,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 11 (error): No autenticado,backend
+AT-04-07-12,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 12 (serialización + inmutabilidad): Montos string y resultado estable,backend
+AT-04-07-13,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 13 (rechazos persistidos): Self-trade y sin-liquidez aparecen como REJECTED,backend
+AT-04-07-14,04,HU-04-07,spec/04-gestion-de-ordenes/HU-04-07-consultar-historial-de-ordenes.md,Escenario 14 (rechazos no persistidos): Rechazos de validación/fondos no aparecen,backend
+AT-05-01-01,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 1: Fill total — taker compra contra maker vende,backend
+AT-05-01-02,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 2: Fill total — taker vende contra maker compra,backend
+AT-05-01-03,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 3 (borde): Fill parcial — el remanente sigue bloqueado,backend
+AT-05-01-04,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 4 (borde): Mejora de precio del taker comprador — surplus liberado,backend
+AT-05-01-05,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,"Escenario 5 (borde): Sweep — un taker barre dos makers, dos settlements",backend
+AT-05-01-06,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 6 (atomicidad/error): Falla a mitad del settlement — rollback total,backend
+AT-05-01-07,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 7 (idempotencia): Reproceso del mismo fill no duplica asientos,backend
+AT-05-01-08,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 8 (secuencia): Fills sucesivos sobre el mismo maker preservan conservación y límite de bloqueado,backend
+AT-05-01-09,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 9 (invariante/error): Precondición de bloqueo no satisfecha,backend
+AT-05-01-10,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 10 (borde): Taker BUY market — consumo sin liberar surplus por fill,backend
+AT-05-01-11,05,HU-05-01,spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md,Escenario 11 (concurrencia): Dos settlements simultáneos sobre el mismo maker se serializan,backend
+AT-05-02-01,05,HU-05-02,spec/05-settlement-y-fees/HU-05-02-calculo-de-fees-maker-taker.md,Escenario 1: Taker compra contra maker vende — fees 20/10,backend
+AT-05-02-02,05,HU-05-02,spec/05-settlement-y-fees/HU-05-02-calculo-de-fees-maker-taker.md,Escenario 2: Taker vende contra maker compra — fees 20/10 invertidas,backend
+AT-05-02-03,05,HU-05-02,spec/05-settlement-y-fees/HU-05-02-calculo-de-fees-maker-taker.md,Escenario 3 (borde): `ceil` efectivo en `fee_quote` — residuo a favor de EX,backend
+AT-05-02-04,05,HU-05-02,spec/05-settlement-y-fees/HU-05-02-calculo-de-fees-maker-taker.md,Escenario 4 (borde): `fee_base` siempre exacto bajo lot,backend
+AT-05-02-05,05,HU-05-02,spec/05-settlement-y-fees/HU-05-02-calculo-de-fees-maker-taker.md,Escenario 5 (borde): fill mínimo — fees positivas y neto no negativo,backend
+AT-05-02-06,05,HU-05-02,spec/05-settlement-y-fees/HU-05-02-calculo-de-fees-maker-taker.md,"Escenario 6 (determinismo): mismas entradas, mismos enteros",backend
+AT-05-02-07,05,HU-05-02,spec/05-settlement-y-fees/HU-05-02-calculo-de-fees-maker-taker.md,Escenario 7 (serialización/error): fee serializada como string entero,backend
+AT-05-03-01,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 1: Trade registrado en un fill total (taker BUY),backend
+AT-05-03-02,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 2: Trade registrado en un fill total (taker SELL),backend
+AT-05-03-03,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 3 (borde): Un fill por cada porción de un sweep,backend
+AT-05-03-04,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 4 (borde): coherencia aritmética con `ceil` efectivo,backend
+AT-05-03-05,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 5 (idempotencia): reproceso de fill no duplica el trade,backend
+AT-05-03-06,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 6 (atomicidad): settlement revertido no deja trade,backend
+AT-05-03-07,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 7 (persistencia/reconciliación): reinicio y suma de fees a EX,backend
+AT-05-03-08,05,HU-05-03,spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md,Escenario 8 (serialización/error): montos como string entero,backend
+AT-05-04-01,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 1: El usuario consulta su historial (perspectiva comprador taker),backend
+AT-05-04-02,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,"Escenario 2: Misma cuenta, perspectiva vendedor maker",backend
+AT-05-04-03,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 3 (orden y paginación cursor-based): recencia descendente y páginas estables,backend
+AT-05-04-04,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 4 (filtro): por `orderId` propio devuelve todos sus fills,backend
+AT-05-04-05,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 5 (borde): historial vacío,backend
+AT-05-04-06,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 6 (error): sin autenticación,backend
+AT-05-04-07,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 7 (error): intento de ver trades de otra cuenta,backend
+AT-05-04-08,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 8 (filtro): `orderId` ajeno o inexistente devuelve lista vacía,backend
+AT-05-04-09,05,HU-05-04,spec/05-settlement-y-fees/HU-05-04-consultar-historial-de-trades.md,Escenario 9 (serialización): montos como string entero,backend
+AT-06-01-01,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 1: Generación de un seed nuevo válido,backend
+AT-06-01-02,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 2 (reproducibilidad): Known-answer test BIP-39,backend
+AT-06-01-03,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,"Escenario 3 (determinismo): Misma entrada, misma seed",backend
+AT-06-01-04,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 4 (entropía): Dos generaciones independientes difieren,backend
+AT-06-01-05,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 5 (error / borde): Mnemonic con checksum inválido se rechaza,backend
+AT-06-01-06,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 6 (seguridad / custodia): El secreto nunca se expone,backend
+AT-06-01-07,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 7 (persistencia): El seed sobrevive a un reinicio,backend
+AT-06-01-08,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 8 (idempotencia de provisioning): No se regenera el seed,backend
+AT-06-01-09,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 9 (error / borde): Mnemonic con longitud incorrecta se rechaza,backend
+AT-06-01-10,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 10 (error / borde): Palabra fuera del wordlist se rechaza,backend
+AT-06-01-11,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 11 (error / arranque): Fallo de descifrado del seed,backend
+AT-06-01-12,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 12 (atomicidad): Crash durante la escritura del seed,backend
+AT-06-01-13,06,HU-06-01,spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md,Escenario 13 (integridad / arranque): Smoke test del seed contra el mapeo,backend
+AT-06-02-01,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 1: Derivación del índice 0 (known-answer test),backend
+AT-06-02-02,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 2: Derivación de múltiples índices,backend
+AT-06-02-03,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 3: Checksum EIP-55 correcto,backend
+AT-06-02-04,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 4 (borde): Componentes hardened del path,backend
+AT-06-02-05,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 5 (determinismo): Reproducibilidad de la derivación,backend
+AT-06-02-06,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 6 (persistencia): Reconstrucción tras reinicio,backend
+AT-06-02-07,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 7 (seguridad): La clave privada nunca se expone,backend
+AT-06-02-08,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 8 (borde / error): Índice con clave derivada inválida,backend
+AT-06-02-09,06,HU-06-02,spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md,Escenario 9 (borde / error): `address_index` fuera del rango no-hardened,backend
+AT-06-03-01,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 1: Asignación a una cuenta nueva,backend
+AT-06-03-02,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 2 (idempotencia): Reasignación devuelve la misma dirección,backend
+AT-06-03-03,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 3: Unicidad y contigüidad entre cuentas,backend
+AT-06-03-04,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 4: Una dirección válida para ETH y USDC,backend
+AT-06-03-05,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 5 (concurrencia): Asignaciones simultáneas sin colisión,backend
+AT-06-03-06,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 6 (persistencia): Reconstrucción tras reinicio,backend
+AT-06-03-07,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 7 (reproducibilidad): Coherencia índice → dirección,backend
+AT-06-03-08,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 8 (error): Cuenta inexistente,backend
+AT-06-03-09,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 9 (eager): La dirección existe al crear la cuenta,backend
+AT-06-03-10,06,HU-06-03,spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md,Escenario 10 (integración con épica 07): Evento de asignación,backend
+AT-06-04-01,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 1: Consulta exitosa para ETH,backend
+AT-06-04-02,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 2: Misma dirección para USDC,backend
+AT-06-04-03,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 3 (error): Falta de autenticación,backend
+AT-06-04-04,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 4 (autorización / aislamiento): No se accede a la dirección de otra cuenta,backend
+AT-06-04-05,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 5 (error / validación): Activo no soportado,backend
+AT-06-04-06,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 6 (error / red): chainId distinto de Sepolia,backend
+AT-06-04-07,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 7 (borde / fallback): Asignación on-demand en la primera consulta,backend
+AT-06-04-08,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 8 (idempotencia / consistencia): Consultas repetidas,backend
+AT-06-04-09,06,HU-06-04,spec/06-wallet-hd-y-direcciones/HU-06-04-consultar-direccion-de-deposito.md,Escenario 9 (concurrencia del fallback): Primera consulta concurrente,backend
+AT-07-01-01,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 1: detección de un depósito de ETH nativo válido,backend
+AT-07-01-02,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 2 (borde): múltiples depósitos a la misma dirección,backend
+AT-07-01-03,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 3 (borde): monto exacto en wei sin pérdida de precisión,backend
+AT-07-01-04,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 4 (error/ignorar): transacción revertida,backend
+AT-07-01-05,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 5 (borde): transferencia de valor cero,backend
+AT-07-01-06,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 6 (borde): destino es una dirección del exchange no asignada a ningún usuario,backend
+AT-07-01-07,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 7 (idempotencia de detección): reprocesar el mismo bloque,backend
+AT-07-01-08,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 8 (atribución correcta a distintas cuentas),backend
+AT-07-01-09,07,HU-07-01,spec/07-depositos-on-chain/HU-07-01-deteccion-deposito-eth-nativo.md,Escenario 9 (borde): transacción de creación de contrato (`to = null`),backend
+AT-07-02-01,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 1: detección de un depósito USDC válido,backend
+AT-07-02-02,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 2 (borde): dos logs Transfer en la misma transacción,backend
+AT-07-02-03,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 3 (borde): monto con máxima precisión de 6 decimales,backend
+AT-07-02-04,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 4 (error/ignorar): Transfer de un contrato distinto al USDC-mock,backend
+AT-07-02-05,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 5 (error/ignorar): log con topic0 distinto de Transfer,backend
+AT-07-02-06,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 6 (borde): transferencia de valor cero,backend
+AT-07-02-07,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 7 (error/ignorar): transacción revertida,backend
+AT-07-02-08,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 8 (idempotencia de detección): reprocesar el mismo log,backend
+AT-07-02-09,07,HU-07-02,spec/07-depositos-on-chain/HU-07-02-deteccion-deposito-usdc-erc20.md,Escenario 9 (borde): destino no asignado a ningún usuario,backend
+AT-07-03-01,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 1: acreditación al alcanzar exactamente 12 confirmaciones,backend
+AT-07-03-02,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 2 (borde): 11 confirmaciones no alcanzan el umbral,backend
+AT-07-03-03,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 3 (error): intento de usar/acreditar un depósito no confirmado,backend
+AT-07-03-04,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 4: acreditación de un depósito USDC,backend
+AT-07-03-05,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 5 (borde): confirmaciones muy por encima del umbral,backend
+AT-07-03-06,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,"Escenario 6 (conservación, INV-1): la suma global aumenta solo por el depósito",backend
+AT-07-03-07,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 7 (consulta de estado por el usuario),backend
+AT-07-03-08,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 8 (aislamiento: depósito de otra cuenta no se revela),backend
+AT-07-03-09,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 9 (error de autenticación: sin credencial),backend
+AT-07-03-10,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 10 (error: depósito inexistente),backend
+AT-07-03-11,07,HU-07-03,spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md,Escenario 11 (error: `txHash` mal formado),backend
+AT-07-04-01,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 1: reproceso de un depósito ya acreditado no duplica,backend
+AT-07-04-02,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 2 (concurrencia): doble acreditación simultánea,backend
+AT-07-04-03,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 3 (idempotencia ETH nativo con logIndex 0),backend
+AT-07-04-04,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 4 (reorg antes de confirmar): bloque huérfano,backend
+AT-07-04-05,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 5 (reorg con reinclusión): recuento de confirmaciones desde el nuevo bloque,backend
+AT-07-04-06,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 6 (error/ignorar): transacción revertida no acreditable,backend
+AT-07-04-07,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,"Escenario 7 (idempotencia persistente tras reinicio, INV-8)",backend
+AT-07-04-08,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 8 (conservación bajo N reprocesos),backend
+AT-07-04-09,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 9 (reorg con reinclusión revertida): tx reaparece con `status = 0`,backend
+AT-07-04-10,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,Escenario 10 (detección de reorg por `parentHash`),backend
+AT-07-04-11,07,HU-07-04,spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md,"Escenario 11 (reanudación desde checkpoint sin reacreditar, INV-8)",backend
+AT-08-01-01,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 1: solicitud de retiro de ETH válida (feliz),backend
+AT-08-01-02,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 2: solicitud de retiro de USDC válida (feliz),backend
+AT-08-01-03a,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 3a (borde): monto exactamente igual al mínimo pasa,backend
+AT-08-01-03b,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 3b (borde): monto 1 wei por debajo del mínimo falla,backend
+AT-08-01-04,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 4 (borde): dirección destino en minúsculas se acepta y se normaliza,backend
+AT-08-01-05,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 5 (error): dirección con checksum EIP-55 inválido,backend
+AT-08-01-06,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 6 (error): dirección con longitud o prefijo inválidos,backend
+AT-08-01-07,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 7 (error): monto no positivo,backend
+AT-08-01-08,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 8 (error): monto con formato inválido (no matchea el patrón),backend
+AT-08-01-09,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 9 (error): activo no soportado,backend
+AT-08-01-10,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 10 (error): fondos insuficientes en ETH para principal + gas,backend
+AT-08-01-11,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 11 (error): retiro de USDC con USDC suficiente pero sin ETH para el gas,backend
+AT-08-01-12,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 12 (idempotencia): reenvío con la misma clave y mismos parámetros,backend
+AT-08-01-12b,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 12b (idempotencia en estado terminal): reenvío de una clave de un retiro ya FAILED,backend
+AT-08-01-13,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,"Escenario 13 (error de idempotencia): misma clave, parámetros distintos",backend
+AT-08-01-14,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 14 (error): solicitud sin autenticación,backend
+AT-08-01-15,08,HU-08-01,spec/08-retiros-on-chain/HU-08-01-solicitar-retiro.md,Escenario 15 (precedencia): payload con múltiples violaciones,backend
+AT-08-02-01,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 1: bloqueo de retiro de ETH (feliz),backend
+AT-08-02-02,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 2: bloqueo dual de retiro de USDC (feliz),backend
+AT-08-02-03,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 3 (borde): bloqueo que consume exactamente todo el disponible,backend
+AT-08-02-04,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 4 (atomicidad/error): retiro de USDC con ETH insuficiente para gas no bloquea nada,backend
+AT-08-02-05,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 5 (error): ETH insuficiente para principal + gas no bloquea nada,backend
+AT-08-02-06,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 6 (conservación): el bloqueo no cambia la suma total por activo,backend
+AT-08-02-07,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 7 (idempotencia): reenvío idempotente no vuelve a bloquear,backend
+AT-08-02-08,08,HU-08-02,spec/08-retiros-on-chain/HU-08-02-debito-y-reserva-al-solicitar.md,Escenario 8 (concurrencia): dos retiros que compiten por el mismo disponible,backend
+AT-08-03-01,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 1: firma EIP-155 y broadcast de retiro de ETH (feliz),backend
+AT-08-03-02,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 2 (anti-replay): chainId siempre 11155111,backend
+AT-08-03-03,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 3 (nonce secuencial): retiros sucesivos de la misma emisora,backend
+AT-08-03-04,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 4 (error): conflicto de nonce,backend
+AT-08-03-05,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 5 (concurrencia): dos retiros de la misma emisora no toman el mismo nonce,backend
+AT-08-03-06,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 6 (error): broadcast rechazado por el nodo,backend
+AT-08-03-07,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 7 (gas respaldado exactamente): la transacción usa el `gas_price` snapshotteado,backend
+AT-08-03-08,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 8 (idempotencia/persistencia): reinicio no reasigna nonce ni re-firma,backend
+AT-08-03-09a,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 9a (error): intentar firmar un retiro ya en `BROADCAST`,backend
+AT-08-03-09b,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 9b (error): intentar firmar un retiro ya `CONFIRMED`,backend
+AT-08-03-09c,08,HU-08-03,spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md,Escenario 9c (error): intentar firmar un retiro ya `FAILED`,backend
+AT-08-04-01,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 1: retiro de ETH confirmado con gas sobrante liberado (feliz),backend
+AT-08-04-02,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,"Escenario 2 (borde): gas usado menor que la previsión, se libera la diferencia",backend
+AT-08-04-03,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 3 (borde): aún no alcanza 12 confirmaciones,backend
+AT-08-04-04,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 4 (FAILED por broadcast definitivamente imposible),backend
+AT-08-04-05,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 5 (FAILED revertida): tx minada con status = 0,backend
+AT-08-04-06,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 6 (atomicidad observable como invariante black-box),backend
+AT-08-04-07,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 7 (idempotencia): observar la confirmación varias veces,backend
+AT-08-04-08,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 8 (reorg antes de confirmar),backend
+AT-08-04-08b,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 8b (reorg con tx descartada → FAILED),backend
+AT-08-04-09,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 9 (consulta): el trader consulta el estado de su retiro,backend
+AT-08-04-09b,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,"Escenario 9b (consulta en mempool, aún sin receipt): confirmaciones = 0",backend
+AT-08-04-10,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 10 (error): transición de estado inválida,backend
+AT-08-04-11,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 11 (USDC con status = 1 pero sin el evento Transfer esperado → FAILED),backend
+AT-08-04-12,08,HU-08-04,spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md,Escenario 12 (cancelación de un retiro PENDING por el usuario),backend
+AT-08-05-01,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 1: retiro de USDC exitoso (feliz),backend
+AT-08-05-02,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 2 (campos de la transacción ERC-20),backend
+AT-08-05-03,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 3 (borde): USDC alcanza pero falta ETH para el gas,backend
+AT-08-05-04,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 4 (borde): falta USDC para el principal,backend
+AT-08-05-04b,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 4b (borde): ambos activos insuficientes → precede USDC,backend
+AT-08-05-05,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,"Escenario 5 (FAILED revertida): el `transfer` revierte, USDC se reacredita y el gas se consume",backend
+AT-08-05-06,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 6 (FAILED no minada): se libera toda la reserva dual,backend
+AT-08-05-07,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 7 (confirmación con `Transfer` correcto),backend
+AT-08-05-08,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 8 (anti-replay y nonce — reutiliza HU-08-03),backend
+AT-08-05-09,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,"Escenario 9 (precisión de decimales): USDC en 6 decimales, gas en wei",backend
+AT-08-05-10,08,HU-08-05,spec/08-retiros-on-chain/HU-08-05-retiro-usdc-erc20.md,Escenario 10 (status = 1 sin el evento Transfer esperado → FAILED),backend
+AT-09-01-01,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 1: Registro de cuenta,backend
+AT-09-01-02,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 2: Login devuelve token,backend
+AT-09-01-03,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 3: Perfil propio,backend
+AT-09-01-04,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 4: Alta de orden limit (feliz),backend
+AT-09-01-05,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 5: Alta de orden market (borde: sin precio),backend
+AT-09-01-06,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 6: Detalle de orden,backend
+AT-09-01-07,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 7: Listado de órdenes con paginación,backend
+AT-09-01-08,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 8: Cancelación de orden,backend
+AT-09-01-09,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 9: Balances,backend
+AT-09-01-10,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 10: Dirección de depósito,backend
+AT-09-01-11,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,"Escenario 11: Creación de retiro (asíncrono, 202)",backend
+AT-09-01-12,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 12: Listar depósitos y retiros,backend
+AT-09-01-13,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 13: Orderbook de mercado (público),backend
+AT-09-01-14,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 14: Trades recientes (público),backend
+AT-09-01-15,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 15 (error): Ruta inexistente y método no permitido,backend
+AT-09-01-16,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 16 (error): Cuerpo no JSON / monto mal serializado,backend
+AT-09-01-17,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 17 (concurrencia/idempotencia): clientOrderId duplicado,backend
+AT-09-01-18,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 18: Paginación de depósitos/retiros,backend
+AT-09-01-19,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 19: Ticker / top-of-book (público),backend
+AT-09-01-20,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 20 (borde): Ticker y orderbook con lados vacíos,backend
+AT-09-01-21,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 21 (error): Orden MARKET sin liquidez,backend
+AT-09-01-22,09,HU-09-01,spec/09-api-http-websocket/HU-09-01-contrato-rest.md,Escenario 22 (borde): MARKET con fill parcial y liquidez agotada,backend
+AT-09-02-01,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 1: Acceso autenticado exitoso,backend
+AT-09-02-02,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 2 (error): Token ausente,backend
+AT-09-02-03,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 3 (error): Token inválido o malformado,backend
+AT-09-02-04,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 4 (precedencia): Payload inválido sin token,backend
+AT-09-02-05,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 5 (autorización): Listados aislados por cuenta,backend
+AT-09-02-06,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 6 (autorización/error): Acceso a orden ajena,backend
+AT-09-02-07,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 7 (autorización/error): Cancelar orden ajena,backend
+AT-09-02-08,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 8 (autorización/error): Acceso a retiro ajeno,backend
+AT-09-02-09,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 9 (WS privado): Suscripción privada requiere token,backend
+AT-09-02-10,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 10 (aislamiento WS): Eventos solo de la cuenta dueña,backend
+AT-09-02-11,09,HU-09-02,spec/09-api-http-websocket/HU-09-02-autenticacion-y-autorizacion-api.md,Escenario 11 (rate limit): Exceso de solicitudes,backend
+AT-09-03-01,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 1: Snapshot inicial del orderbook,backend
+AT-09-03-02,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 2: Actualización incremental al ingresar una orden,backend
+AT-09-03-03,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 3 (borde): Eliminación de un nivel,backend
+AT-09-03-04,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 4: Stream de trades,backend
+AT-09-03-05,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 5 (borde): Varios cruces en orden de prioridad,backend
+AT-09-03-06,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 6 (error de sincronía): Detección de hueco de secuencia,backend
+AT-09-03-07,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 7: Canal público sin autenticación,backend
+AT-09-03-08,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 8: Desuscripción,backend
+AT-09-03-09,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 9 (error): Mensaje de suscripción inválido,backend
+AT-09-03-10,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 10: Reconexión produce nuevo snapshot,backend
+AT-09-03-11,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 11: Profundidad del snapshot WS,backend
+AT-09-03-12,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 12: Heartbeat ping/pong,backend
+AT-09-03-13,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 13: Bootstrap REST + WS,backend
+AT-09-03-14,09,HU-09-03,spec/09-api-http-websocket/HU-09-03-websocket-mercado-publico.md,Escenario 14: Atomicidad de la delta de un fill multi-nivel,backend
+AT-09-04-01,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 1: Autenticación y suscripción,backend
+AT-09-04-02,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 2 (error): Sin token válido,backend
+AT-09-04-03,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 3: Evento de orden al aceptar el alta,backend
+AT-09-04-04,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 4: Transición por fill parcial y total,backend
+AT-09-04-05,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 5: Evento de balance al bloquear y al liquidar,backend
+AT-09-04-06,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 6: Cancelación reflejada,backend
+AT-09-04-07,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 7 (aislamiento): Eventos solo del dueño,backend
+AT-09-04-08,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 8 (atomicidad): Estado posterior al settlement,backend
+AT-09-04-09,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 9 (borde): Hueco de secuencia,backend
+AT-09-04-10,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 10 (idempotencia de cliente): Reaplicar evento,backend
+AT-09-04-11,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 11 (seguridad): Expiración de token en sesión activa,backend
+AT-09-04-12,09,HU-09-04,spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md,Escenario 12 (retiros): Canal de retiros refleja el ciclo de vida,backend
+AT-09-05-01,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 1: Envelope uniforme,backend
+AT-09-05-02,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 2: Mapeo de código a HTTP,backend
+AT-09-05-03,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 3 (precedencia): Un error por respuesta,backend
+AT-09-05-04,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 4 (precedencia auth): Auth antes que esquema,backend
+AT-09-05-05,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 5: VALIDATION_ERROR con issues,backend
+AT-09-05-06,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 6: Montos en details como string,backend
+AT-09-05-07,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 7 (WebSocket): Mismo envelope sin status HTTP,backend
+AT-09-05-08,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 8 (rate limit): 429 con Retry-After,backend
+AT-09-05-09,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 9 (error de sistema): 500 sin fuga,backend
+AT-09-05-10,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 10 (ruta/método): NOT_FOUND y 405,backend
+AT-09-05-11,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,"Escenario 11 (estabilidad): code del catálogo, message libre",backend
+AT-09-05-12,09,HU-09-05,spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md,Escenario 12 (invariante): El error no muta estado,backend
+AT-10-01-01,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 1: Login exitoso,web
+AT-10-01-02a,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 2a: Email inexistente responde con mensaje genérico,web
+AT-10-01-02b,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 2b: Email existente con contraseña incorrecta responde con el mismo mensaje,web
+AT-10-01-03,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 3 (borde): campos vacíos deshabilitan el envío,web
+AT-10-01-04,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 4 (borde): anti doble submit,web
+AT-10-01-05,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 5 (error): validación de esquema,web
+AT-10-01-06,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 6 (error): rate limit,web
+AT-10-01-07,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 7 (error): expiración de sesión redirige a login,web
+AT-10-01-08,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 8 (error): fallo de red / servidor,web
+AT-10-01-09,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 9 (borde): sesión ya activa redirige automáticamente,web
+AT-10-01-10,10,HU-10-01,spec/10-cliente-web/HU-10-01-pantalla-de-login.md,Escenario 10 (borde): sesión persistida inválida permanece en login,web
+AT-10-02-01,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 1: Carga inicial del orderbook y trades,web
+AT-10-02-02,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 2: Actualización en vivo del libro,web
+AT-10-02-03,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 3: Nuevo trade se inserta al tope y se respeta el tope de 50,web
+AT-10-02-04,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 4 (borde): cálculo de spread con enteros,web
+AT-10-02-05,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 5 (borde): un lado vacío deja spread indefinido,web
+AT-10-02-06,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 6 (borde): formato de cantidades sin pérdida de precisión,web
+AT-10-02-07,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 7 (error/borde): libro cruzado se descarta y resincroniza,web
+AT-10-02-08,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 8 (error): gap de secuencia fuerza resync,web
+AT-10-02-09,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 9 (error): desconexión y reconexión con resync,web
+AT-10-02-10,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 10 (error): fallo de la carga inicial del snapshot,web
+AT-10-02-11,10,HU-10-02,spec/10-cliente-web/HU-10-02-vista-de-trading.md,Escenario 11 (borde): último precio destacado con indicador de dirección,web
+AT-10-03-01,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 1: Alta de orden LIMIT válida,web
+AT-10-03-02,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 2: Alta de orden MARKET válida,web
+AT-10-03-03,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 3 (borde): conversión exacta humano→unidad mínima,web
+AT-10-03-04,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 4 (borde): estimación de notional y fee con enteros,web
+AT-10-03-05,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 5 (error de validación cliente): tick inválido bloquea envío,web
+AT-10-03-06,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 6 (error de validación cliente): lot inválido bloquea envío,web
+AT-10-03-07,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 7 (error de validación cliente): notional por debajo del mínimo,web
+AT-10-03-08a,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 8a (validación cliente): LIMIT sin precio bloquea el envío,web
+AT-10-03-08b,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 8b (manejo de servidor): backend rechaza LIMIT sin precio,web
+AT-10-03-08c,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 8c (manejo de servidor): backend rechaza MARKET con precio,web
+AT-10-03-09,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 9 (error de servidor): fondos insuficientes,web
+AT-10-03-10,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 10 (error de servidor): self-trade bloqueado,web
+AT-10-03-11,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 11 (error de servidor): market sin liquidez,web
+AT-10-03-12,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 12 (idempotencia/concurrencia): reintento reutiliza clientOrderId,web
+AT-10-03-13,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 13 (borde): anti doble submit,web
+AT-10-03-14,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 14 (estimación): el rol de fee depende del top-of-book,web
+AT-10-03-15,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 15 (borde): MARKET no muestra notional estimado ni valida mínimo notional en cliente,web
+AT-10-03-16,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 16 (precedencia): múltiples validaciones de campo simultáneas,web
+AT-10-03-17,10,HU-10-03,spec/10-cliente-web/HU-10-03-formulario-de-orden.md,Escenario 17 (estimación): precio medio estimado de ejecución de una MARKET,web
+AT-10-04-01,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 1: Listado de órdenes abiertas,web
+AT-10-04-02,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 2: Actualización en vivo por fill parcial,web
+AT-10-04-03,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 3: Orden pasa a terminal y se mueve a historial,web
+AT-10-04-04,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 4: Cancelación exitosa desde la UI,web
+AT-10-04-05,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 5 (error/concurrencia): cancelar una orden ya ejecutada,web
+AT-10-04-06,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 6 (error): cancelar orden inexistente o ajena,web
+AT-10-04-07,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 7 (borde): anti doble submit de cancelación,web
+AT-10-04-08,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 8: Paginación del historial,web
+AT-10-04-09,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 9 (borde): historial vacío,web
+AT-10-04-10,10,HU-10-04,spec/10-cliente-web/HU-10-04-ordenes-abiertas-e-historial.md,Escenario 10 (borde): orden REJECTED en historial,web
+AT-10-05-01,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 1: Carga inicial de balances,web
+AT-10-05-02,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 2: Total recompuesto con enteros,web
+AT-10-05-03,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 3: Actualización en vivo al bloquear fondos por una orden,web
+AT-10-05-04,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 4: Actualización en vivo al liquidarse un fill,web
+AT-10-05-05,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 5: Actualización en vivo al acreditarse un depósito,web
+AT-10-05-06,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 6 (borde): balance cero,web
+AT-10-05-07a,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 7a (error/borde): update con disponible negativo se descarta,web
+AT-10-05-07b,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 7b (error/borde): update con total incoherente se descarta,web
+AT-10-05-08,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 8 (error): reconexión del canal de balances,web
+AT-10-05-09,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 9: Actualización en vivo al solicitar un retiro,web
+AT-10-05-10,10,HU-10-05,spec/10-cliente-web/HU-10-05-balances.md,Escenario 10 (error): fallo de carga del snapshot inicial de balances,web
+AT-10-06-01,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 1: Mostrar dirección de depósito con checksum EIP-55,web
+AT-10-06-02,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 2: Seguimiento de un depósito hasta acreditarse (12 confirmaciones),web
+AT-10-06-03,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 3 (idempotencia): el mismo depósito no se duplica,web
+AT-10-06-04,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 4: Retiro válido y seguimiento de estado,web
+AT-10-06-05,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 5 (error): dirección destino con checksum inválido,web
+AT-10-06-06,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 6 (error): monto que no respeta la unidad mínima,web
+AT-10-06-07,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 7 (error): monto por debajo del mínimo de retiro,web
+AT-10-06-08,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 8 (error): fondos insuficientes para retirar,web
+AT-10-06-09,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 9 (error): broadcast definitivamente fallido observado como FAILED,web
+AT-10-06-10,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 10 (error/borde): chainId distinto de Sepolia,web
+AT-10-06-11,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 11 (borde): anti doble submit del retiro,web
+AT-10-06-12,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,"Escenario 12: Retiro de ETH (activo nativo, 18 decimales)",web
+AT-10-06-13,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 13 (error): retiro FAILED y creación de un retiro nuevo,web
+AT-10-06-14,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 14 (error): conflicto de nonce durante el retiro,web
+AT-10-06-15,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 15 (idempotencia/concurrencia): reintento de retiro reutiliza clientWithdrawalId,web
+AT-10-06-16,10,HU-10-06,spec/10-cliente-web/HU-10-06-depositos-y-retiros.md,Escenario 16 (borde): depósito PENDIENTE descartado por reorg,web
+AT-11-01-01,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 1: Login exitoso persiste el token y navega,mobile
+AT-11-01-02,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 2: Restauración de sesión al abrir la app (optimista),mobile
+AT-11-01-03,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 3 (borde): Apertura sin token persistido,mobile
+AT-11-01-04,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 4 (error): Credenciales inválidas,mobile
+AT-11-01-05,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 5 (error): Token expirado en una petición autenticada,mobile
+AT-11-01-06,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 6: Logout borra el token,mobile
+AT-11-01-07,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 7 (borde): Validación de campos en cliente,mobile
+AT-11-01-08,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 8a (seguridad — almacenamiento): el token sólo va al almacén cifrado,mobile
+AT-11-01-09,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 9 (error): Fallo de red durante el login,mobile
+AT-11-01-10,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 10 (ciclo de vida): Reanudación desde background,mobile
+AT-11-01-11,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 8b (seguridad — logs): ni token ni password se loggean,mobile
+AT-11-01-12,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 11 (ciclo de vida): Reconexión WebSocket con token expirado,mobile
+AT-11-01-13,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,"Escenario 12 (borde, seguridad): Fallo de lectura del almacén seguro",mobile
+AT-11-01-14,11,HU-11-01,spec/11-cliente-mobile/HU-11-01-login-mobile.md,Escenario 13 (concurrencia): Logout singleton ante múltiples 401,mobile
+AT-11-02-01,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 1: Render inicial del orderbook y spread,mobile
+AT-11-02-02,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 2: Actualización en vivo de un nivel,mobile
+AT-11-02-03,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 3: Últimos trades en vivo (tope de 50),mobile
+AT-11-02-04,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 4 (borde): Un lado del libro vacío,mobile
+AT-11-02-05,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 5 (borde): Formato exacto de montos grandes,mobile
+AT-11-02-06,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 6 (ciclo de vida): Background suspende y foreground re-sincroniza,mobile
+AT-11-02-07,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 7 (reconexión): Caída del WebSocket,mobile
+AT-11-02-08,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 8 (borde): Resync por deltas fuera de secuencia,mobile
+AT-11-02-09,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 9: Pull-to-refresh fuerza resync,mobile
+AT-11-02-10,11,HU-11-02,spec/11-cliente-mobile/HU-11-02-vista-de-trading-mobile.md,Escenario 10 (borde): Formato según tick y lot,mobile
+AT-11-03-01,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 1: Alta LIMIT válida que queda en el libro,mobile
+AT-11-03-02,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 2: Alta LIMIT que cruza y se ejecuta,mobile
+AT-11-03-03,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 3: Alta MARKET con liquidez,mobile
+AT-11-03-04,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 4 (borde): Precio fuera de tick,mobile
+AT-11-03-05,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 5 (borde): Cantidad fuera de lot,mobile
+AT-11-03-06,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 6 (borde): Por debajo del mínimo notional,mobile
+AT-11-03-07,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 7 (error): LIMIT sin precio,mobile
+AT-11-03-08,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 8 (error): MARKET con precio,mobile
+AT-11-03-09,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 9 (error): Fondos insuficientes,mobile
+AT-11-03-10,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 10 (error): Market sin liquidez,mobile
+AT-11-03-11,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 11 (idempotencia): Reintento con el mismo clientOrderId,mobile
+AT-11-03-12,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 12 (concurrencia): Doble tap en enviar,mobile
+AT-11-03-13,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 13 (error): Self-trade bloqueado,mobile
+AT-11-03-14,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 14 (borde): Conversión exacta sin floats,mobile
+AT-11-03-15,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 15 (error): Token expirado al enviar,mobile
+AT-11-03-16,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 16 (error): Límite de tasa (RATE_LIMITED),mobile
+AT-11-03-17,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 17 (error): Fallo de red al enviar la orden,mobile
+AT-11-03-18,11,HU-11-03,spec/11-cliente-mobile/HU-11-03-formulario-de-orden-mobile.md,Escenario 18 (recuperación): Crash entre envío y respuesta,mobile
+AT-11-04-01,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 1: Listado de órdenes abiertas,mobile
+AT-11-04-02,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 2: Cancelar una orden abierta,mobile
+AT-11-04-03,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 3 (live): Fill parcial actualiza el remanente,mobile
+AT-11-04-04,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 4 (live): Fill total mueve a historial,mobile
+AT-11-04-05,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 5: Historial con paginación,mobile
+AT-11-04-06,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 6 (error): Cancelar una orden ya ejecutada,mobile
+AT-11-04-07,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 7 (error): Cancelar orden inexistente o ajena,mobile
+AT-11-04-08,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 8 (idempotencia): Doble cancelación de la misma orden,mobile
+AT-11-04-09,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 9 (concurrencia): Doble tap en cancelar,mobile
+AT-11-04-10,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 10 (ciclo de vida): Resync al volver a foreground,mobile
+AT-11-04-11,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 11: Pull-to-refresh,mobile
+AT-11-04-12,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 12 (error): Token expirado,mobile
+AT-11-04-13,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,Escenario 13 (error): Fallo de red al cancelar,mobile
+AT-11-04-14,11,HU-11-04,spec/11-cliente-mobile/HU-11-04-ordenes-abiertas-e-historial-mobile.md,"Escenario 14 (live, borde): Evento WS de una orden no listada",mobile
+AT-11-05-01,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 1: Vista de balances por activo,mobile
+AT-11-05-02,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 2: total = disponible + bloqueado exacto,mobile
+AT-11-05-03,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 3 (live): Alta de orden bloquea fondos,mobile
+AT-11-05-04,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 4 (live): Cancelación libera fondos,mobile
+AT-11-05-05,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 5 (live): Depósito acreditado,mobile
+AT-11-05-06,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 6 (borde): Formato exacto de monto grande,mobile
+AT-11-05-07,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 7: Pull-to-refresh,mobile
+AT-11-05-08,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 8 (ciclo de vida): Resync al volver a foreground,mobile
+AT-11-05-09,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 9 (error): Token expirado,mobile
+AT-11-05-10,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 10 (borde): Balance cero,mobile
+AT-11-05-11,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 11 (error): Fallo de red al cargar balances,mobile
+AT-11-05-12,11,HU-11-05,spec/11-cliente-mobile/HU-11-05-balances-mobile.md,Escenario 12 (borde): Composición del bloqueado,mobile
+AT-11-06-01,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 1: Mostrar dirección de depósito con QR,mobile
+AT-11-06-02,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 2: Seguimiento de un depósito hasta acreditación,mobile
+AT-11-06-03,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 3 (borde): Depósito sin confirmaciones suficientes,mobile
+AT-11-06-04,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 4 (idempotencia): Mismo depósito no se cuenta dos veces,mobile
+AT-11-06-05,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 5: Retiro válido aceptado y en seguimiento,mobile
+AT-11-06-06,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 6 (error): Dirección destino inválida (EIP-55),mobile
+AT-11-06-07,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 7 (error): Monto de retiro inválido,mobile
+AT-11-06-08,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 8 (error): Monto por debajo del mínimo de retiro,mobile
+AT-11-06-09,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 9 (error): Fondos insuficientes para retirar,mobile
+AT-11-06-10,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 10 (error): chainId incorrecto,mobile
+AT-11-06-11,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 11 (error): Conflicto de nonce,mobile
+AT-11-06-12,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 12 (error): Broadcast fallido,mobile
+AT-11-06-13,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 13: Escanear QR rellena el destino,mobile
+AT-11-06-14,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 14 (borde): Permiso de cámara denegado,mobile
+AT-11-06-15,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 15 (concurrencia): Doble tap en retirar,mobile
+AT-11-06-16,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 16 (borde): Conversión exacta del monto sin floats,mobile
+AT-11-06-17,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 17 (seguridad): No se exponen secretos,mobile
+AT-11-06-18,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 18 (error): Token expirado,mobile
+AT-11-06-19,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 19 (error): QR con red incorrecta (mainnet) es rechazado,mobile
+AT-11-06-20,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 20 (borde): QR con contenido inválido,mobile
+AT-11-06-21,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 21 (borde): Gas en el modal de retiro de USDC,mobile
+AT-11-06-22,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 22 (idempotencia/recuperación): clientWithdrawalId persistido y crash,mobile
+AT-11-06-23,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 23 (idempotencia depósito): DEPOSIT_ALREADY_CREDITED,mobile
+AT-11-06-24,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 24 (seguimiento): Retiro que pasa a FAILED,mobile
+AT-11-06-25,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 25 (error): Fallo de red al solicitar el retiro,mobile
+AT-11-06-26,11,HU-11-06,spec/11-cliente-mobile/HU-11-06-depositos-y-retiros-mobile.md,Escenario 26 (depósito): QR EIP-681 de USDC-mock,mobile

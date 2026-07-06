@@ -1,0 +1,45 @@
+# ATs de épicas 01–09 que NO son automatizables black-box contra el contrato
+# HTTP/WebSocket de la épica 09.
+#
+# Formato (lista YAML; ver HELPERS.md §"Declarar un AT no automatizable"):
+#   - at_id: AT-EE-SS-NN        # ID estable del catálogo (tipo backend)
+#     motivo: >-                 # por qué no es observable black-box y cómo se
+#       ...                      # evalúa en su lugar (rúbrica/manual/white-box)
+#     referencia: spec/...       # (opcional) archivo de la HU
+#
+# Reglas:
+# - Un AT declarado acá NO puede tener tests con @pytest.mark.at (el plugin lo
+#   rechaza en la colección): o se testea, o se declara, nunca ambas.
+# - El reporte (resultados-at.csv) los marca `no_automatizado` y los lista aparte.
+# - La carga de la prueba es alta: si el efecto es observable por REST/WS aunque
+#   sea indirectamente (p. ej. persistencia vía reinicio del SUT orquestado por el
+#   evaluador), se prefiere automatizarlo. Esta lista es para lo genuinamente
+#   inobservable desde afuera.
+#
+# Las entradas siguientes son las declaradas al construir el núcleo del harness;
+# los agentes que escriban los tests por épica agregan las suyas con el mismo
+# formato y justificación.
+
+- at_id: AT-06-01-01
+  motivo: >-
+    La generación del seed HD (mnemonic de 24 palabras, checksum BIP-39, seed
+    PBKDF2 de 64 bytes, cifrado en reposo) es interna: la API de la épica 09 no
+    expone el mnemonic ni el seed por ningún endpoint (custodia, HU-06-01 RN-5).
+    Se evalúa por inspección de código/white-box en H8 (rúbrica on-chain).
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-02
+  motivo: >-
+    Known-answer test de la derivación BIP-39 (mnemonic canónico + passphrase
+    "TREZOR" ⇒ seed hexadecimal exacta): requiere invocar la función interna de
+    derivación con inputs elegidos; el contrato HTTP/WS no expone esa operación.
+    Se evalúa white-box (tests propios del SUT o inspección) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-12
+  motivo: >-
+    Atomicidad ante crash durante la escritura del seed: exige inyectar una
+    falla de proceso/filesystem en un punto interno del SUT, sin superficie
+    black-box para provocarla ni observarla determinísticamente. Se evalúa por
+    inspección de código (escritura atómica) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md

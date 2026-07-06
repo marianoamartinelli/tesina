@@ -1,0 +1,38 @@
+# Entorno on-chain local de evaluación: un nodo anvil (foundry) que simula
+# Sepolia (chainId 11155111, spec/00-fundaciones/activos-y-par-de-trading.md §1).
+#
+# Uso:
+#   docker compose up -d          # levanta el nodo en localhost:8545
+#   python desplegar-usdc.py      # despliega el USDC-mock e imprime su dirección
+#   docker compose down           # apaga y DESCARTA el estado (cada corrida de
+#                                 # evaluación parte de una cadena limpia)
+#
+# Decisiones (ver README.md de este directorio):
+# - `--chain-id 11155111`: mismo chainId que Sepolia; el SUT debe verificar
+#   eth_chainId al arrancar (épica 07) y firmar retiros EIP-155 con él (INV-6).
+# - Automine (sin --block-time): cada transacción se mina al instante; las
+#   confirmaciones se controlan minando bloques vacíos a demanda (anvil_mine,
+#   helpers/onchain.py), lo que hace deterministas los tests de 12 confirmaciones.
+# - Mnemonic por defecto de anvil = mnemonic canónico de Hardhat (HU-06-02):
+#   cuentas 0..9 desbloqueadas y prefondeadas; la 0 es la tesorería del harness.
+# - Sin volumen persistente: el estado vive en memoria del contenedor, a propósito.
+
+services:
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:stable
+    container_name: suite-at-anvil
+    entrypoint: ["anvil"]
+    command:
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8545"
+      - "--chain-id"
+      - "11155111"
+    ports:
+      - "8545:8545"
+    healthcheck:
+      test: ["CMD", "cast", "chain-id", "--rpc-url", "http://127.0.0.1:8545"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
