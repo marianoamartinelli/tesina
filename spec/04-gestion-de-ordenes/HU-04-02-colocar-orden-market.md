@@ -31,7 +31,7 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
    **exactamente uno** de `quantityWei` o `quoteOrderQtyMin` (entero > 0). Si faltan ambos o
    están ambos ⇒ `VALIDATION_ERROR`. Si incluye `priceMin` ⇒ `PRICE_NOT_ALLOWED`. Requiere
    además **`clientOrderId`** (obligatorio; formato según HU-09-01 RN-19): su ausencia ⇒
-   `VALIDATION_ERROR` (422) con `details.field = "clientOrderId"`, evaluado en el paso de
+   `VALIDATION_ERROR` (422) con `details.issues` señalando `clientOrderId`, evaluado en el paso de
    esquema (RE-4 paso 2).
 2. **RN-2 (sin tick; lot según forma).** Market no valida tick (no hay precio). Si se usa
    `quantityWei`, debe cumplir lot size: `quantityWei mod 10^14 == 0 ∧ quantityWei > 0`

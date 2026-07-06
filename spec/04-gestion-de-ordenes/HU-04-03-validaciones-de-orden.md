@@ -33,7 +33,7 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
       cuenta deshabilitada/suspendida).
    2. **Esquema/tipos** → `VALIDATION_ERROR` (422): campo faltante —incluido
       `clientOrderId`, **obligatorio** en el alta: ausente ⇒ `VALIDATION_ERROR` con
-      `details.field = "clientOrderId"` (HU-04-01/02 RN-1, HU-09-01 RN-19)—, tipo
+      `details.issues` señalando `clientOrderId` (HU-04-01/02 RN-1, HU-09-01 RN-19)—, tipo
       incorrecto, monto que no matchea `^(0|[1-9][0-9]*)$`, y la regla de forma única de
       tamaño en market (exactamente uno de `quantityWei`/`quoteOrderQtyMin`).
    3. **Enums y combinaciones** → `INVALID_SIDE`, `INVALID_ORDER_TYPE`, `PRICE_REQUIRED`,

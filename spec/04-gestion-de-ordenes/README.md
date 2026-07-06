@@ -116,7 +116,7 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
   1. autenticación (`UNAUTHENTICATED`) → autorización (`UNAUTHORIZED`);
   2. esquema/tipos del payload (`VALIDATION_ERROR`, incl. patrón `^(0|[1-9][0-9]*)$`,
      `clientOrderId` **obligatorio** —ausente ⇒ `VALIDATION_ERROR` con
-     `details.field = "clientOrderId"`, HU-04-01/02 RN-1— y forma única de tamaño en
+     `details.issues` señalando `clientOrderId`, HU-04-01/02 RN-1— y forma única de tamaño en
      market);
   3. enums y combinaciones (`INVALID_SIDE`, `INVALID_ORDER_TYPE`, `PRICE_REQUIRED`,
      `PRICE_NOT_ALLOWED`);
@@ -147,7 +147,7 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
   > RN-5). Se coloca tras la idempotencia (paso 5) porque ésta es un chequeo barato a nivel
   > de solicitud que debe preceder a la lectura del estado del mercado.
 - **RE-5 — Idempotencia de alta.** El campo `clientOrderId` es **obligatorio** en el alta
-  (HU-04-01/02 RN-1; su ausencia ⇒ `VALIDATION_ERROR` con `details.field = "clientOrderId"`,
+  (HU-04-01/02 RN-1; su ausencia ⇒ `VALIDATION_ERROR` con `details.issues` señalando `clientOrderId`,
   RE-4 paso 2). Si el trader envía un `clientOrderId` ya usado por su
   cuenta, el alta se rechaza con `DUPLICATE_CLIENT_ORDER_ID` (409) y **no** crea una
   segunda orden ni reserva fondos. La unicidad es **permanente por cuenta** (lifetime): un

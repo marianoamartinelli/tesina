@@ -32,7 +32,7 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
    `priceMin` (entero > 0) y `quantityWei` (entero > 0). `quoteOrderQtyMin` **no** se admite
    en una orden limit (→ `VALIDATION_ERROR`). Requiere además **`clientOrderId`**
    (obligatorio; formato según HU-09-01 RN-19): su ausencia ⇒ `VALIDATION_ERROR` (422) con
-   `details.field = "clientOrderId"`, evaluado en el paso de esquema (RE-4 paso 2).
+   `details.issues` señalando `clientOrderId`, evaluado en el paso de esquema (RE-4 paso 2).
 2. **RN-2 (reglas del par).** `priceMin mod 10000 == 0 ∧ priceMin > 0` (si no,
    `INVALID_PRICE_TICK`); `quantityWei mod 10^14 == 0 ∧ quantityWei > 0` (si no,
    `INVALID_LOT_SIZE`); `notional_min = floor(quantityWei × priceMin / 10^18) ≥ 10000000`
