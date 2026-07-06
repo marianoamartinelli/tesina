@@ -1,0 +1,5 @@
+celda: a-con-rag
+harness: a            # Claude Agent SDK
+modelo: claude-opus-4-8   # pinneado por ADR-005
+rag: true
+etapas: ../comun/etapas.yaml

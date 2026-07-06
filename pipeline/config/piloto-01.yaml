@@ -1,0 +1,5 @@
+celda: piloto-01      # corrida descartable (no cuenta para el 2x2)
+harness: a            # configuración libre: la piloto debuggea protocolo y harness
+modelo: claude-opus-4-8
+rag: true             # con RAG para ejercitar también ese camino
+etapas: ../comun/etapas.yaml

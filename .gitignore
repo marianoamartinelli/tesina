@@ -13,3 +13,7 @@ tesis/build/
 *.fls
 *.fdb_latexmk
 *.synctex.gz
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/

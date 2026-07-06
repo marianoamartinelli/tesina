@@ -1,0 +1,7 @@
+# Dependencias del pipeline (hito H4) — versiones exactas pinneadas (ADR-005).
+# Instalar en el venv del repo: .venv/bin/pip install -r pipeline/requirements.txt
+# Las versiones de SDK se registran en el manifest de cada corrida.
+claude-agent-sdk==0.2.110
+openai-agents==0.17.7
+PyYAML==6.0.3
+pytest==9.1.1

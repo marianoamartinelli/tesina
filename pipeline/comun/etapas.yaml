@@ -1,0 +1,36 @@
+# Definición única de las etapas del pipeline (compartida por ambos harnesses).
+# Orden fijado por el protocolo pre-registrado (evaluacion/protocolo.md §4).
+# Los prompts se cargan verbatim desde los archivos referenciados; ningún harness
+# define texto de prompt propio.
+
+prompt_sistema: comun/prompts/sistema.md
+
+etapas:
+  - id: backend
+    prompt: comun/prompts/etapa-1-backend.md
+    # Criterio de avance (lo verifica el evaluador humano, no el harness):
+    # el backend arranca y responde el health-check de la épica 09.
+    smoke_check: "backend levanta y responde health-check"
+    presupuesto_proporcional: 0.60
+  - id: web
+    prompt: comun/prompts/etapa-2-web.md
+    smoke_check: "cliente web compila y renderiza login"
+    presupuesto_proporcional: 0.25
+  - id: mobile
+    prompt: comun/prompts/etapa-3-mobile.md
+    smoke_check: "app mobile compila y corre en Expo"
+    presupuesto_proporcional: 0.15
+
+rag:
+  herramienta: consultar_corpus
+  descripcion: >-
+    Busca en una base de conocimiento con los estándares del dominio on-chain
+    (BIP-32, BIP-39 y su wordlist, BIP-44, EIP-155, ERC-20, ERC-55, ERC-681 y la
+    interfaz JSON-RPC de Ethereum) y devuelve los pasajes más relevantes para la
+    consulta. Usala cuando necesites el detalle normativo exacto de uno de esos
+    estándares (fórmulas, campos, algoritmos, vectores de prueba).
+  corpus: ../corpus/documentos
+  k: 6
+  bm25:
+    k1: 1.5
+    b: 0.75

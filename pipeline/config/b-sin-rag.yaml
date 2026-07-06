@@ -1,0 +1,5 @@
+celda: b-sin-rag
+harness: b            # OpenAI Agents SDK
+modelo: gpt-5.5           # pinneado por ADR-005
+rag: false
+etapas: ../comun/etapas.yaml
