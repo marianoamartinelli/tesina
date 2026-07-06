@@ -11,7 +11,10 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   referencias cruzadas, precedencia de errores, invariantes) y tag `spec-v1.0`.
   A partir del tag, la spec es **inmutable** para el experimento: las 4 corridas
   reciben exactamente ese commit. *(2026-07-05 — tag `spec-v1.0`; 57 HUs,
-  693 AT-ids; ~50 correcciones de consistencia, ver journal.)*
+  693 AT-ids; ~50 correcciones de consistencia, ver journal. Re-freeze como
+  **`spec-v1.1`** el mismo día, antes de toda corrida: 17 defectos hallados al
+  construir la suite de H5, corregidos por ADR-006 con AT-ids intactos; las
+  corridas pinnean v1.1.)*
 - [x] **H2 — Protocolo experimental pre-registrado.** Documento que fija, antes de
   cualquier corrida: criterios de intervención humana (cuándo intervenir, cómo se
   clasifica según las 8 causas raíz de la propuesta), orden de construcción
