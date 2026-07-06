@@ -32,16 +32,16 @@ las reglas de mínimo de retiro (épica 08). El único error propio de esta HU e
      al precio límite: `lock_quote = floor(q_wei × price_min / 10^18)`.
    - **SELL limit** de `q_wei` ETH: se bloquea **base (ETH)** por la cantidad:
      `lock_base = q_wei`.
-   - **MARKET BUY por `quoteOrderQty`** (monto de quote a gastar): se bloquea **quote (USDC)**
-     directamente, `R = quoteOrderQty` (sin derivación de notional). Ver HU-04-02 RN-5.
+   - **MARKET BUY por `quoteOrderQtyMin`** (monto de quote a gastar): se bloquea **quote (USDC)**
+     directamente, `R = quoteOrderQtyMin` (sin derivación de notional). Ver HU-04-02 RN-5.
    - **MARKET BUY por `quantityWei`** (cantidad de base a comprar): se bloquea **quote (USDC)**
      por el **costo estimado del barrido** de los asks vigentes hasta `quantityWei`
      (snapshot), `R = Σ_niveles floor(wei_consumido_nivel × precio_nivel / 10^18)`, calculado
      por el matching (HU-04-02 RN-5).
    - **MARKET SELL por `quantityWei`**: se bloquea **base (ETH)**, `R = q_wei` (igual que SELL
      limit).
-   - **MARKET SELL por `quoteOrderQty`**: se bloquea **base (ETH)** por los **wei estimados**
-     necesarios para obtener `quoteOrderQty` de quote barriendo los bids vigentes (snapshot),
+   - **MARKET SELL por `quoteOrderQtyMin`**: se bloquea **base (ETH)** por los **wei estimados**
+     necesarios para obtener `quoteOrderQtyMin` de quote barriendo los bids vigentes (snapshot),
      calculado por el matching (HU-04-02 RN-5).
    - En todas las variantes MARKET, el sobrante reservado y no consumido (por mejor precio,
      por descarte del remanente immediate-or-cancel o por redondeo del barrido) se **libera**
@@ -92,10 +92,22 @@ las reglas de mínimo de retiro (épica 08). El único error propio de esta HU e
 9. **RN-9 (montos enteros):** todos los montos bloqueados/liberados/consumidos son enteros
    de unidad mínima; las conversiones base→quote usan `floor` con una sola división
    (`multiplicar antes de dividir`); prohibido floats.
-10. **RN-10 (bloqueo por retiro):** una solicitud de retiro de `x` en activo `A` bloquea
-    `x` (`WITHDRAWAL_LOCK`) si `available(acc,A) ≥ x`; si no, `INSUFFICIENT_FUNDS`. Al
-    confirmarse on-chain se consume el bloqueado (`WITHDRAWAL_SETTLE`, sale del sistema); si
-    el retiro se aborta antes del débito definitivo, se libera (`WITHDRAWAL_RELEASE`).
+10. **RN-10 (bloqueo por retiro — modelo de la épica 08):** una solicitud de retiro
+    aceptada bloquea el **monto más la previsión de fee de red**
+    `fee_red_wei = gas_limit × gas_price_wei` (con `gas_price_wei` **snapshoteado** al
+    aceptar la solicitud; HU-08-02 RN-1/RN-7):
+    - **Retiro de ETH:** se bloquea en ETH `reserva_eth = amount_wei + fee_red_wei`
+      (`WITHDRAWAL_LOCK`) si `available(acc, ETH) ≥ reserva_eth`; si no,
+      `INSUFFICIENT_FUNDS` con `required = amount_wei + fee_red_wei` (HU-08-01 RN-9).
+    - **Retiro de USDC:** reserva **dual** y atómica: se bloquea `amount_usdc` en USDC
+      **y** `fee_red_wei` en ETH; si cualquiera de las dos patas no alcanza, no se aplica
+      ninguna (`INSUFFICIENT_FUNDS`; HU-08-02 RN-3, detalle en HU-08-05).
+    Al confirmarse on-chain se **consume** del bloqueado el monto retirado más el gas
+    efectivamente usado (`gas_usado_wei ≤ fee_red_wei`) — asiento `WITHDRAWAL_SETTLE`,
+    sale del sistema — y el **sobrante de gas** `fee_red_wei − gas_usado_wei` se **libera**
+    a disponible (`WITHDRAWAL_RELEASE`, solo si es `> 0`), según la reconciliación de
+    HU-08-04 RN-3. Si el retiro se aborta antes del débito definitivo, se libera todo lo
+    **no consumido** (`WITHDRAWAL_RELEASE`; HU-08-04 RN-5).
 
 ## Criterios de aceptacion (DoD)
 
@@ -164,17 +176,17 @@ las reglas de mínimo de retiro (épica 08). El único error propio de esta HU e
 - Y `total` de `USDC` permanece `"2000000000"`
 
 ### Escenario 10 (error): Retiro sin fondos suficientes [AT-02-02-10]
-- Dado un trader con `ETH` disponible `500000000000000000` (0.5 ETH) y bloqueado `0`
+- Dado un trader con `ETH` disponible `500000000000000000` (0.5 ETH) y bloqueado `0`, y una previsión de fee de red `fee_red_wei = "420000000000000"` (21000 × 20 gwei, snapshot de HU-08-02 RN-7)
 - Cuando solicita un retiro de `600000000000000000` wei (0.6 ETH)
-- Entonces se rechaza con `code = INSUFFICIENT_FUNDS` (HTTP 422) y `details = { asset: "ETH", required: "600000000000000000", available: "500000000000000000" }` (los tres campos, conforme al catálogo de 00-fundaciones/modelo-de-errores.md §3.4)
+- Entonces se rechaza con `code = INSUFFICIENT_FUNDS` (HTTP 422) y `details = { asset: "ETH", required: "600420000000000000", available: "500000000000000000" }` (los tres campos, conforme al catálogo de 00-fundaciones/modelo-de-errores.md §3.4; `required = amount_wei + fee_red_wei`, HU-08-01 RN-9)
 - Y los balances quedan intactos (no se crea `WITHDRAWAL_LOCK`)
 
 ### Escenario 11 (retiro): Bloqueo, consumo y liberación de retiro [AT-02-02-11]
-- Dado un trader con `ETH` disponible `1000000000000000000` (1 ETH)
+- Dado un trader con `ETH` disponible `1000000000000000000` (1 ETH) y una previsión de fee de red `fee_red_wei = "420000000000000"` (21000 × 20 gwei, snapshot de HU-08-02 RN-7)
 - Cuando solicita un retiro de `400000000000000000` wei aceptado
-- Entonces se bloquea: disponible `"600000000000000000"`, bloqueado `"400000000000000000"` (`WITHDRAWAL_LOCK`)
-- Y si el retiro se **confirma** on-chain, el bloqueado se consume y `total(ETH)` baja en `400000000000000000` (`WITHDRAWAL_SETTLE`, sale del sistema)
-- Y si en cambio el retiro se **aborta** antes del débito, el bloqueado se libera al disponible y `total(ETH)` vuelve a `"1000000000000000000"` (`WITHDRAWAL_RELEASE`)
+- Entonces se bloquea `reserva_eth = amount_wei + fee_red_wei = "400420000000000000"`: disponible `"599580000000000000"`, bloqueado `"400420000000000000"` (`WITHDRAWAL_LOCK`, HU-08-02 RN-1)
+- Y si el retiro se **confirma** on-chain con `gas_usado_wei = "420000000000000"` (una transferencia ETH consume exactamente 21000 gas), el bloqueado se consume por `amount_wei + gas_usado_wei = "400420000000000000"` y `total(ETH)` baja a `"599580000000000000"` (`WITHDRAWAL_SETTLE`, sale del sistema; el sobrante `fee_red_wei − gas_usado_wei = "0"` no genera liberación — HU-08-04 RN-3)
+- Y si en cambio el retiro se **aborta** antes del débito, se libera **toda** la reserva (`"400420000000000000"`) al disponible y `total(ETH)` permanece `"1000000000000000000"` (`WITHDRAWAL_RELEASE`, nada salió del sistema — HU-08-04 RN-5)
 
 ### Escenario 12 (borde): Ejecución exactamente al precio límite ⇒ sin ORDER_RELEASE [AT-02-02-12]
 - Dado un trader que crea una orden BUY limit de `1000000000000000000` wei (1 ETH) a `price_min = 2000000000` (2000.00), bloqueando `lock_quote = 2000000000`

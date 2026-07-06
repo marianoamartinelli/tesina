@@ -103,7 +103,9 @@ reinicios (`INV-8`), igual que el resto del estado del sistema.
     declarados** en la configuración del entorno; al superarse el umbral en la ventana, se
     rechaza con `RATE_LIMITED` (429) y `details.retryAfterSeconds ≥ 0`. Se evalúa como
     **paso 0** de la precedencia (RN-9): antes de cualquier otra validación, incluso la de
-    esquema. (Consistente con el rate limiting de login, HU-01-02 RN-9.)
+    esquema. (Consistente con el rate limiting de login, HU-01-02 RN-9.) El límite por
+    cuenta autenticada de HU-09-02 RN-12 **no** aplica a este endpoint (es público, sin
+    cuenta); si se implementa rate limiting aquí, usa `RATE_LIMITED`.
 11. **RN-11 (persistencia).** La cuenta creada se persiste de forma durable y sobrevive a
     reinicios del sistema (`INV-8`).
 

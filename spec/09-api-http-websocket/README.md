@@ -4,8 +4,8 @@
 
 Definir el **contrato de interfaz** que consumen los clientes web (React) y mobile
 (React Native/Expo) contra el backend del exchange. La épica especifica la **superficie
-observable**: recursos REST (perfil/auth, órdenes, balances, depósitos, retiros,
-mercado), sus payloads de request/response y códigos de estado; la **autenticación por
+observable**: recursos REST (perfil/auth, órdenes, balances, movimientos, depósitos,
+retiros, mercado), sus payloads de request/response y códigos de estado; la **autenticación por
 token** y la **autorización** (un usuario solo accede a sus propios recursos); y los
 **canales WebSocket** público (orderbook + trades) y privado (órdenes, balances y
 retiros del usuario). Además, fija la **forma uniforme de los errores** de la API y su mapeo desde el
@@ -63,7 +63,8 @@ dominio (01–08). Cuando hay conflicto, prevalece `00-fundaciones`.
 - **01 — Cuentas y autenticación:** semántica de registro, login, token y autorización
   (esta épica expone su superficie HTTP/WS).
 - **02 — Balances y ledger:** semántica de `available`/`locked`/`total` que el endpoint de
-  balances y el canal privado serializan.
+  balances y el canal privado serializan; historial de movimientos (HU-02-05, autoridad
+  semántica) que expone `GET /movements` (HU-09-01 RN-22).
 - **03 — Motor de matching:** orderbook y trades que alimentan los endpoints de mercado y
   el canal público.
 - **04 — Gestión de órdenes:** ciclo de vida, validaciones y precedencia de alta/cancelación

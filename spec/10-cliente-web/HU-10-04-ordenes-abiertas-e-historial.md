@@ -14,7 +14,7 @@ Cubre dos vistas relacionadas del cliente React: (1) órdenes abiertas (`OPEN` y
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (clasificación por estado).** "Órdenes abiertas" lista únicamente `OPEN` y `PARTIALLY_FILLED`. "Historial" lista `FILLED`, `CANCELLED` y `REJECTED`. Una orden que pasa a estado terminal se mueve de abiertas a historial.
-2. **RN-2 (columnas).** Cada fila muestra: `orderId`, `side`, `type`, `priceMin` (o "market"), `quantityWei`, cantidad ejecutada, remanente (`quantityWei − ejecutada`), **precio promedio de ejecución** (`avgExecutionPrice`), `status` y timestamp de creación. El **precio promedio de ejecución** es el monto total ejecutado en quote dividido por la cantidad ejecutada en base, expresado como `priceMin` (string), provisto por la épica 09; para órdenes sin ningún fill (ejecutada = 0) se muestra `"--"`. Es la información más relevante post-trade para MARKET y fills parciales a múltiples precios. Los montos se formatean desde unidad mínima sin floats (RNE-1).
+2. **RN-2 (columnas).** Cada fila muestra: `orderId`, `side`, `type`, `priceMin` (o "market"), `quantityWei`, cantidad ejecutada, remanente (`quantityWei − ejecutada`), **precio promedio de ejecución** (`avgPriceMin`), `status` y timestamp de creación. El **precio promedio de ejecución** es el monto total ejecutado en quote dividido por la cantidad ejecutada en base, expresado como `priceMin` (string), provisto por la épica 09; para órdenes sin ningún fill (ejecutada = 0) se muestra `"--"`. Es la información más relevante post-trade para MARKET y fills parciales a múltiples precios. Los montos se formatean desde unidad mínima sin floats (RNE-1).
 3. **RN-3 (remanente respaldado — INV-7).** El remanente mostrado de una orden abierta corresponde a lo que sigue bloqueado en balances (HU-10-05); el cliente no muestra remanentes que contradigan el bloqueado informado por el servidor (RNE-6).
 4. **RN-4 (actualización en vivo).** Vía WebSocket, los eventos de fill/cambio de estado actualizan la fila correspondiente (ejecutada, remanente, status). Al alcanzar un estado terminal, la orden se reubica en historial sin recargar toda la vista.
 5. **RN-5 (cancelar — solo cancelables).** El botón "Cancelar" está habilitado solo para `OPEN`/`PARTIALLY_FILLED`. Al cancelar, el cliente llama al endpoint de cancelación (épica 09). Ante éxito, la orden pasa a `CANCELLED` y el remanente bloqueado se libera (reflejado en HU-10-05 por su propio canal).
@@ -34,19 +34,19 @@ Cubre dos vistas relacionadas del cliente React: (1) órdenes abiertas (`OPEN` y
 - Y aparecen ordenadas por timestamp de creación descendente: la de `t2` antes que la de `t1` (RN-11)
 - Y las cantidades se muestran formateadas desde unidad mínima sin floats
 - Y el remanente mostrado = `quantityWei − ejecutada`
-- Y la orden `OPEN` sin fills muestra `avgExecutionPrice = "--"`
+- Y la orden `OPEN` sin fills muestra `avgPriceMin = "--"`
 
 ### Escenario 2: Actualización en vivo por fill parcial [AT-10-04-02]
-- Dado una orden `OPEN` listada con `avgExecutionPrice = "--"`
+- Dado una orden `OPEN` listada con `avgPriceMin = "--"`
 - Cuando llega por WebSocket un fill parcial de esa orden
-- Entonces la fila pasa a `PARTIALLY_FILLED`, actualiza ejecutada, remanente y `avgExecutionPrice` (precio promedio provisto por la API)
+- Entonces la fila pasa a `PARTIALLY_FILLED`, actualiza ejecutada, remanente y `avgPriceMin` (precio promedio provisto por la API)
 - Y permanece en órdenes abiertas
 
 ### Escenario 3: Orden pasa a terminal y se mueve a historial [AT-10-04-03]
 - Dado una orden `PARTIALLY_FILLED` listada en abiertas
 - Cuando un fill la completa (`FILLED`)
 - Entonces deja de aparecer en órdenes abiertas
-- Y aparece en el historial con estado `FILLED` y su `avgExecutionPrice` (precio promedio de ejecución) poblado
+- Y aparece en el historial con estado `FILLED` y su `avgPriceMin` (precio promedio de ejecución) poblado
 
 ### Escenario 4: Cancelación exitosa desde la UI [AT-10-04-04]
 - Dado una orden `OPEN` de la cuenta
@@ -87,7 +87,7 @@ Cubre dos vistas relacionadas del cliente React: (1) órdenes abiertas (`OPEN` y
 - Dado una cuenta con una orden `REJECTED` persistida por un rechazo **del matching** (p. ej. una MARKET rechazada por `MARKET_NO_LIQUIDITY`, o una orden rechazada por `SELF_TRADE_BLOCKED`; los rechazos de validación/fondos **no** se persisten como orden, HU-04-05 RN-5)
 - Cuando el usuario abre el historial
 - Entonces aparece la orden con estado `REJECTED`, ejecutada = `0` y remanente = `quantityWei`
-- Y `avgExecutionPrice = "--"` (nunca tuvo fills) y se muestra el motivo de rechazo si la API lo provee
+- Y `avgPriceMin = "--"` (nunca tuvo fills) y se muestra el motivo de rechazo si la API lo provee
 - Y el botón "Cancelar" no aparece para órdenes `REJECTED`
 
 ## Definicion de Done (checklist transversal)

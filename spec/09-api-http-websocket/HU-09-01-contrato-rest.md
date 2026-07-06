@@ -34,8 +34,10 @@ autenticación por token Bearer (HU-09-02).
 |--------------------|--------|----------------------------------------|------|-------|-------|
 | Registro           | POST   | `/api/v1/auth/register`                | No   | 201   | 01    |
 | Login              | POST   | `/api/v1/auth/login`                   | No   | 200   | 01    |
+| Logout             | POST   | `/api/v1/auth/logout`                  | Sí   | 204   | 01    |
 | Perfil propio      | GET    | `/api/v1/me`                           | Sí   | 200   | 01    |
 | Balances           | GET    | `/api/v1/balances`                     | Sí   | 200   | 02    |
+| Movimientos        | GET    | `/api/v1/movements`                    | Sí   | 200   | 02    |
 | Crear orden        | POST   | `/api/v1/orders`                       | Sí   | 201   | 04    |
 | Listar órdenes     | GET    | `/api/v1/orders`                       | Sí   | 200   | 04    |
 | Detalle de orden   | GET    | `/api/v1/orders/{orderId}`             | Sí   | 200   | 04    |
@@ -47,6 +49,7 @@ autenticación por token Bearer (HU-09-02).
 | Crear retiro       | POST   | `/api/v1/withdrawals`                  | Sí   | 202   | 08    |
 | Listar retiros     | GET    | `/api/v1/withdrawals`                  | Sí   | 200   | 08    |
 | Detalle de retiro  | GET    | `/api/v1/withdrawals/{withdrawalId}`   | Sí   | 200   | 08    |
+| Cancelar retiro    | POST   | `/api/v1/withdrawals/{withdrawalId}/cancel` | Sí | 200 | 08  |
 | Orderbook          | GET    | `/api/v1/market/orderbook?depth=N`     | No   | 200   | 03    |
 | Trades recientes   | GET    | `/api/v1/market/trades`                | No   | 200   | 03    |
 | Ticker (top-of-book)| GET   | `/api/v1/market/ticker`                | No   | 200   | 03    |
@@ -69,16 +72,39 @@ autenticación por token Bearer (HU-09-02).
    `VALIDATION_ERROR` (422). Un `Content-Type` no soportado puede responder 415 con el mismo
    envelope de error.
 4. **RN-4 (alta de orden, request):** body `{ clientOrderId, symbol, side, type, priceMin?,
-   quantityWei }`. `side ∈ {BUY, SELL}`, `type ∈ {LIMIT, MARKET}`. `priceMin` es
-   **obligatorio** para `LIMIT` y **prohibido** para `MARKET`. La validación sigue la
+   quantityWei?, quoteOrderQtyMin? }`. `side ∈ {BUY, SELL}`, `type ∈ {LIMIT, MARKET}`.
+   `clientOrderId` es **obligatorio** (formato y validación en RN-19; su ausencia ⇒
+   `VALIDATION_ERROR`, 422, en el paso de esquema). `priceMin` es
+   **obligatorio** para `LIMIT` y **prohibido** para `MARKET`. **Tamaño de la orden:** para
+   `LIMIT`, `quantityWei` es obligatorio y `quoteOrderQtyMin` está **prohibido**
+   (⇒ `VALIDATION_ERROR`, 422); para `MARKET` debe estar presente **exactamente uno** de
+   `quantityWei` o `quoteOrderQtyMin` (ambos o ninguno ⇒ `VALIDATION_ERROR`, 422;
+   HU-04-02 RN-1). `quoteOrderQtyMin` es el **presupuesto en quote** de una `MARKET BUY`/
+   `MARKET SELL` (string entero en USDC-min, `^(0|[1-9][0-9]*)$`), con la semántica de
+   HU-04-02 (RN-1/RN-5). La validación sigue la
    precedencia determinista de `00-fundaciones/modelo-de-errores.md` §4 (esquema → enums →
    reglas del par → idempotencia → fondos → matching). El comportamiento detallado es de
    HU-04-*.
 5. **RN-5 (alta de orden, response 201):** devuelve el objeto orden:
-   `{ orderId, clientOrderId, symbol, side, type, priceMin|null, quantityWei, filledWei,
-   feeWei, feeUsdcMin, status, createdAt, updatedAt }`. `priceMin` es `null` para `MARKET`.
+   `{ orderId, clientOrderId, symbol, side, type, priceMin|null, quantityWei, remainingWei,
+   filledWei, executedQuoteMin, avgPriceMin, feeWei, feeUsdcMin, status, createdAt,
+   updatedAt }`. `priceMin` es `null` para `MARKET`.
    `feeWei`/`feeUsdcMin` (ver RN-2) acumulan la fee cobrada por los fills ocurridos hasta el
    momento; valen `"0"` si la orden aún no tuvo fills.
+   **Campos de ejecución acumulada** (fórmulas de la épica 04 — HU-04-06 RN-3/RN-10 y
+   HU-04-07 RN-11 —; string entero que matchea `^(0|[1-9][0-9]*)$` salvo el caso `null`):
+   - `remainingWei = quantityWei − filledWei` (wei, porción no ejecutada). Para una
+     `MARKET` por `quoteOrderQtyMin` (sin `quantityWei`, RN-4), el objeto orden incluye
+     `quoteOrderQtyMin` en lugar de `quantityWei` y `remainingWei = null` (HU-04-07 RN-11;
+     serialización única, nunca `"0"`).
+   - `executedQuoteMin` = quote efectivamente gastado (BUY) o recibido (SELL)
+     `= Σ floor(q_fill × P_fill / 10^18)` USDC-min, suma sobre todos los fills
+     (HU-04-06 RN-10).
+   - `avgPriceMin = floor(executedQuoteMin × 10^18 / filledWei)` (USDC-min por ETH, precio
+     promedio ponderado real de ejecución); es **`null`** si `filledWei = "0"`
+     (serialización única, nunca `"0"`) (HU-04-06 RN-10).
+   Estos campos aparecen con la misma definición en **toda** respuesta que devuelva el
+   objeto orden (`GET /orders`, `GET /orders/{orderId}`, `DELETE /orders/{orderId}`).
    `status` ∈ `{OPEN, PARTIALLY_FILLED, FILLED, CANCELLED}` según el resultado inmediato del
    matching. `REJECTED` **nunca** aparece en una respuesta 201: toda orden rechazada (por
    validación de esquema/par o por matching, p. ej. `SELF_TRADE_BLOCKED`,
@@ -99,9 +125,14 @@ autenticación por token Bearer (HU-09-02).
    `ORDER_NOT_CANCELLABLE` (409). Si no existe o no pertenece a la cuenta,
    `ORDER_NOT_FOUND` (404).
 8. **RN-8 (listar órdenes — paginación):** `GET /orders` acepta `status` (filtro opcional
-   por estado), `clientOrderId` (filtro opcional: devuelve los items de la cuenta con ese
-   `clientOrderId` — 0 o 1 por la unicidad de RN-6; sin nueva ruta), `limit` (default 50,
-   máx 200) y `cursor` (paginación por cursor opaco).
+   por estado; un valor **fuera del enum** de estados de orden ⇒ `VALIDATION_ERROR`, 422 —
+   validación **estricta** de enums en query params, coherente con HU-04-07 RN-3),
+   `clientOrderId` (filtro opcional: devuelve los items de la cuenta con ese
+   `clientOrderId` — 0 o 1 por la unicidad de RN-6; sin nueva ruta), `from`/`to` (filtros
+   temporales opcionales, timestamps ISO-8601 UTC — mismo formato que RN-20 —, con la
+   semántica de HU-04-07 RN-4: rango cerrado `[from, to]` aplicado a la marca de
+   finalización; `from > to` o fecha mal formada ⇒ `VALIDATION_ERROR`, 422), `limit`
+   (default 50, máx 200) y `cursor` (paginación por cursor opaco).
    Devuelve `{ items: [orden...], nextCursor: string|null }`. `limit` inválido (no entero
    positivo o > máx) ⇒ `VALIDATION_ERROR` (422).
    **Ordenamiento:** los `items` se devuelven ordenados por `createdAt` **descendente** (más
@@ -205,10 +236,12 @@ autenticación por token Bearer (HU-09-02).
     `GET /withdrawals/{withdrawalId}` devuelve el **mismo** objeto item (200) para un retiro
     de la cuenta; un retiro inexistente o de otra cuenta ⇒ `NOT_FOUND` (404) (HU-09-02 RN-7,
     para no filtrar existencia). Solo incluye retiros de la cuenta autenticada.
-19. **RN-19 (formato de `clientOrderId`):** `clientOrderId` es un string de **1 a 64**
+19. **RN-19 (`clientOrderId` obligatorio y su formato):** `clientOrderId` es **obligatorio**
+    en `POST /orders` (RN-4): un string de **1 a 64**
     caracteres ASCII imprimibles (rango `0x20`–`0x7E`, sin caracteres de control). Un
-    `clientOrderId` ausente, vacío, de más de 64 caracteres o con caracteres fuera de rango
-    ⇒ `VALIDATION_ERROR` (422), evaluado en el paso de esquema (antes de la idempotencia,
+    `clientOrderId` **ausente**, vacío, de más de 64 caracteres o con caracteres fuera de
+    rango ⇒ `VALIDATION_ERROR` (422), con `details.issues` identificando el campo
+    (`clientOrderId`), evaluado en el paso de esquema (antes de la idempotencia,
     `00-fundaciones/modelo-de-errores.md` §4). Esta restricción hace reproducible la prueba
     de `DUPLICATE_CLIENT_ORDER_ID` (RN-6).
 20. **RN-20 (historial de trades propios):** `GET /trades` (Auth: Sí) devuelve
@@ -225,6 +258,44 @@ autenticación por token Bearer (HU-09-02).
     (nombre API del par, RN-1); `sequence` es **entero JSON** (conteo, no monto);
     `timestamp` string ISO-8601 UTC; montos como string entero (RN-2);
     `side ∈ {BUY, SELL}`, `role ∈ {MAKER, TAKER}`, `feeAsset ∈ {ETH, USDC}`.
+21. **RN-21 (cancelar retiro):** `POST /withdrawals/{withdrawalId}/cancel` (Auth: Sí, sin
+    body) cancela un retiro **propio** que está en `PENDING` y **sin** `txHash` (no
+    broadcasteado). La **semántica** es la de HU-08-04 RN-13 (transición `PENDING → FAILED`
+    con `gas_usado_wei = 0`, liberación **total** de la reserva vía `WITHDRAWAL_RELEASE`,
+    idempotencia respecto del estado terminal); esta RN fija solo la **superficie REST**.
+    Éxito: **200** con el mismo objeto item de RN-18, con `status: "FAILED"` y
+    `failureReason: "USER_CANCELLED"`. Errores: un retiro en
+    `BROADCAST`/`CONFIRMED`/`FAILED` (no cancelable) ⇒ `CONFLICT` (409) (HU-08-04 RN-13);
+    un retiro inexistente **o de otra cuenta** ⇒ `NOT_FOUND` (404) con
+    `details = { resource: "withdrawal", id }` (respuesta indistinguible: no se revela la
+    existencia del recurso ajeno; nunca `UNAUTHORIZED`; HU-08-04 RN-10/RN-13, HU-09-02 RN-7).
+22. **RN-22 (historial de movimientos):** `GET /movements` (Auth: Sí; sin token válido ⇒
+    `UNAUTHENTICATED`, 401) expone la proyección de solo lectura del ledger de **HU-02-05**,
+    que es la **autoridad semántica** (contenido, filtros, orden); esta RN fija la
+    superficie REST. Devuelve `{ items: [...], nextCursor: string|null }`; cada item es el
+    de HU-02-05 RN-2: `{ entryId, type, timestamp, reference, postings }`, con `entryId`
+    serializado como **string**, `type` del enum de HU-02-03, `timestamp` ISO-8601 UTC con
+    milisegundos, `reference` según el tipo (`orderId` / `withdrawalId` / `tradeId` /
+    `{ txHash, logIndex }` / `{ reversedEntryId }`), `logIndex` como **entero JSON**
+    (conteo, no monto), y `postings` con **solo** los postings propios
+    `{ asset, bucket, direction, amount, kind }`, `amount` como string entero positivo
+    (`^[1-9][0-9]*$`). Query params (espejo de HU-02-05 RN-3..RN-8):
+    - `asset` (opcional) ∈ `{ETH, USDC}`; otro valor ⇒ `VALIDATION_ERROR` (422).
+    - `type` (opcional, **repetible**: `?type=DEPOSIT&type=ORDER_LOCK`): **OR** entre los
+      tipos solicitados y **AND** con los demás filtros; un valor fuera del enum de
+      HU-02-03 ⇒ `VALIDATION_ERROR` (422).
+    - `from`/`to` (opcionales, ISO-8601 UTC): semántica `from ≤ timestamp < to`
+      (inclusivo/exclusivo, HU-02-05 RN-5); `from > to` o formato inválido ⇒
+      `VALIDATION_ERROR` (422); `from == to` ⇒ lista vacía con **200**.
+    - `limit`: entero en `[1, 100]`, **default 20** (rango propio de HU-02-05 RN-7,
+      distinto del de RN-8); inválido ⇒ `VALIDATION_ERROR` (422).
+    - `cursor` (opaco, anclado al `entryId`, HU-02-05 RN-7): la página siguiente devuelve
+      asientos con `entryId` estrictamente **menor**; paginación estable (sin duplicados ni
+      omisiones), las entradas nuevas no aparecen en páginas ya recorridas.
+    Orden por defecto: `timestamp` **descendente** con desempate por `entryId` descendente
+    (HU-02-05 RN-6). Consulta válida sin coincidencias ⇒ `items: []` con **200** (no 404;
+    HU-02-05 RN-9). Solo incluye movimientos de la cuenta autenticada (HU-02-05 RN-1,
+    HU-09-02 RN-5).
 
 ## Criterios de aceptación (DoD)
 
@@ -232,7 +303,8 @@ autenticación por token Bearer (HU-09-02).
 - Dado un email no registrado y una contraseña válida
 - Cuando el cliente hace `POST /api/v1/auth/register` con `{ email, password }` y
   `Content-Type: application/json`
-- Entonces la respuesta es **201** con cuerpo `{ accountId, email, createdAt }`
+- Entonces la respuesta es **201** con cuerpo `{ accountId, email, status, createdAt }`,
+  con `status: "ACTIVE"` (estado inicial de la cuenta, HU-01-01 RN-6)
 - Y no se expone la contraseña ni hash alguno en la respuesta
 
 ### Escenario 2: Login devuelve token [AT-09-01-02]
@@ -246,8 +318,8 @@ autenticación por token Bearer (HU-09-02).
 ### Escenario 3: Perfil propio [AT-09-01-03]
 - Dado un token válido
 - Cuando el cliente hace `GET /api/v1/me`
-- Entonces la respuesta es **200** con `{ accountId, email, createdAt }` de la cuenta dueña
-  del token
+- Entonces la respuesta es **200** con `{ accountId, email, status, createdAt }` de la
+  cuenta dueña del token, con `status: "ACTIVE"` (HU-01-04 RN-4)
 
 ### Escenario 4: Alta de orden limit (feliz) [AT-09-01-04]
 - Dado un token válido y balance suficiente
@@ -286,6 +358,8 @@ autenticación por token Bearer (HU-09-02).
 - Y si entre la primera y la segunda llamada paginada se crea una orden nueva, esa orden
   **no** aparece al paginar con el cursor previo (cursor estable, RN-8)
 - Y `limit=0` o `limit=500` (> máx) produce `VALIDATION_ERROR` (422)
+- Y `?status=FOO` (valor fuera del enum de estados de orden) produce `VALIDATION_ERROR`
+  (422): validación estricta de enums en query params (RN-8, HU-04-07 RN-3)
 
 ### Escenario 8: Cancelación de orden [AT-09-01-08]
 - Dado una orden propia en estado `OPEN`
@@ -406,8 +480,11 @@ autenticación por token Bearer (HU-09-02).
 - Dado un orderbook con el lado SELL (asks) **vacío**
 - Cuando el cliente envía una orden `MARKET BUY` válida en esquema y con fondos suficientes
 - Entonces la respuesta es `MARKET_NO_LIQUIDITY` (422) con el envelope de error estándar
-- Y los balances de la cuenta quedan **idénticos** a antes de la request (INV-1, INV-2) y
-  **no** se crea ninguna orden ni queda remanente en el libro
+- Y los balances de la cuenta quedan **idénticos** a antes de la request (INV-1, INV-2);
+  **no queda orden abierta ni efecto alguno en el libro** (sin remanente; orderbook
+  idéntico) ni en los balances
+- Y la orden se persiste como `REJECTED` y figura en el **historial** de órdenes
+  (HU-04-02 RN-4, HU-04-07 RN-12); no aparece en el listado de órdenes abiertas
 
 ### Escenario 22 (borde): MARKET con fill parcial y liquidez agotada [AT-09-01-22]
 - Dado un orderbook cuyo lado opuesto solo alcanza para ejecutar **parte** de la cantidad
@@ -420,7 +497,7 @@ autenticación por token Bearer (HU-09-02).
 
 ## Definicion de Done (checklist transversal)
 - [ ] Todos los escenarios de aceptación (AT-*) pasan
-- [ ] Reglas de negocio RN-1..RN-20 verificadas
+- [ ] Reglas de negocio RN-1..RN-22 verificadas
 - [ ] Manejo de errores conforme a 00-fundaciones/modelo-de-errores.md
 - [ ] Precision/redondeo conforme a 00-fundaciones/convenciones-monetarias.md
 - [ ] Sin violacion de invariantes globales (00-fundaciones/invariantes-globales.md)

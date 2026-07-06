@@ -25,9 +25,12 @@ precio → `PRICE_NOT_ALLOWED` si se envía precio; lot size; mínimo notional e
 realiza la épica 04; la reserva de fondos, la épica 02; las fees y el settlement, la épica
 05.
 
-La orden `MARKET` se especifica por **cantidad base** `quantityWei` (ETH, wei). Para un
-`MARKET BUY`, además, la épica 02/04 reserva un **presupuesto en quote** `B` (USDC-min) que
-acota la ejecución (no se puede gastar más quote del reservado).
+La orden `MARKET` llega al motor con una **cantidad base objetivo** `quantityWei` (ETH,
+wei) —la de la forma por cantidad, o la base que la épica 04 **precomputa** sobre el
+snapshot para un `MARKET SELL` por monto (HU-04-02 RN-5)— y, para un `MARKET BUY`, un
+**presupuesto en quote** `B` (USDC-min) reservado por la épica 02/04 que acota la
+ejecución (no se puede gastar más quote del reservado). Un `MARKET BUY` **por monto**
+(`quoteOrderQtyMin`, HU-04-02) llega **sin** cantidad objetivo: su única cota es `B`.
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (siempre taker, sin precio).** Una `MARKET` no lleva `price_min`. Si el payload
@@ -64,7 +67,8 @@ acota la ejecución (no se puede gastar más quote del reservado).
    `q' = 249900000000000000`, `quote_min = floor(q' × 2000500000 / 10^18) = 499924950 ≤
    500000000` (el lot 2500 daría `500125000 > 500000000`).
 6. **RN-6 (condición de fin).** El cruce termina cuando ocurre lo primero de: (a)
-   `remaining_taker_wei = 0` (cantidad completa), (b) el lado opuesto queda **vacío** (libro
+   `remaining_taker_wei = 0` (cantidad objetivo completa; no aplica a un `MARKET BUY` por
+   monto, que no lleva cantidad objetivo), (b) el lado opuesto queda **vacío** (libro
    agotado), o (c) para BUY, el presupuesto `B` no alcanza para tomar ni 1 lot más (RN-5).
 7. **RN-7 (no descansa; remanente se descarta).** Una `MARKET` **nunca** se posa en el
    libro (HU-03-01 RN-7). El remanente no ejecutado por agotamiento de libro o presupuesto
@@ -73,13 +77,29 @@ acota la ejecución (no se puede gastar más quote del reservado).
    opuesto está **vacío** (no hay ninguna orden), no puede ejecutarse: se rechaza con
    `MARKET_NO_LIQUIDITY` (422), terminal `REJECTED`, **cero fills**. La reserva de fondos se
    libera íntegra (épica 02). (Precedencia: paso 7 de `modelo-de-errores.md` §4.)
-9. **RN-9 (estados resultantes).**
-   - `FILLED` si se ejecutó la cantidad completa (`remaining_taker_wei = 0`).
-   - Si se ejecutó **parte** y luego se detuvo por libro agotado o presupuesto (RN-6 b/c)
-     con `filledWei > 0`: el remanente se descarta y la orden queda en estado terminal
+9. **RN-9 (estados resultantes — objetivo precomputado; el ciclo de vida lo fija la
+   épica 04, HU-04-02 RN-7).** El **objetivo efectivo** de una `MARKET` queda fijado al
+   admitirla (épica 04, sobre el mismo snapshot con el que se calcula la reserva,
+   HU-04-02 RN-5): en las formas **por cantidad** —incluido el `MARKET SELL` por monto,
+   cuya base precomputada llega al motor como `quantityWei`— el objetivo es esa cantidad
+   base; en un `MARKET BUY` **por monto** (`quoteOrderQtyMin`) el objetivo es **agotar el
+   presupuesto `B`** (ejecutar hasta que `B_rem` no alcance para tomar ni 1 lot más,
+   RN-5, RN-6 c). Estados:
+   - `FILLED` si el objetivo se ejecuta **completo**: `remaining_taker_wei = 0` en las
+     formas por cantidad; o, en `MARKET BUY` por monto, detención por RN-6 c con
+     `filledWei > 0` (presupuesto agotado = objetivo completado; el residuo sub-lot de `B`
+     se libera, RN-10). En este caso el `order-update` **no** lleva `reason` (HU-03-05
+     RN-5).
+   - Si se ejecutó **parte** del objetivo (`filledWei > 0`) y la ejecución se detuvo
+     **antes** de completarlo: el remanente se descarta y la orden queda en estado terminal
      `CANCELLED`. El `order-update` reporta `reason` distinguiendo el motivo:
-     `MARKET_EXHAUSTED` (libro agotado, RN-6 b) o `MARKET_BUDGET_EXHAUSTED` (presupuesto
-     agotado, RN-6 c). **No** es un error HTTP (hubo ejecución); ver HU-03-05 RN-5.
+     `MARKET_EXHAUSTED` si el lado opuesto se agotó (RN-6 b) o `MARKET_BUDGET_EXHAUSTED` si
+     una orden **por cantidad** se detuvo por presupuesto (RN-6 c) antes de completar su
+     cantidad objetivo (caso defensivo: bajo HU-04-02 RN-5 la reserva de la forma por
+     cantidad cubre el costo del barrido del snapshot, pero el motor no asume esa
+     validación previa, RN-14). Si ambas condiciones se alcanzan en el mismo punto,
+     prevalece `MARKET_EXHAUSTED`. **No** es un error HTTP (hubo ejecución); ver HU-03-05
+     RN-5.
    - `REJECTED` con `MARKET_NO_LIQUIDITY` (422) solo en el caso de cero liquidez: lado
      opuesto **vacío** (RN-8), `filledWei = 0`.
    - `REJECTED` con `MARKET_BUDGET_INSUFFICIENT` (422) para `MARKET BUY` cuando el lado
@@ -151,22 +171,24 @@ acota la ejecución (no se puede gastar más quote del reservado).
 - Y la reserva de fondos se libera íntegra; balances intactos (INV-2, INV-3)
 
 ### Escenario 5 (borde): MARKET BUY detenida por presupuesto [AT-03-04-05]
-- Dado un libro de asks: A1 `SELL 1 ETH @ 2000.00` (1 ETH), A2 `SELL 1 ETH @ 2000.50` y
-  presupuesto reservado `B = 2500 USDC = "2500000000"`
-- Cuando ingresa `MARKET BUY 2 ETH`
+- Dado un libro de asks: A1 `SELL 1 ETH @ 2000.00` (1 ETH), A2 `SELL 1 ETH @ 2000.50`
+- Cuando ingresa una `MARKET BUY` **por monto** con `quoteOrderQtyMin = "2500000000"`
+  (2500 USDC; presupuesto reservado `B = "2500000000"`, HU-04-02 RN-5)
 - Entonces ejecuta A1 (1 ETH @ 2000.00, `quote_min = "2000000000"`); del presupuesto quedan
-  `"500000000"` (500 USDC)
+  `B_rem = "500000000"` (500 USDC)
 - Y de A2 toma la máxima cantidad múltiplo de lot cuyo `quote_min ≤ 500000000`: `0.2499 ETH`
   (`q' = 249900000000000000`, `quote_min = floor(q' × 2000500000 / 10^18) = "499924950"` ≤
   500000000) (RN-5)
-- Y la ejecución se detiene por presupuesto; el remanente se descarta; orden terminal
-  `CANCELLED` con `filledWei = "1249900000000000000"` (RN-6 c, RN-9)
+- Y la ejecución se detiene por presupuesto (RN-6 c) con el **objetivo completado** (agotar
+  `B`): la orden queda terminal **`FILLED`** con `filledWei = "1249900000000000000"`, quote
+  gastado `2000000000 + 499924950 = "2499924950"` y el residuo sub-lot `"75050"` liberado
+  (RN-9, RN-10, HU-04-02 RN-7)
 - Y A2 **permanece** en el libro con `status = "PARTIALLY_FILLED"`,
   `remainingWei = "750100000000000000"` (1 ETH − `q'`), conservando su `seq` original y su
   posición como best ask del nivel `@ 2000.50`
-- Y se emite un `order-update` para el taker con `status = "CANCELLED"`,
-  `cumulativeFilledWei = "1249900000000000000"` y `reason = "MARKET_BUDGET_EXHAUSTED"`
-  (RN-9, HU-03-05 RN-5)
+- Y se emite un `order-update` para el taker con `status = "FILLED"`,
+  `cumulativeFilledWei = "1249900000000000000"` y **sin** `reason` (el objetivo se
+  completó, RN-9, HU-03-05 RN-5)
 
 ### Escenario 6 (borde): precio enviado en MARKET es rechazado antes del motor [AT-03-04-06]
 - Dado un cliente que envía `MARKET BUY 1 ETH` con un `price` presente
@@ -174,11 +196,14 @@ acota la ejecución (no se puede gastar más quote del reservado).
 - Entonces se rechaza con `PRICE_NOT_ALLOWED` (422) y la orden **no** llega al motor (RN-1)
 
 ### Escenario 7 (borde): MARKET de 1 lot exacto contra liquidez suficiente [AT-03-04-07]
-- Dado un libro con `best_ask = 2000.00` y profundidad ≥ 1 lot
+- Dado un libro con `best_ask = 100000.00` (`price_min = 100000000000`, múltiplo de tick) y
+  profundidad ≥ 1 lot; a ese precio 1 lot vale exactamente el mínimo notional
+  (`floor(10^14 × 100000000000 / 10^18) = 10000000` = 10 USDC), por lo que la épica 04
+  admite la orden (RN-13, HU-04-02 RN-3)
 - Cuando ingresa `MARKET BUY 0.0001 ETH` (`quantityWei = 100000000000000` = 1 lot) con
   presupuesto suficiente
-- Entonces ejecuta `q_fill = 100000000000000` a `2000.00`,
-  `quote_min = floor(10^14 × 2000000000 / 10^18) = "200000"` y queda `FILLED` (RN-4)
+- Entonces ejecuta `q_fill = 100000000000000` a `100000.00`,
+  `quote_min = floor(10^14 × 100000000000 / 10^18) = "10000000"` y queda `FILLED` (RN-4)
 
 ### Escenario 8 (error): auto-cruce de una MARKET [AT-03-04-08]
 - Dado que el único ask del libro pertenece a la **misma cuenta** que envía la `MARKET BUY`

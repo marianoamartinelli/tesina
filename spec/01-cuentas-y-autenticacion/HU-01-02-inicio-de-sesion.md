@@ -52,7 +52,9 @@ cuentas** (RNE-3).
    - queda asociado a la `accountId` de la cuenta autenticada.
    La respuesta incluye el token y su `expiresAt` (ISO 8601 UTC). La verificación de la
    entropía/CSPRNG se delega a inspección de código (DoD); el AT-01-02-10 actúa como
-   heurística observable mínima. (RNE-4)
+   heurística observable mínima (emisiones siempre distintas y ausencia del `email`/
+   `accountId` en claro dentro del token), satisfacible tanto por tokens opacos como por
+   JWT. (RNE-4)
 4. **RN-4 (secreto no expuesto).** La respuesta de login **no** incluye la contraseña ni su
    hash. El token es el único secreto que se entrega, y solo al titular que prueba las
    credenciales. (RNE-2)
@@ -74,7 +76,9 @@ cuentas** (RNE-3).
    limitar intentos por email/origen. Al superarse el umbral, `RATE_LIMITED` (429) con
    `details.retryAfterSeconds`. Se evalúa como **paso 0** de la precedencia (RN-8): antes de
    cualquier otra validación, incluso la de esquema. El rate limiting no debe revelar la
-   existencia del email (se aplica de forma uniforme).
+   existencia del email (se aplica de forma uniforme). El límite por cuenta autenticada de
+   HU-09-02 RN-12 **no** aplica a este endpoint (es público, sin cuenta); si se implementa
+   rate limiting aquí, usa `RATE_LIMITED`.
 10. **RN-10 (estado de la cuenta).** En este alcance solo existe el estado `ACTIVE`; toda
     cuenta registrada puede autenticarse. (La gestión de estados como suspensión queda
     fuera de alcance de la épica.)
@@ -161,13 +165,16 @@ cuentas** (RNE-3).
 - Y `details` incluye `retryAfterSeconds`
 - Y el comportamiento de rate limiting es uniforme y no revela si el email existe
 
-### Escenario 10 (seguridad): Heurística de entropía del token [AT-01-02-10]
+### Escenario 10 (seguridad): Heurística de impredecibilidad del token [AT-01-02-10]
 - Dado una cuenta `ACTIVE` con credenciales válidas
 - Cuando se emiten **cien tokens** para esa misma cuenta (cien logins exitosos)
-- Entonces los cien tokens son **distintos** entre sí
-- Y **ningún par** de tokens comparte un prefijo de más de 4 caracteres
-  (heurística mínima observable de alta entropía; la verificación formal de ≥128 bits / CSPRNG
-  se documenta en el DoD por inspección de código, RN-3)
+- Entonces los cien tokens son **distintos** entre sí (en particular, dos logins
+  consecutivos con las mismas credenciales producen tokens distintos)
+- Y ningún token contiene **en claro** (como substring literal del token) el `email` ni el
+  `accountId` de la cuenta
+  (heurística mínima observable, satisfacible tanto por tokens opacos como por JWT; la
+  verificación formal de ≥128 bits / CSPRNG / firma se documenta en el DoD por inspección
+  de código, RN-3)
 
 ### Escenario 11 (seguridad): Indistinguibilidad temporal — anti timing attack [AT-01-02-11]
 - Dado una cuenta `ACTIVE` con email `trader@example.com` y un email inexistente

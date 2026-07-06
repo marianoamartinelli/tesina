@@ -31,9 +31,11 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
       `ORDER_NOT_FOUND` (404, RE-7), **no** `UNAUTHORIZED`; `UNAUTHORIZED` (403) se reserva
       para autorizaciones a nivel de cuenta definidas en `01-cuentas-y-autenticación` (p. ej.
       cuenta deshabilitada/suspendida).
-   2. **Esquema/tipos** → `VALIDATION_ERROR` (422): campo faltante, tipo incorrecto, monto
-      que no matchea `^(0|[1-9][0-9]*)$`, y la regla de forma única de tamaño en market
-      (exactamente uno de `quantityWei`/`quoteOrderQty`).
+   2. **Esquema/tipos** → `VALIDATION_ERROR` (422): campo faltante —incluido
+      `clientOrderId`, **obligatorio** en el alta: ausente ⇒ `VALIDATION_ERROR` con
+      `details.field = "clientOrderId"` (HU-04-01/02 RN-1, HU-09-01 RN-19)—, tipo
+      incorrecto, monto que no matchea `^(0|[1-9][0-9]*)$`, y la regla de forma única de
+      tamaño en market (exactamente uno de `quantityWei`/`quoteOrderQtyMin`).
    3. **Enums y combinaciones** → `INVALID_SIDE`, `INVALID_ORDER_TYPE`, `PRICE_REQUIRED`,
       `PRICE_NOT_ALLOWED` (422).
    4. **Reglas del par** → `INVALID_PRICE_TICK`, `INVALID_LOT_SIZE`, `BELOW_MIN_NOTIONAL`
@@ -71,7 +73,7 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
    `MARKET`: notional estimado según HU-04-02 RN-3 ≥ `10000000`.
 9. **RN-9 (positividad como subcaso).** No existen códigos separados de "no positivo": un
    precio ≤ 0 se canaliza por `INVALID_PRICE_TICK` y una cantidad ≤ 0 por
-   `INVALID_LOT_SIZE`; un `quoteOrderQty ≤ 0` o que no matchea el patrón cae en
+   `INVALID_LOT_SIZE`; un `quoteOrderQtyMin ≤ 0` o que no matchea el patrón cae en
    `VALIDATION_ERROR`.
 10. **RN-10 (idempotencia).** `clientOrderId` repetido por la cuenta ⇒
     `DUPLICATE_CLIENT_ORDER_ID` (409), evaluado **después** de las reglas del par y **antes**
@@ -90,6 +92,11 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
     con el `code`.
 
 ## Criterios de aceptación (DoD)
+
+> Nota: `clientOrderId` es **obligatorio** en el alta (RN-1 paso 2, HU-04-01/02 RN-1). En
+> los `Cuando` de estos escenarios se omite por brevedad: toda alta se entiende enviada con
+> un `clientOrderId` válido y único por cuenta, salvo que el escenario ejercite
+> explícitamente su ausencia o duplicación.
 
 ### Escenario 1: Precedencia — tick gana sobre fondos [AT-04-03-01]
 - Dado un trader autenticado con `disponible(USDC) = 0`
@@ -114,7 +121,7 @@ y la precedencia. No cubre la ejecución del matching ni el settlement.
 
 ### Escenario 5 (error): Market con precio [AT-04-03-05]
 - Dado un trader autenticado
-- Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="2000000000", priceMin="2000000000"`
+- Cuando coloca `side=BUY, type=MARKET, quoteOrderQtyMin="2000000000", priceMin="2000000000"`
 - Entonces se rechaza con `PRICE_NOT_ALLOWED` (422)
 
 ### Escenario 6 (error): Precio fuera de tick [AT-04-03-06]

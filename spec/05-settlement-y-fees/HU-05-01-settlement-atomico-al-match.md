@@ -83,9 +83,11 @@ las órdenes ya pasaron validación y self-trade ya fue bloqueado **antes** del 
      al completarse la orden.
    - **Taker comprador MARKET (`takerOrderType = MARKET`):** no hay `price_limit_taker`; el
      settlement del fill **solo consume `quote_min`** de `bloqueado(comprador, USDC)` y
-     **no libera surplus por fill**. La liberación del excedente total de `bloqueado`
-     (estimado al alta por la épica 04, p. ej. por mejor ask) es **responsabilidad de la
-     épica 04** al completarse o cancelarse la orden, **no** de esta épica.
+     **no libera surplus por fill**. La liberación del excedente de `bloqueado` que quedara
+     sin consumir (reservado al alta por la épica 04 como el **costo exacto** de barrer el
+     snapshot —HU-04-02 RN-5, RE-1 de la épica 04— o como el presupuesto de la forma por
+     monto) es **responsabilidad de la épica 04** al completarse o cancelarse la orden,
+     **no** de esta épica.
    - **Taker vendedor (taker SELL, LIMIT o MARKET):** no aplica surplus en quote: el
      vendedor bloquea ETH `= q_wei` (o, en market, ETH = cantidad de la orden, consumida
      exacta a lo largo de los fills), que se consume exacto; no genera surplus en esta
@@ -262,9 +264,10 @@ las órdenes ya pasaron validación y self-trade ya fue bloqueado **antes** del 
 - Y se preserva INV-2 (ningún balance queda negativo) e INV-4 (no hay aplicación parcial)
 
 ### Escenario 10 (borde): Taker BUY market — consumo sin liberar surplus por fill [AT-05-01-10]
-- Dado un comprador taker con orden **MARKET BUY** (`takerOrderType = MARKET`, **sin**
-  `price_limit_taker`) para la cual la épica 04 bloqueó `bloqueado(comprador, USDC) =
-  2010000000` (estimación al alta, p. ej. por mejor ask)
+- Dado un comprador taker con orden **MARKET BUY** por 1 ETH (`takerOrderType = MARKET`,
+  **sin** `price_limit_taker`) para la cual la épica 04 bloqueó `bloqueado(comprador, USDC)
+  = 2000500000` (el **costo exacto** de barrer el snapshot de asks: `1000000000 +
+  1000500000`; HU-04-02 RN-5, RE-1 de la épica 04)
 - Y dos makers SELL resting: M1 de `q_wei = 500000000000000000` (0.5 ETH) a `price_min =
   2000000000` y M2 de `q_wei = 500000000000000000` a `price_min = 2001000000`
 - Cuando el matching emite dos fills: F1 (vs M1, `q_wei = 500000000000000000` @ 2000.00) y
@@ -272,11 +275,12 @@ las órdenes ya pasaron validación y self-trade ya fue bloqueado **antes** del 
 - Entonces F1 consume `quote_min = floor(500000000000000000 × 2000000000 / 10^18) =
   1000000000` y F2 consume `quote_min = floor(500000000000000000 × 2001000000 / 10^18) =
   1000500000` de `bloqueado(comprador, USDC)`
-- Y **ningún** fill libera surplus (no hay `price_limit_taker`, RN-6): tras ambos fills
-  `bloqueado(comprador, USDC) = 2010000000 − 1000000000 − 1000500000 = 9500000` permanece
-  bloqueado
-- Y la liberación de ese remanente (`9500000`) es **responsabilidad de la épica 04** al
-  terminar la orden market (no de esta épica)
+- Y **ningún** fill libera surplus (no hay `price_limit_taker`, RN-6): el settlement solo
+  consume `quote_min` por fill; tras ambos fills `bloqueado(comprador, USDC) =
+  2000500000 − 1000000000 − 1000500000 = 0` queda agotado **exactamente** por los consumos
+- Y si quedara un excedente reservado sin consumir (p. ej. porque el libro cambió entre el
+  snapshot y la ejecución), su liberación es **responsabilidad de la épica 04** al terminar
+  la orden market (no de esta épica, RN-6)
 - Y cada fill preserva la conservación por activo con EX incluida (INV-1)
 
 ### Escenario 11 (concurrencia): Dos settlements simultáneos sobre el mismo maker se serializan [AT-05-01-11]

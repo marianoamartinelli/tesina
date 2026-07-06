@@ -93,11 +93,13 @@ entero en unidad mínima (`00-fundaciones/convenciones-monetarias.md` §5).
     secuencias entre canales: un hueco se detecta **solo dentro del mismo canal**. Recibir un
     mensaje de otro canal con `sequence` distinta **no** constituye un hueco.
 14. **RN-14 (heartbeat / detección de conexión muerta):** el servidor envía periódicamente
-    `{ "type": "ping" }` (intervalo recomendado **30 s**) y el cliente debe responder
-    `{ "type": "pong" }` dentro de **10 s**. Si el servidor no recibe `pong` dentro de la
-    ventana, **cierra** la conexión y libera las suscripciones asociadas. (Alternativamente
-    puede usarse el ping/pong de control de WebSocket RFC 6455 con el mismo intervalo; el
-    contrato fija el intervalo, no la capa.) Aplica también al canal privado (HU-09-04).
+    el mensaje JSON de aplicación `{ "type": "ping" }` (intervalo recomendado **30 s**) y el
+    cliente debe responder `{ "type": "pong" }` dentro de **10 s**. Si el servidor no recibe
+    `pong` dentro de la ventana, **cierra** la conexión y libera las suscripciones
+    asociadas. El `ping` JSON de aplicación es **obligatorio** (mecanismo normativo y
+    testeable del contrato); los frames de control ping/pong de WebSocket RFC 6455 quedan
+    **permitidos como mecanismo adicional**, pero **nunca como sustituto** del `ping` JSON.
+    Aplica también al canal privado (HU-09-04).
 15. **RN-15 (bootstrap REST + WS — sincronización sin depender del snapshot WS):** para
     inicializar una copia local del libro usando el snapshot REST (p. ej. con más
     profundidad), el cliente: (1) se suscribe al canal `orderbook` por WS y **acumula** las

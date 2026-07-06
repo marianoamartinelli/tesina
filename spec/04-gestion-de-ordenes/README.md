@@ -21,7 +21,7 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
 - Alta de órdenes **LIMIT** (`side`, `priceMin`, `quantityWei`): validación, reserva de
   fondos y entrega al matching engine.
 - Alta de órdenes **MARKET** por **cantidad** (`quantityWei`) o por **monto**
-  (`quoteOrderQty`): validación, reserva de fondos, validación de liquidez.
+  (`quoteOrderQtyMin`): validación, reserva de fondos, validación de liquidez.
 - **Validaciones de orden**: lado/tipo, tick size de precio, lot size de cantidad, mínimo
   notional, positividad, idempotencia por `clientOrderId`, fondos suficientes, y la
   **precedencia determinista** entre ellas.
@@ -80,15 +80,15 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
   - **LIMIT BUY:** `R = floor(quantityWei × priceMin / 10^18)` USDC-min (notional al
     precio límite).
   - **LIMIT SELL:** `R = quantityWei` wei (ETH).
-  - **MARKET BUY por `quoteOrderQty`:** `R = quoteOrderQty` USDC-min.
+  - **MARKET BUY por `quoteOrderQtyMin`:** `R = quoteOrderQtyMin` USDC-min.
   - **MARKET BUY por `quantityWei`:** `R =` costo en quote de barrer los asks vigentes
     hasta `quantityWei` (snapshot del libro; lo calcula el matching, épica 03).
   - **MARKET SELL por `quantityWei`:** `R = quantityWei` wei.
-  - **MARKET SELL por `quoteOrderQty`:** `R =` base en wei necesaria para obtener
-    `quoteOrderQty` de quote barriendo los bids vigentes (snapshot).
+  - **MARKET SELL por `quoteOrderQtyMin`:** `R =` base en wei necesaria para obtener
+    `quoteOrderQtyMin` de quote barriendo los bids vigentes (snapshot).
 
   > **Snapshot atómico (formas que dependen del libro).** Para `MARKET BUY por quantityWei`
-  > y `MARKET SELL por quoteOrderQty`, `R` se calcula sobre un **snapshot atómico** del lado
+  > y `MARKET SELL por quoteOrderQtyMin`, `R` se calcula sobre un **snapshot atómico** del lado
   > opuesto tomado al procesar el alta, en el mismo punto en que se evalúa la precondición de
   > liquidez (RE-4 paso 6) e **inmediatamente antes** de bloquear fondos. **No hay
   > dependencia circular:** primero se lee el libro y se calcula `R`, y recién después se
@@ -114,8 +114,10 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
      `RATE_LIMITED` (429), antes de cualquier otra evaluación y sin crear orden ni reservar
      (RE-10; el límite concreto en HU-09-*);
   1. autenticación (`UNAUTHENTICATED`) → autorización (`UNAUTHORIZED`);
-  2. esquema/tipos del payload (`VALIDATION_ERROR`, incl. patrón `^(0|[1-9][0-9]*)$` y forma
-     única de tamaño en market);
+  2. esquema/tipos del payload (`VALIDATION_ERROR`, incl. patrón `^(0|[1-9][0-9]*)$`,
+     `clientOrderId` **obligatorio** —ausente ⇒ `VALIDATION_ERROR` con
+     `details.field = "clientOrderId"`, HU-04-01/02 RN-1— y forma única de tamaño en
+     market);
   3. enums y combinaciones (`INVALID_SIDE`, `INVALID_ORDER_TYPE`, `PRICE_REQUIRED`,
      `PRICE_NOT_ALLOWED`);
   4. reglas del par (`INVALID_PRICE_TICK`, `INVALID_LOT_SIZE`, `BELOW_MIN_NOTIONAL`);
@@ -144,7 +146,9 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
   > `REJECTED` por falta de liquidez nunca deje fondos reservados (coherente con HU-04-05
   > RN-5). Se coloca tras la idempotencia (paso 5) porque ésta es un chequeo barato a nivel
   > de solicitud que debe preceder a la lectura del estado del mercado.
-- **RE-5 — Idempotencia de alta.** Si el trader envía un `clientOrderId` ya usado por su
+- **RE-5 — Idempotencia de alta.** El campo `clientOrderId` es **obligatorio** en el alta
+  (HU-04-01/02 RN-1; su ausencia ⇒ `VALIDATION_ERROR` con `details.field = "clientOrderId"`,
+  RE-4 paso 2). Si el trader envía un `clientOrderId` ya usado por su
   cuenta, el alta se rechaza con `DUPLICATE_CLIENT_ORDER_ID` (409) y **no** crea una
   segunda orden ni reserva fondos. La unicidad es **permanente por cuenta** (lifetime): un
   `clientOrderId` **no** se puede reutilizar aunque la orden original ya esté en estado
@@ -160,7 +164,7 @@ de enviar la orden al matching**, registrar el estado resultante y exponerlo en 
 - **RE-7 — Aislamiento por cuenta.** Un trader solo puede consultar/cancelar **sus**
   órdenes. Referir una orden ajena o inexistente devuelve `ORDER_NOT_FOUND` (404), sin
   filtrar la existencia de órdenes de terceros.
-- **RE-8 — Dinero entero y serializado.** Todo `priceMin`, `quantityWei`, `quoteOrderQty`,
+- **RE-8 — Dinero entero y serializado.** Todo `priceMin`, `quantityWei`, `quoteOrderQtyMin`,
   cantidad ejecutada/remanente, notional, reserva y fee es **entero de unidad mínima** y
   viaja en la API como **string** `^(0|[1-9][0-9]*)$`. Prohibido floats binarios.
 - **RE-9 — Respaldo de remanentes (INV-7).** El `bloqueado` de una cuenta cubre en todo

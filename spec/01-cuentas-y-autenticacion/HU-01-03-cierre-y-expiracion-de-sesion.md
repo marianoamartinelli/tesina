@@ -16,7 +16,9 @@ seguir usándose para operar una vez que dejo de necesitarlas o pasa demasiado t
 Cubre dos mecanismos de fin de sesión: (a) **logout explícito**, que invalida de inmediato
 el token presentado; y (b) **expiración automática** por TTL (`expiresAt`, definido en
 HU-01-02). En ambos casos, el efecto observable es que las llamadas protegidas posteriores
-con ese token se rechazan con `UNAUTHENTICATED` (401).
+con ese token se rechazan con `UNAUTHENTICATED` (401). La ruta canónica del endpoint de
+logout es `POST /api/v1/auth/logout` (mapa de endpoints de HU-09-01); su comportamiento lo
+fija esta HU.
 
 No cubre la emisión ni la renovación de tokens (refresh tokens están fuera de alcance: el
 usuario vuelve a hacer login para obtener un token nuevo). El logout opera **sobre el token

@@ -18,8 +18,9 @@ asiento que tiene al menos un posting sobre las cuentas del usuario, mostrando *
 postings (no los de la contraparte ni los de `EX`/`EXTERNAL`). Soporta filtros por activo,
 tipo y rango de fechas, ordenamiento por timestamp descendente por defecto, y paginación.
 No permite crear ni modificar movimientos (es lectura); las mutaciones se especifican en
-HU-02-02/03. El contrato exacto de paginación lo fija la épica 09; aquí se fija el
-**contenido**, los **filtros** y el **orden**.
+HU-02-02/03. La ruta canónica es `GET /api/v1/movements` (mapa de endpoints de HU-09-01);
+el contrato exacto de paginación lo fija la épica 09. Esta HU sigue siendo la dueña de la
+**semántica** del historial: aquí se fija el **contenido**, los **filtros** y el **orden**.
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (autenticación/autorización):** requiere credencial válida (`UNAUTHENTICATED` si

@@ -109,12 +109,16 @@ settlement y fees (05), los depósitos (07) y los retiros (08).
   participa de INV-1 (entra en la suma `Σ`); `EXTERNAL(A)` **no** entra en esa suma: es la
   contrapartida que cierra la doble entrada y cuyo saldo (negativo) iguala `depósitos −
   retiros`.
-- **Gas de retiros ETH:** el gas de cada transacción de retiro lo paga el exchange desde su
-  **reserva operativa**, externa al modelo de balances de usuario (no custodiada aquí). Por
-  lo tanto, `WITHDRAWAL_SETTLE` consume del `locked` del usuario **exactamente** el monto del
-  retiro solicitado, y `EXTERNAL(ETH)` aumenta exactamente ese mismo monto. El gas **no**
-  altera INV-1, **no** aparece en el ledger de usuario ni se carga a `EX`. (Coordinado con la
-  épica 08.)
+- **Gas de retiros (fee de red):** el fee de red de cada transacción de retiro lo paga el
+  **usuario**: al aceptar un retiro se bloquea, además del monto, la previsión de gas en ETH
+  `fee_red_wei = gas_limit × gas_price_wei` (snapshot al aceptar; HU-08-02 RN-1/RN-7). Al
+  confirmar, `WITHDRAWAL_SETTLE` consume del `locked` del usuario el monto retirado **más**
+  el gas efectivamente usado `gas_usado_wei` (ambos salen del sistema: principal al
+  destinatario, gas al validador), y `EXTERNAL(A)` aumenta exactamente lo que salió en cada
+  activo; el **sobrante de gas** `fee_red_wei − gas_usado_wei` se libera a disponible
+  (`WITHDRAWAL_RELEASE`, solo si `> 0`). El gas consumido integra los
+  `retiros_confirmados(A)` de INV-1 y **no** se carga a `EX`. (Modelo de la épica 08:
+  HU-08-02 y HU-08-04 RN-3.)
 
 ### 5.2 Tipos de movimiento (enum estable del ledger)
 

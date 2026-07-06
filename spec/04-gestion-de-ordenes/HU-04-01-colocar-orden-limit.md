@@ -29,8 +29,10 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (entrada).** Una orden limit requiere `side ∈ {BUY, SELL}`, `type = LIMIT`,
-   `priceMin` (entero > 0) y `quantityWei` (entero > 0). `quoteOrderQty` **no** se admite
-   en una orden limit (→ `VALIDATION_ERROR`). Acepta opcionalmente `clientOrderId`.
+   `priceMin` (entero > 0) y `quantityWei` (entero > 0). `quoteOrderQtyMin` **no** se admite
+   en una orden limit (→ `VALIDATION_ERROR`). Requiere además **`clientOrderId`**
+   (obligatorio; formato según HU-09-01 RN-19): su ausencia ⇒ `VALIDATION_ERROR` (422) con
+   `details.field = "clientOrderId"`, evaluado en el paso de esquema (RE-4 paso 2).
 2. **RN-2 (reglas del par).** `priceMin mod 10000 == 0 ∧ priceMin > 0` (si no,
    `INVALID_PRICE_TICK`); `quantityWei mod 10^14 == 0 ∧ quantityWei > 0` (si no,
    `INVALID_LOT_SIZE`); `notional_min = floor(quantityWei × priceMin / 10^18) ≥ 10000000`
@@ -88,6 +90,11 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 
 ## Criterios de aceptación (DoD)
 
+> Nota: `clientOrderId` es **obligatorio** en el alta (RN-1). En los `Cuando` de estos
+> escenarios se omite por brevedad: toda alta se entiende enviada con un `clientOrderId`
+> válido y único por cuenta, salvo que el escenario ejercite explícitamente su ausencia o
+> duplicación.
+
 ### Escenario 1: Alta de compra limit que descansa en el libro [AT-04-01-01]
 - Dado un trader autenticado con `disponible(USDC) = 5000000000` (5000 USDC) y `bloqueado(USDC) = 0`
 - Y un orderbook sin asks a `priceMin ≤ 2000000000`
@@ -95,7 +102,7 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 - Entonces la orden se acepta y queda en estado `OPEN`
 - Y se bloquean `R = floor(10^18 × 2000000000 / 10^18) = 2000000000` USDC-min: `disponible(USDC) = 3000000000`, `bloqueado(USDC) = 2000000000`
 - Y `total(USDC)` no cambia (INV-3) y la suma global de USDC no cambia (INV-1)
-- Y la orden aparece como abierta con `executedQty = "0"` y `remainingQty = "1000000000000000000"`
+- Y la orden aparece como abierta con `filledWei = "0"` y `remainingWei = "1000000000000000000"`
 
 ### Escenario 2: Alta de venta limit que descansa en el libro [AT-04-01-02]
 - Dado un trader autenticado con `disponible(ETH) = 3000000000000000000` (3 ETH)
@@ -119,7 +126,7 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 - Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000"` (1 ETH)
 - Entonces 0.4 ETH ejecutan como taker y el remanente `600000000000000000` wei descansa a `2000000000`; la orden queda `PARTIALLY_FILLED` (no `OPEN`, conforme a HU-04-05 RN-3)
 - Y la reserva remanente bloqueada en USDC respalda exactamente el remanente: `floor(600000000000000000 × 2000000000 / 10^18) = 1200000000` USDC-min (INV-7)
-- Y `executedQty = "400000000000000000"`, `remainingQty = "600000000000000000"`, estado `PARTIALLY_FILLED`
+- Y `filledWei = "400000000000000000"`, `remainingWei = "600000000000000000"`, estado `PARTIALLY_FILLED`
 
 ### Escenario 5 (borde): Compra que matchea a mejor precio libera el sobrante reservado [AT-04-01-05]
 - Dado un trader autenticado con `disponible(USDC) = 5000000000`
@@ -168,10 +175,10 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 - Entonces la orden sigue `OPEN` con su prioridad precio-tiempo intacta (INV-7)
 - Y `bloqueado` y `disponible` reconstruidos coinciden exactamente con los previos (INV-8)
 
-### Escenario 12 (error): `quoteOrderQty` no se admite en limit [AT-04-01-12]
+### Escenario 12 (error): `quoteOrderQtyMin` no se admite en limit [AT-04-01-12]
 - Dado un trader autenticado con fondos suficientes
-- Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000", quoteOrderQty="2000000000"`
-- Entonces se rechaza con `VALIDATION_ERROR` (HTTP 422); `details.issues` indica que `quoteOrderQty` no es un campo permitido en una orden `LIMIT` (RN-1)
+- Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000", quoteOrderQtyMin="2000000000"`
+- Entonces se rechaza con `VALIDATION_ERROR` (HTTP 422); `details.issues` indica que `quoteOrderQtyMin` no es un campo permitido en una orden `LIMIT` (RN-1)
 - Y no se reserva nada ni se crea orden
 
 ### Escenario 13 (borde): Orden propia dentro del rango consumible ⇒ rechazo íntegro [AT-04-01-13]
@@ -180,7 +187,7 @@ precio se expresa como `priceMin` (USDC-min por 1 ETH) y la cantidad como `quant
 - Cuando coloca `side=BUY, type=LIMIT, priceMin="2000000000", quantityWei="1000000000000000000"` (1 ETH; rango consumible = ambos asks)
 - Entonces se rechaza **íntegra y atómicamente** con `SELF_TRADE_BLOCKED` (HTTP 422), `details = { restingOrderId }` (el ask propio), **sin ningún fill**, tampoco contra el ask ajeno (RN-10, RN-14, RE-11; coincide con AT-03-06-03)
 - Y la reserva tomada se revierte: `disponible(USDC) = 5000000000`, `bloqueado(USDC) = 0`; el libro queda **idéntico** (ambos asks intactos)
-- Y la orden queda `REJECTED` con `executedQty = "0"` (RE-12); no descansa ningún remanente
+- Y la orden queda `REJECTED` con `filledWei = "0"` (RE-12); no descansa ningún remanente
 
 ### Escenario 14 (idempotencia): `clientOrderId` no reutilizable tras estado terminal [AT-04-01-14]
 - Dado un trader cuya orden con `clientOrderId = "k-1"` ya está `FILLED` (terminal)

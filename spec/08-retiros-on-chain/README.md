@@ -208,8 +208,9 @@ internos exactamente en el principal transferido más el gas consumido por el ex
 > (estado `PENDING`, sin `txHash`), el titular de la cuenta puede **cancelarlo** mediante una
 > solicitud explícita: transiciona `PENDING → FAILED` con `WITHDRAWAL_RELEASE` completo
 > (libera toda la reserva, `gas_usado_wei = 0`). Un retiro ya en `BROADCAST`/`CONFIRMED`/
-> `FAILED` **no** es cancelable → `CONFLICT` (409). (Los nombres de endpoint los fija la
-> épica 09; aquí se fija el efecto contable y la transición de estado.)
+> `FAILED` **no** es cancelable → `CONFLICT` (409). (La ruta la fija la épica 09:
+> `POST /api/v1/withdrawals/{withdrawalId}/cancel`, HU-09-01 RN-21; aquí se fija el efecto
+> contable y la transición de estado — HU-08-04 RN-13.)
 
 ---
 

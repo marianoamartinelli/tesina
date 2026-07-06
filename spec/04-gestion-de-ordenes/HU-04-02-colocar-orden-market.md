@@ -19,7 +19,7 @@ Cubre el alta de una orden `MARKET`: no lleva precio, ejecuta de inmediato contr
 opuesto del libro en prioridad precio-tiempo (HU-03-*) y **nunca descansa**
 (comportamiento immediate-or-cancel: el remanente no ejecutado se descarta). Admite dos
 formas de tamaño: por **cantidad de base** (`quantityWei`) o por **monto de quote**
-(`quoteOrderQty`). Exactamente una de las dos debe estar presente.
+(`quoteOrderQtyMin`). Exactamente una de las dos debe estar presente.
 
 Cubre validación, reserva de fondos previa, validación de liquidez y el estado final
 (`FILLED`, `CANCELLED` con ejecución parcial, o `REJECTED` por `MARKET_NO_LIQUIDITY`,
@@ -28,16 +28,18 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
 
 ## Reglas de negocio e invariantes
 1. **RN-1 (entrada).** Una orden market requiere `side ∈ {BUY, SELL}`, `type = MARKET`, y
-   **exactamente uno** de `quantityWei` o `quoteOrderQty` (entero > 0). Si faltan ambos o
-   están ambos ⇒ `VALIDATION_ERROR`. Si incluye `priceMin` ⇒ `PRICE_NOT_ALLOWED`. Acepta
-   opcionalmente `clientOrderId`.
+   **exactamente uno** de `quantityWei` o `quoteOrderQtyMin` (entero > 0). Si faltan ambos o
+   están ambos ⇒ `VALIDATION_ERROR`. Si incluye `priceMin` ⇒ `PRICE_NOT_ALLOWED`. Requiere
+   además **`clientOrderId`** (obligatorio; formato según HU-09-01 RN-19): su ausencia ⇒
+   `VALIDATION_ERROR` (422) con `details.field = "clientOrderId"`, evaluado en el paso de
+   esquema (RE-4 paso 2).
 2. **RN-2 (sin tick; lot según forma).** Market no valida tick (no hay precio). Si se usa
    `quantityWei`, debe cumplir lot size: `quantityWei mod 10^14 == 0 ∧ quantityWei > 0`
-   (si no, `INVALID_LOT_SIZE`). `quoteOrderQty` no está sujeto a lot ni a tick, pero debe
+   (si no, `INVALID_LOT_SIZE`). `quoteOrderQtyMin` no está sujeto a lot ni a tick, pero debe
    ser entero positivo (`^(0|[1-9][0-9]*)$`, > 0).
 3. **RN-3 (mínimo notional para market).** El notional estimado debe ser ≥ `10000000`
    (10 USDC), si no `BELOW_MIN_NOTIONAL`:
-   - forma `quoteOrderQty`: el estimador es el propio `quoteOrderQty`.
+   - forma `quoteOrderQtyMin`: el estimador es el propio `quoteOrderQtyMin`.
    - forma `quantityWei`: el estimador es `floor(quantityWei × P / 10^18)`, con `P` el
      mejor precio del lado opuesto (best ask para BUY, best bid para SELL) al momento del
      alta. Si el lado opuesto está vacío, no hay precio de referencia: aplica RN-4
@@ -52,32 +54,36 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
    lado opuesto tomado al procesar el alta (mismo punto que RN-4, **antes** de bloquear
    fondos; sin dependencia circular: se lee el libro, se calcula `R`, y recién después se
    bloquea — ver RE-1 del README):
-   - **BUY por `quoteOrderQty`:** `R = quoteOrderQty` USDC-min.
+   - **BUY por `quoteOrderQtyMin`:** `R = quoteOrderQtyMin` USDC-min.
    - **BUY por `quantityWei`:** `R =` costo en quote de barrer los asks vigentes hasta
      `quantityWei` (snapshot): `R = Σ_niveles floor(wei_consumido_nivel × precio_nivel / 10^18)`.
    - **SELL por `quantityWei`:** `R = quantityWei` wei (ETH).
-   - **SELL por `quoteOrderQty`:** `R =` base en wei necesaria para obtener `quoteOrderQty`
+   - **SELL por `quoteOrderQtyMin`:** `R =` base en wei necesaria para obtener `quoteOrderQtyMin`
      de quote barriendo los bids vigentes (snapshot). Por cada nivel de bid a precio `P_bid`,
      los wei a vender para cubrir el quote restante son
      `q_nivel = ceil(quote_restante × 10^18 / P_bid)` (redondeo **hacia arriba** para no
      quedar corto por sub-unidad; `convenciones-monetarias.md §2.3`). `R` es la suma de los
      `q_nivel`, determinada **únicamente** por el snapshot de liquidez y el objetivo
-     `quoteOrderQty` (**no** se acota por `disponible(ETH)`); luego se exige
+     `quoteOrderQtyMin` (**no** se acota por `disponible(ETH)`); luego se exige
      `disponible(ETH) ≥ R`, si no `INSUFFICIENT_FUNDS` (422). **Terminación:**
      la orden se considera completa (`FILLED`) cuando se agota la base reservada por el
      snapshot (equivalente a haber vendido los wei necesarios); el quote recibido nunca es
-     **menor** que `quoteOrderQty` cuando hay liquidez suficiente (puede excederlo en a lo
+     **menor** que `quoteOrderQtyMin` cuando hay liquidez suficiente (puede excederlo en a lo
      sumo sub-unidad por nivel a causa del `ceil`), y todo sobrante de base no vendida se
      libera (RN-8).
    Requiere `disponible ≥ R` en el activo correspondiente; si no, `INSUFFICIENT_FUNDS`.
 6. **RN-6 (fee no se reserva).** La reserva no incluye fee; la fee se cobra en el activo
    recibido por cada fill (HU-05-*). Ver RE-2.
 7. **RN-7 (ejecución y descarte del remanente).** La market consume liquidez hasta
-   completar su objetivo (`quantityWei` o `quoteOrderQty`) o agotar el lado opuesto. El
+   completar su objetivo (`quantityWei` o `quoteOrderQtyMin`) o agotar el lado opuesto. El
    objetivo no alcanzado **no descansa**: se descarta. Estado final:
-   - objetivo completado ⇒ `FILLED`;
-   - ejecución parcial y luego liquidez **o presupuesto** agotados ⇒ `CANCELLED` con
-     `executedQty > 0` (remanente descartado; `reason = MARKET_EXHAUSTED` o
+   - objetivo completado ⇒ `FILLED`. En la forma por monto de un BUY, el objetivo se
+     considera **completado** cuando el presupuesto remanente no alcanza para ejecutar ni
+     1 lot más del siguiente maker (HU-03-04 RN-5, RN-6 c): la orden queda `FILLED` aunque
+     reste un residuo sub-lot del presupuesto, que se libera (RN-8);
+   - ejecución parcial con el objetivo **incompleto** —por liquidez agotada o, caso
+     defensivo en la forma por cantidad, por presupuesto agotado— ⇒ `CANCELLED` con
+     `filledWei > 0` (remanente descartado; `reason = MARKET_EXHAUSTED` o
      `MARKET_BUDGET_EXHAUSTED` según HU-03-04 RN-9);
    - cero ejecución por lado vacío ⇒ `REJECTED` con `MARKET_NO_LIQUIDITY`;
    - cero ejecución (`filledWei = 0`) en `MARKET BUY` con lado opuesto **no** vacío cuyo
@@ -104,11 +110,11 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
     reserva revertida → `MARKET_BUDGET_INSUFFICIENT`) (RE-4 paso 8).
 12. **RN-12 (invariantes).** Respeta INV-1, INV-2, INV-3, INV-4 (settlement atómico de
     cada fill, HU-05-*) e INV-8.
-13. **RN-13 (serialización).** `quantityWei`, `quoteOrderQty`, reservas, ejecutado y fees
+13. **RN-13 (serialización).** `quantityWei`, `quoteOrderQtyMin`, reservas, ejecutado y fees
     como string `^(0|[1-9][0-9]*)$` (RE-8).
-14. **RN-14 (cantidades reportadas).** `executedQty` se expresa siempre en **base** (wei) =
-    suma de los `q_wei` de todos los fills (también para órdenes por `quoteOrderQty`). El
-    quote efectivamente gastado (BUY) o recibido (SELL) se reporta en `executedQuoteQty`
+14. **RN-14 (cantidades reportadas).** `filledWei` se expresa siempre en **base** (wei) =
+    suma de los `q_wei` de todos los fills (también para órdenes por `quoteOrderQtyMin`). El
+    quote efectivamente gastado (BUY) o recibido (SELL) se reporta en `executedQuoteMin`
     (USDC-min) `= Σ floor(q_fill × P_fill / 10^18)` (ver HU-04-05 RN-7 y HU-04-06/07).
 15. **RN-15 (alcance de `clientOrderId`).** Unicidad **permanente por cuenta** (lifetime),
     aun tras estado terminal; dos cuentas distintas pueden reusar el mismo valor (RE-5).
@@ -118,13 +124,18 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
 
 ## Criterios de aceptación (DoD)
 
+> Nota: `clientOrderId` es **obligatorio** en el alta (RN-1). En los `Cuando` de estos
+> escenarios se omite por brevedad: toda alta se entiende enviada con un `clientOrderId`
+> válido y único por cuenta, salvo que el escenario ejercite explícitamente su ausencia o
+> duplicación.
+
 ### Escenario 1: Compra market por monto que ejecuta totalmente [AT-04-02-01]
 - Dado un trader autenticado con `disponible(USDC) = 5000000000`
 - Y asks resting ajenos suficientes a `priceMin = 2000000000`
-- Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="2000000000"` (gastar 2000 USDC)
+- Cuando coloca `side=BUY, type=MARKET, quoteOrderQtyMin="2000000000"` (gastar 2000 USDC)
 - Entonces se bloquean `R = 2000000000` USDC-min, la orden ejecuta como taker y queda `FILLED`
 - Y todo USDC reservado no gastado (por mejor precio o redondeo) se libera a disponible (RN-8)
-- Y `executedQty` reporta la **base** en wei comprada y `executedQuoteQty` el USDC efectivamente gastado (RN-14)
+- Y `filledWei` reporta la **base** en wei comprada y `executedQuoteMin` el USDC efectivamente gastado (RN-14)
 - Y no queda remanente descansando en el libro
 
 ### Escenario 2: Venta market por cantidad que ejecuta totalmente [AT-04-02-02]
@@ -147,13 +158,13 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
 - Y un único ask resting ajeno por `400000000000000000` wei (0.4 ETH) a `priceMin = 2000000000`
 - Cuando coloca `side=BUY, type=MARKET, quantityWei="1000000000000000000"` (comprar 1 ETH)
 - Entonces ejecuta 0.4 ETH, agota la liquidez y el remanente (0.6 ETH) se **descarta** (no descansa)
-- Y la orden queda `CANCELLED` con `executedQty = "400000000000000000"`
+- Y la orden queda `CANCELLED` con `filledWei = "400000000000000000"`
 - Y el USDC reservado no consumido se libera a disponible (RN-8)
 
 ### Escenario 5a (error): Sin liquidez — BUY con asks vacíos [AT-04-02-05a]
 - Dado un trader autenticado con `disponible(USDC) = 5000000000` y `bloqueado(USDC) = 0`
 - Y el libro **sin asks** (lado opuesto de un BUY vacío)
-- Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="2000000000"`
+- Cuando coloca `side=BUY, type=MARKET, quoteOrderQtyMin="2000000000"`
 - Entonces se rechaza con `MARKET_NO_LIQUIDITY` (HTTP 422) y la orden queda `REJECTED`
 - Y `bloqueado(USDC) = 0` y `disponible(USDC) = 5000000000` quedan **intactos**: la comprobación es previa a fondos, no se reservó nada (RN-4, RE-4 paso 6)
 
@@ -166,31 +177,31 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
 
 ### Escenario 6 (error): Market con precio especificado [AT-04-02-06]
 - Dado un trader autenticado
-- Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="2000000000", priceMin="2000000000"`
+- Cuando coloca `side=BUY, type=MARKET, quoteOrderQtyMin="2000000000", priceMin="2000000000"`
 - Entonces se rechaza con `PRICE_NOT_ALLOWED` (HTTP 422)
 - Y no se reserva ni se ejecuta nada
 
 ### Escenario 7 (error): Ambos tamaños presentes [AT-04-02-07]
 - Dado un trader autenticado
-- Cuando coloca `side=BUY, type=MARKET, quantityWei="1000000000000000000", quoteOrderQty="2000000000"`
+- Cuando coloca `side=BUY, type=MARKET, quantityWei="1000000000000000000", quoteOrderQtyMin="2000000000"`
 - Entonces se rechaza con `VALIDATION_ERROR` (HTTP 422), `details.issues` indica que se exige exactamente uno
 - Y no se reserva ni se ejecuta nada
 
 ### Escenario 8 (error): Ningún tamaño presente [AT-04-02-08]
 - Dado un trader autenticado
-- Cuando coloca `side=BUY, type=MARKET` sin `quantityWei` ni `quoteOrderQty`
+- Cuando coloca `side=BUY, type=MARKET` sin `quantityWei` ni `quoteOrderQtyMin`
 - Entonces se rechaza con `VALIDATION_ERROR` (HTTP 422)
 
 ### Escenario 9 (error): Fondos insuficientes [AT-04-02-09]
 - Dado un trader autenticado con `disponible(USDC) = 1000000000`
 - Y un ask resting **ajeno** cruzable (lado opuesto no vacío, patrón de AT-04-03-13: así el resultado es únicamente `INSUFFICIENT_FUNDS` y no `MARKET_NO_LIQUIDITY`)
-- Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="2000000000"`
+- Cuando coloca `side=BUY, type=MARKET, quoteOrderQtyMin="2000000000"`
 - Entonces se rechaza con `INSUFFICIENT_FUNDS` (HTTP 422), `details = { asset:"USDC", required:"2000000000", available:"1000000000" }`
 - Y no se ejecuta ni se mantiene reserva (INV-2)
 
 ### Escenario 10 (error): Monto por debajo del mínimo notional [AT-04-02-10]
 - Dado un trader autenticado con fondos suficientes
-- Cuando coloca `side=BUY, type=MARKET, quoteOrderQty="9999999"` (9.999999 USDC < 10 USDC)
+- Cuando coloca `side=BUY, type=MARKET, quoteOrderQtyMin="9999999"` (9.999999 USDC < 10 USDC)
 - Entonces se rechaza con `BELOW_MIN_NOTIONAL` (HTTP 422), `details = { actualNotional:"9999999", minNotional:"10000000" }`
 - Y no se reserva ni se ejecuta
 
@@ -202,17 +213,17 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
 ### Escenario 12a (borde): Venta market por monto que completa el objetivo [AT-04-02-12a]
 - Dado un trader autenticado con `disponible(ETH) = 2000000000000000000` (2 ETH)
 - Y bids resting ajenos **suficientes** a `priceMin = 1500000000` (1500.00 USDC/ETH)
-- Cuando coloca `side=SELL, type=MARKET, quoteOrderQty="2000000000"` (recibir ~2000 USDC vendiendo ETH)
+- Cuando coloca `side=SELL, type=MARKET, quoteOrderQtyMin="2000000000"` (recibir ~2000 USDC vendiendo ETH)
 - Entonces el matching reserva en ETH la base necesaria por snapshot: `q_nivel = ceil(2000000000 × 10^18 / 1500000000) = 1333333333333333334` wei (RN-5)
-- Y ejecuta esa base; el USDC recibido es `executedQuoteQty = floor(1333333333333333334 × 1500000000 / 10^18) = 2000000000` (= objetivo; el `ceil` agregó 1 wei de base para no quedar corto)
-- Y la orden queda `FILLED` con `executedQty = "1333333333333333334"`; el sobrante de ETH reservado no vendido (si lo hubiera) se libera (RN-8)
+- Y ejecuta esa base; el USDC recibido es `executedQuoteMin = floor(1333333333333333334 × 1500000000 / 10^18) = 2000000000` (= objetivo; el `ceil` agregó 1 wei de base para no quedar corto)
+- Y la orden queda `FILLED` con `filledWei = "1333333333333333334"`; el sobrante de ETH reservado no vendido (si lo hubiera) se libera (RN-8)
 
 ### Escenario 12b (borde): Venta market por monto con liquidez insuficiente [AT-04-02-12b]
 - Dado un trader autenticado con `disponible(ETH) = 2000000000000000000`
 - Y un **único** bid resting ajeno por `400000000000000000` wei (0.4 ETH) a `priceMin = 1500000000`
-- Cuando coloca `side=SELL, type=MARKET, quoteOrderQty="2000000000"`
+- Cuando coloca `side=SELL, type=MARKET, quoteOrderQtyMin="2000000000"`
 - Entonces el snapshot solo cubre 0.4 ETH: se reserva `R = 400000000000000000` wei, se vende todo, se agota la liquidez y el remanente del objetivo se **descarta**
-- Y la orden queda `CANCELLED` con `executedQty = "400000000000000000"` y `executedQuoteQty = floor(400000000000000000 × 1500000000 / 10^18) = "600000000"` (RN-7, RN-14)
+- Y la orden queda `CANCELLED` con `filledWei = "400000000000000000"` y `executedQuoteMin = floor(400000000000000000 × 1500000000 / 10^18) = "600000000"` (RN-7, RN-14)
 - Y el ETH reservado no vendido se libera a disponible (RN-8)
 
 ### Escenario 13 (error): Self-trade en market (bid propio como única liquidez) [AT-04-02-13]
@@ -228,7 +239,7 @@ libro ni el settlement (HU-03-*/HU-05-*), ni el contrato de la API (HU-09-*).
 - Cuando coloca `side=SELL, type=MARKET, quantityWei="1000000000000000000"` (vender 1 ETH; rango consumible = ambos bids)
 - Entonces se rechaza **íntegra y atómicamente** con `SELF_TRADE_BLOCKED` (HTTP 422), `details = { restingOrderId }` (el bid propio), **sin ningún fill**, tampoco contra el bid ajeno (RN-9, RE-11; coincide con AT-03-06-03)
 - Y la reserva tomada se revierte: `disponible(ETH) = 2000000000000000000`, `bloqueado(ETH) = 0`; el libro queda **idéntico** (ambos bids intactos)
-- Y la orden queda `REJECTED` con `executedQty = "0"` (RE-12)
+- Y la orden queda `REJECTED` con `filledWei = "0"` (RE-12)
 
 ## Definicion de Done (checklist transversal)
 - [ ] Todos los escenarios de aceptación (AT-04-02-01 .. AT-04-02-14, incluidos 05a/05b y 12a/12b) pasan

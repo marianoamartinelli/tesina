@@ -15,9 +15,9 @@ ejecutó, qué cancelé y qué fue rechazado**.
 ## Contexto y alcance
 Cubre la consulta de las órdenes **terminales** del trader: `FILLED`, `CANCELLED` y
 `REJECTED`. Permite filtrar por `status` (uno o varios estados terminales) y por **período**
-(rango temporal). Devuelve, por cada orden, al menos: `orderId`, `clientOrderId` (si lo
-hubo), `side`, `type`, `priceMin` (para limit), `quantityWei`/`quoteOrderQty`,
-`executedQty`, `remainingQty`, `executedQuoteQty`, `avgExecutionPrice`, `status`, marca de
+(rango temporal). Devuelve, por cada orden, al menos: `orderId`, `clientOrderId`
+(obligatorio en el alta, HU-04-01/02 RN-1), `side`, `type`, `priceMin` (para limit), `quantityWei`/`quoteOrderQtyMin`,
+`filledWei`, `remainingWei`, `executedQuoteMin`, `avgPriceMin`, `status`, marca de
 creación y marca de finalización. El aislamiento por
 cuenta es estricto. La forma concreta del endpoint y la paginación se fijan en HU-09-*;
 aquí se fija la **semántica**.
@@ -39,23 +39,26 @@ aquí se fija la **semántica**.
 5. **RN-5 (filtros combinables).** `status` y período se combinan con AND: una orden
    aparece solo si satisface todos los filtros presentes.
 6. **RN-6 (orden determinista).** El resultado se ordena de forma determinista y
-   documentada (por defecto: marca de finalización descendente y, ante empate, `orderId`
-   ascendente), para paginación estable.
+   documentada (por defecto: `createdAt` **descendente** —más reciente primero— y, ante
+   empate, `orderId` **descendente**; clave y desempate alineados con HU-09-01 RN-8, que
+   fija el contrato del endpoint compartido `GET /orders`; `createdAt` existe para toda
+   orden, a diferencia de la marca de finalización), para paginación estable. La marca de
+   finalización sigue siendo la clave del **filtro** `from`/`to` (RN-4).
 7. **RN-7 (paginación).** Soporta paginación (límite + cursor/offset, HU-09-*); sin
    duplicados ni omisiones entre páginas bajo el orden de RN-6.
-8. **RN-8 (serialización).** Todos los montos (`priceMin`, `quantityWei`, `quoteOrderQty`,
-   `executedQty`) se serializan como string `^(0|[1-9][0-9]*)$` (RE-8).
+8. **RN-8 (serialización).** Todos los montos (`priceMin`, `quantityWei`, `quoteOrderQtyMin`,
+   `filledWei`) se serializan como string `^(0|[1-9][0-9]*)$` (RE-8).
 9. **RN-9 (auth).** Requiere trader autenticado; sin credencial ⇒ `UNAUTHENTICATED` (401).
 10. **RN-10 (solo lectura, inmutabilidad).** La consulta no modifica estado. Las órdenes
     terminales son inmutables (HU-04-05 RN-2): el historial es estable en el tiempo.
 11. **RN-11 (campos por orden terminal).** Cada orden reporta, además de su `status`:
-    - `executedQty` (base, wei) y `remainingQty` (porción **no** ejecutada): `FILLED` ⇒
-      `remainingQty="0"`; `CANCELLED` ⇒ `remainingQty = quantityWei − executedQty` (la porción
-      descartada/cancelada); `REJECTED` ⇒ `remainingQty = quantityWei` (para órdenes por
-      cantidad; para market por `quoteOrderQty`, `remainingQty` no aplica y es **`null`** —
+    - `filledWei` (base, wei) y `remainingWei` (porción **no** ejecutada): `FILLED` ⇒
+      `remainingWei="0"`; `CANCELLED` ⇒ `remainingWei = quantityWei − filledWei` (la porción
+      descartada/cancelada); `REJECTED` ⇒ `remainingWei = quantityWei` (para órdenes por
+      cantidad; para market por `quoteOrderQtyMin`, `remainingWei` no aplica y es **`null`** —
       serialización única; nunca `"0"`).
-    - `executedQuoteQty` (quote gastado/recibido) y `avgExecutionPrice`
-      (`floor(executedQuoteQty × 10^18 / executedQty)`, o **`null`** si `executedQty="0"` —
+    - `executedQuoteMin` (quote gastado/recibido) y `avgPriceMin`
+      (`floor(executedQuoteMin × 10^18 / filledWei)`, o **`null`** si `filledWei="0"` —
       serialización única, nunca `"0"`), con la misma definición que HU-04-06 RN-10.
 12. **RN-12 (qué REJECTED aparecen).** Solo las órdenes rechazadas por la **capa de matching**
     (`MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED`, `MARKET_BUDGET_INSUFFICIENT`) se persisten y
@@ -67,7 +70,7 @@ aquí se fija la **semántica**.
 ### Escenario 1: Listar historial sin filtros [AT-04-07-01]
 - Dado un trader con órdenes `FILLED`, `CANCELLED` y `REJECTED`
 - Cuando consulta su historial sin filtros
-- Entonces recibe las tres órdenes con su `status`, `executedQty` y marcas temporales
+- Entonces recibe las tres órdenes con su `status`, `filledWei` y marcas temporales
 
 ### Escenario 2 (filtro): Solo FILLED [AT-04-07-02]
 - Dado un trader con órdenes `FILLED`, `CANCELLED` y `REJECTED`
@@ -96,7 +99,7 @@ aquí se fija la **semántica**.
 
 ### Escenario 7 (paginación): Resultado estable y paginado [AT-04-07-07]
 - Dado un trader con muchas órdenes terminales
-- Cuando pagina con el orden por defecto (finalización desc, `orderId` asc en empate)
+- Cuando pagina con el orden por defecto (`createdAt` desc, `orderId` desc en empate, RN-6)
 - Entonces cada orden aparece exactamente una vez, sin duplicados ni omisiones (RN-6, RN-7)
 
 ### Escenario 8 (borde): Historial vacío [AT-04-07-08]
@@ -120,7 +123,7 @@ aquí se fija la **semántica**.
 - Entonces se rechaza con `UNAUTHENTICATED` (401)
 
 ### Escenario 12 (serialización + inmutabilidad): Montos string y resultado estable [AT-04-07-12]
-- Dado una orden `FILLED` con `executedQty="1000000000000000000"`
+- Dado una orden `FILLED` con `filledWei="1000000000000000000"`
 - Cuando consulta el historial dos veces en momentos distintos
 - Entonces los montos viajan como string `^(0|[1-9][0-9]*)$` y la orden terminal aparece idéntica en ambas consultas (RN-8, RN-10)
 

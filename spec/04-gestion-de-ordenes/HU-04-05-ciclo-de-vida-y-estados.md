@@ -69,15 +69,15 @@ descansó).
    completo), `CANCELLED` (parcial + remanente descartado) o `REJECTED` sin ejecución alguna
    (`MARKET_NO_LIQUIDITY`, `SELF_TRADE_BLOCKED` o `MARKET_BUDGET_INSUFFICIENT`); nunca en
    `OPEN` ni en `PARTIALLY_FILLED` persistente (RE-6).
-7. **RN-7 (monotonía y unidad de ejecutado).** `executedQty` es monótona no decreciente y
+7. **RN-7 (monotonía y unidad de ejecutado).** `filledWei` es monótona no decreciente y
    nunca excede `quantityWei` (o el objetivo de la market). Se expresa **siempre en base
    (wei)**: es la suma de los `q_wei` de todos los fills, también para órdenes market por
-   `quoteOrderQty`. En `FILLED`, `executedQty == quantityWei` para órdenes por cantidad (para
-   market por `quoteOrderQty`, `FILLED` significa objetivo de quote alcanzado, HU-04-02 RN-5).
-   En `OPEN`, `executedQty = "0"`. El quote gastado/recibido se reporta aparte en
-   `executedQuoteQty` (HU-04-06/07), **no** en `executedQty`.
+   `quoteOrderQtyMin`. En `FILLED`, `filledWei == quantityWei` para órdenes por cantidad (para
+   market por `quoteOrderQtyMin`, `FILLED` significa objetivo de quote alcanzado, HU-04-02 RN-5).
+   En `OPEN`, `filledWei = "0"`. El quote gastado/recibido se reporta aparte en
+   `executedQuoteMin` (HU-04-06/07), **no** en `filledWei`.
 8. **RN-8 (coherencia con reserva, INV-7).** Mientras la orden esté en `OPEN` o
-   `PARTIALLY_FILLED`, su `remainingQty` (= `quantityWei − executedQty`) está respaldado por
+   `PARTIALLY_FILLED`, su `remainingWei` (= `quantityWei − filledWei`) está respaldado por
    `bloqueado`. Al pasar a un terminal, el bloqueado asociado se ha consumido (fills) o
    liberado (cancelación/descarte).
 9. **RN-9 (atomicidad de la transición).** Cada cambio de estado es atómico y consistente
@@ -101,18 +101,18 @@ descansó).
 ### Escenario 1: Limit sin match ⇒ OPEN [AT-04-05-01]
 - Dado un trader que coloca una limit válida sin contraparte cruzable
 - Cuando se procesa el alta
-- Entonces la orden queda `OPEN` con `executedQty="0"` y `remainingQty=quantityWei`
+- Entonces la orden queda `OPEN` con `filledWei="0"` y `remainingWei=quantityWei`
 - (Nota: el estado `NEW` es transitorio interno y **no** es observable vía consultas externas, RN-11)
 
 ### Escenario 2: Limit con match parcial ⇒ NEW→PARTIALLY_FILLED [AT-04-05-02]
 - Dado un trader que coloca una limit de 1 ETH con solo 0.4 ETH cruzables
 - Cuando se procesa el alta
-- Entonces ejecuta 0.4 ETH y queda `PARTIALLY_FILLED` con `executedQty="400000000000000000"`, remanente resting
+- Entonces ejecuta 0.4 ETH y queda `PARTIALLY_FILLED` con `filledWei="400000000000000000"`, remanente resting
 
 ### Escenario 3: Limit marketable total ⇒ NEW→FILLED [AT-04-05-03]
 - Dado liquidez suficiente cruzable
 - Cuando el trader coloca una limit que ejecuta completamente al entrar
-- Entonces la orden queda `FILLED` con `executedQty == quantityWei`, sin remanente
+- Entonces la orden queda `FILLED` con `filledWei == quantityWei`, sin remanente
 
 ### Escenario 4: Market total ⇒ NEW→FILLED [AT-04-05-04]
 - Dado liquidez suficiente
@@ -122,7 +122,7 @@ descansó).
 ### Escenario 5 (borde): Market parcial ⇒ NEW→CANCELLED (remanente descartado) [AT-04-05-05]
 - Dado liquidez insuficiente para completar la market
 - Cuando se procesa la market
-- Entonces ejecuta lo disponible, descarta el remanente y queda `CANCELLED` con `executedQty>0` (RN-6)
+- Entonces ejecuta lo disponible, descarta el remanente y queda `CANCELLED` con `filledWei>0` (RN-6)
 
 ### Escenario 6 (error): Market sin liquidez ⇒ REJECTED persistido [AT-04-05-06]
 - Dado el lado opuesto vacío
@@ -138,7 +138,7 @@ descansó).
 ### Escenario 8: Resting OPEN→PARTIALLY_FILLED→FILLED [AT-04-05-08]
 - Dado una orden `OPEN` de 1 ETH
 - Cuando un taker la ejecuta primero por 0.4 ETH y luego por 0.6 ETH
-- Entonces transiciona `OPEN → PARTIALLY_FILLED → FILLED`, con `executedQty` monótona creciente hasta `quantityWei` (RN-7)
+- Entonces transiciona `OPEN → PARTIALLY_FILLED → FILLED`, con `filledWei` monótona creciente hasta `quantityWei` (RN-7)
 
 ### Escenario 9: Cancelación OPEN→CANCELLED [AT-04-05-09]
 - Dado una orden `OPEN`
@@ -148,7 +148,7 @@ descansó).
 ### Escenario 10: Cancelación PARTIALLY_FILLED→CANCELLED [AT-04-05-10]
 - Dado una orden `PARTIALLY_FILLED`
 - Cuando el dueño la cancela
-- Entonces queda `CANCELLED` con `executedQty` preservado y se libera el remanente
+- Entonces queda `CANCELLED` con `filledWei` preservado y se libera el remanente
 
 ### Escenario 11 (error): Transición prohibida desde terminal [AT-04-05-11]
 - Dado una orden `FILLED`
@@ -163,7 +163,7 @@ descansó).
 ### Escenario 13 (persistencia): Estados sobreviven al reinicio [AT-04-05-13]
 - Dado órdenes en distintos estados (`OPEN`, `PARTIALLY_FILLED`, `FILLED`, `CANCELLED`)
 - Cuando el sistema se reinicia y reconstruye desde el ledger/registro
-- Entonces cada orden conserva su estado y `executedQty`; las abiertas mantienen prioridad precio-tiempo (INV-7, INV-8)
+- Entonces cada orden conserva su estado y `filledWei`; las abiertas mantienen prioridad precio-tiempo (INV-7, INV-8)
 
 ### Escenario 14 (recuperación): `NEW` nunca sobrevive a un reinicio [AT-04-05-14]
 - Dado un alta en curso (reserva + entrega al matching) interrumpida por un reinicio
@@ -175,6 +175,6 @@ descansó).
 - [ ] Todos los escenarios de aceptación (AT-04-05-01 .. AT-04-05-14) pasan
 - [ ] Reglas de negocio RN-1..RN-11 verificadas
 - [ ] Manejo de errores conforme a 00-fundaciones/modelo-de-errores.md (`ORDER_NOT_CANCELLABLE`, `MARKET_NO_LIQUIDITY`)
-- [ ] Precision/redondeo conforme a 00-fundaciones/convenciones-monetarias.md (executedQty/remainingQty enteros)
+- [ ] Precision/redondeo conforme a 00-fundaciones/convenciones-monetarias.md (filledWei/remainingWei enteros)
 - [ ] Sin violacion de invariantes globales (INV-2, INV-3, INV-4, INV-7, INV-8)
 - [ ] (si aplica) Adherencia verificada al estandar on-chain citado — N/A
