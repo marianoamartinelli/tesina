@@ -1,0 +1,7 @@
+# Salidas generadas por corrida (se copian a runs/<id>/ en H8, no se versionan acá)
+resultados-at.csv
+# Estado local del entorno on-chain (regenerado por desplegar-usdc.py)
+entorno/usdc-mock.address
+entorno/entorno.env
+__pycache__/
+.pytest_cache/

@@ -43,3 +43,810 @@
     black-box para provocarla ni observarla determinísticamente. Se evalúa por
     inspección de código (escritura atómica) en H8.
   referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+# --- Épica 01 (fusionado desde no_automatizables_ep01.yaml) ---
+- at_id: AT-01-02-13
+  motivo: >-
+    El log de auditoría de autenticación (RNE-9) es interno por definición: la
+    propia HU declara que "no es accesible desde la API del usuario final" y
+    que el AT es "verificable por inspección interna; no observable por caja
+    negra en la respuesta de la API". No existe superficie HTTP/WS/on-chain
+    que lo exponga (exponerlo violaría RNE-3). Se evalúa por inspección de
+    código/operativa en H8.
+  referencia: spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md
+
+- at_id: AT-01-03-04
+  motivo: >-
+    El Dado exige un token expirado por TTL. El entorno de evaluación fija el
+    TTL en 3600 s (evaluacion/suite-at/entorno/README.md: "TTL de token
+    3600 s... se dejan en esos valores") y la spec no da ninguna vía black-box
+    para acortarlo ni para adelantar el reloj del SUT: provocar la expiración
+    costaría 1 h de espera por corrida. La indistinguibilidad de la respuesta
+    401 sí está cubierta para la causa "invalidado por logout" (AT-01-03-02,
+    AT-01-04-04). Se evalúa en H8 por inspección de código (chequeo
+    t >= expiresAt y validación del TTL al arranque, HU-01-02 RN-3).
+  referencia: spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md
+
+- at_id: AT-01-03-09
+  motivo: >-
+    Mismo impedimento que AT-01-03-04: el Dado requiere un token ya expirado
+    por TTL (3600 s fijos en el entorno de evaluación) y no hay superficie
+    black-box para provocar la expiración en tiempo de test. La cláusula "solo
+    un nuevo login permite obtener un token válido" está cubierta en su parte
+    observable por AT-01-02-01/AT-01-02-03 (el login emite token utilizable);
+    la no-reactivación del token expirado se evalúa por inspección de código
+    en H8 (HU-01-03 RN-7).
+  referencia: spec/01-cuentas-y-autenticacion/HU-01-03-cierre-y-expiracion-de-sesion.md
+
+# --- Épica 02 (fusionado desde no_automatizables_ep02.yaml) ---
+- at_id: AT-02-03-01
+  motivo: >-
+    La estructura del asiento DEPOSIT (type, reference {txHash, logIndex},
+    postings CREDIT available / DEBIT EXTERNAL, balanceo por activo) no es
+    observable: el contrato de la épica 09 no expone el ledger (el historial de
+    HU-02-05 no tiene endpoint en HU-09-01) y EXTERNAL es una cuenta técnica
+    interna. El efecto observable (acreditación exacta y única, con identidad
+    txHash/logIndex visible en GET /deposits) se verifica en AT-02-04-08 y en
+    los ATs de la épica 07. La estructura del asiento se evalúa
+    white-box/rúbrica en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-02
+  motivo: >-
+    La forma del asiento ORDER_LOCK (type, reference {orderId}, postings DEBIT
+    available / CREDIT locked) no es observable sin superficie de ledger en el
+    contrato de la épica 09. Su efecto sobre los buckets (available −= x,
+    locked += x, total constante) se verifica black-box en AT-02-02-01/02/03.
+    Se evalúa white-box/rúbrica en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-03
+  motivo: >-
+    La forma del asiento ORDER_RELEASE (type, reference {orderId}, postings
+    DEBIT locked / CREDIT available) no es observable sin superficie de ledger
+    en el contrato de la épica 09. Su efecto sobre los buckets se verifica
+    black-box en AT-02-02-05/06. Se evalúa white-box/rúbrica en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-04
+  motivo: >-
+    La composición del asiento TRADE_FILL (un ÚNICO asiento con seis postings,
+    sub-clasificación kind=FEE hacia EX, reference tradeId, balanceo por activo)
+    no es observable sin superficie de ledger. Los seis montos, las fees y la
+    conservación del fill sí se verifican black-box (balances + pata propia de
+    GET /trades) en AT-02-02-08, AT-02-03-10 y AT-02-04-01. La unicidad y forma
+    del asiento se evalúa white-box/rúbrica en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-05
+  motivo: >-
+    Reconstruir balances sumando CREDIT − DEBIT por cuenta/activo/bucket y
+    verificar el determinismo de reprocesar el ledger exige leer los asientos,
+    sin superficie API en la épica 09. La proyección observable (los balances
+    reportados coinciden exactamente con los que produce la secuencia normativa
+    de asientos) se verifica en AT-02-01-07; la persistencia/reconstrucción tras
+    reinicio, en AT-02-04-06. Se evalúa white-box en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-06
+  motivo: >-
+    La corrección vía asiento de compensación (REVERSAL con postings inversos y
+    reference {reversedEntryId}, original intacto) es un mecanismo interno del
+    motor contable: el contrato de la épica 09 no expone ninguna operación que
+    dispare una reversión ni una vía para observar asientos/entryId. Se evalúa
+    white-box/rúbrica en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-07
+  motivo: >-
+    "No se crea un segundo asiento DEPOSIT" es una propiedad del ledger, sin
+    superficie API para contar asientos; tampoco hay vía black-box para forzar
+    el reproceso del mismo evento on-chain (el reporte DEPOSIT_ALREADY_CREDITED
+    es interno al pipeline de acreditación). El efecto observable (el balance se
+    acredita una sola vez por identidad (txHash, logIndex), INV-5) se verifica
+    en AT-02-04-08. Se evalúa white-box en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-08
+  motivo: >-
+    El rechazo de un asiento desbalanceado es una validación interna del motor
+    contable: no existe vía black-box para intentar escribir un asiento
+    arbitrario (Σ CREDIT ≠ Σ DEBIT) a través del contrato de la épica 09. Se
+    evalúa white-box (tests propios del SUT o inspección) en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-09
+  motivo: >-
+    Requiere inyectar una falla después de persistir algunos postings y antes de
+    completar el asiento (el mecanismo de inyección de AT-02-04-02): es
+    infraestructura interna del SUT, sin superficie black-box para provocarla
+    determinísticamente ni para observar asientos parciales. Se evalúa como test
+    de integración white-box en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+- at_id: AT-02-03-11
+  motivo: >-
+    Requiere inyectar una falla ENTRE la escritura del TRADE_FILL y la del
+    ORDER_RELEASE de surplus dentro de la misma transacción (mecanismo de
+    AT-02-04-02, interno al SUT). Sin esa inyección, la unidad atómica de los
+    dos asientos no es falsable black-box. El efecto observable del camino feliz
+    (consumo + liberación de surplus en la misma operación) se verifica en
+    AT-02-02-07/13. Se evalúa como test de integración white-box en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-03-libro-contable-de-movimientos.md
+
+# ---------------------------------------------------------------------------
+# HU-02-04 — Atomicidad y consistencia
+# ---------------------------------------------------------------------------
+
+- at_id: AT-02-04-02
+  motivo: >-
+    El propio escenario declara el prerrequisito de infraestructura: un
+    repositorio configurable que lanza una excepción tras persistir el N-ésimo
+    posting (o una violación de constraint en el 4.º). Ese punto de inyección es
+    interno a la implementación y el contrato HTTP/WS no ofrece forma de
+    provocarlo ni de sincronizarlo. Se evalúa como test de integración
+    white-box en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md
+
+- at_id: AT-02-04-07
+  motivo: >-
+    La "caída" debe ocurrir mientras una transacción de balance está sin
+    committear: desde afuera no se puede interrumpir el proceso en ese instante
+    de forma determinista (matar el SUT al azar no garantiza la ventana). La
+    parte observable de la recuperación (balances reconstruidos idénticos tras
+    reinicio) se verifica en AT-02-04-06. Se evalúa white-box/inspección en H8.
+  referencia: spec/02-balances-y-ledger/HU-02-04-atomicidad-y-consistencia.md
+
+# ---------------------------------------------------------------------------
+# HU-02-05 — Historial de movimientos
+#
+# TODO-REVISAR (hueco de spec): HU-02-05 especifica la consulta del historial y
+# delega la ruta/los parámetros/la paginación en la épica 09 (RN-4, RN-7), pero
+# el mapa de endpoints de HU-09-01 no incluye ese recurso ni fija su contrato de
+# respuesta. Sin ruta ni esquema normativos, ningún test black-box puede apuntar
+# al recurso de forma determinista y equitativa entre implementaciones. Los 14
+# ATs se evalúan en H8 contra la ruta que cada SUT documente (manual/rúbrica),
+# verificando la semántica fijada por HU-02-05.
+# ---------------------------------------------------------------------------
+
+- at_id: AT-02-05-01
+  motivo: >-
+    Historial completo sin filtros (ítems con entryId/type/timestamp/reference/
+    postings propios, orden timestamp desc + entryId desc): el contrato de la
+    épica 09 no define el endpoint del historial de movimientos (ver
+    encabezado). Se evalúa en H8 contra la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-02
+  motivo: >-
+    Filtro por activo (asset=USDC): sin endpoint de historial en el contrato de
+    la épica 09 (ver encabezado de la sección), el nombre y la forma del
+    parámetro no son normativos (HU-02-05 RN-4 los delega). Se evalúa en H8
+    contra la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-03
+  motivo: >-
+    Filtro por tipo (type=DEPOSIT con reference {txHash, logIndex}): sin
+    endpoint de historial en el contrato de la épica 09. Se evalúa en H8 contra
+    la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-04
+  motivo: >-
+    Filtro por período con semántica from inclusivo / to exclusivo: sin endpoint
+    de historial en el contrato de la épica 09. Se evalúa en H8 contra la ruta
+    documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-05
+  motivo: >-
+    Combinación de filtros con AND (asset + type + período): sin endpoint de
+    historial en el contrato de la épica 09. Se evalúa en H8 contra la ruta
+    documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-06
+  motivo: >-
+    Paginación estable por cursor anclado a entryId (25 ítems, limit=10, sin
+    duplicados ni omisiones): sin endpoint de historial en el contrato de la
+    épica 09; HU-02-05 RN-7 delega el cursor en la épica 09, que no lo
+    implementa. Se evalúa en H8 contra la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-07
+  motivo: >-
+    Resultado vacío con código de éxito (type=WITHDRAWAL_SETTLE sin
+    coincidencias): sin endpoint de historial en el contrato de la épica 09. Se
+    evalúa en H8 contra la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-08
+  motivo: >-
+    Filtro de activo inválido (asset=BTC ⇒ VALIDATION_ERROR con details.issues):
+    sin endpoint de historial en el contrato de la épica 09. Se evalúa en H8
+    contra la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-09
+  motivo: >-
+    Rango de fechas inválido (from > to ⇒ VALIDATION_ERROR): sin endpoint de
+    historial en el contrato de la épica 09. Se evalúa en H8 contra la ruta
+    documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-10
+  motivo: >-
+    Consulta del historial sin autenticación (UNAUTHENTICATED 401): sin endpoint
+    de historial en el contrato de la épica 09 no hay ruta normativa que
+    invocar sin credencial. Se evalúa en H8 contra la ruta documentada por el
+    SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-11
+  motivo: >-
+    Aislamiento del historial (solo postings propios; pedir el de otra cuenta ⇒
+    UNAUTHORIZED): sin endpoint de historial en el contrato de la épica 09. Se
+    evalúa en H8 contra la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-12
+  motivo: >-
+    Rango vacío from == to ⇒ lista vacía con éxito: sin endpoint de historial en
+    el contrato de la épica 09. Se evalúa en H8 contra la ruta documentada por
+    el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-13
+  motivo: >-
+    limit fuera de rango [1, 100] ⇒ VALIDATION_ERROR con details.issues: sin
+    endpoint de historial en el contrato de la épica 09. Se evalúa en H8 contra
+    la ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+- at_id: AT-02-05-14
+  motivo: >-
+    Filtro por múltiples tipos con parámetros repetidos (OR entre tipos, AND con
+    el resto): sin endpoint de historial en el contrato de la épica 09 (HU-02-05
+    RN-4 delega expresamente la forma del parámetro). Se evalúa en H8 contra la
+    ruta documentada por el SUT.
+  referencia: spec/02-balances-y-ledger/HU-02-05-historial-de-movimientos.md
+
+# --- Épica 03 (fusionado desde no_automatizables_ep03.yaml) ---
+- at_id: AT-03-02-07
+  motivo: >-
+    Verifica la garantía INTERNA del motor ante una segunda inserción con el
+    mismo orderId "que sorteó la idempotencia de la épica 04" (la propia HU
+    aclara que no se trata de la respuesta HTTP DUPLICATE_CLIENT_ORDER_ID, que
+    sí cubre la suite en la épica 04/09). Black-box no existe forma de inyectar
+    una inserción duplicada al motor salteando la épica 04: todo POST /orders
+    con clientOrderId repetido se corta antes (409) y uno nuevo genera otro
+    orderId. Se evalúa white-box (tests unitarios del motor / inspección) en H8.
+  referencia: spec/03-motor-de-matching/HU-03-02-insercion-orden-limit-pasiva.md
+
+- at_id: AT-03-05-08
+  motivo: >-
+    El AT verifica la emisión del evento interno order-update con status
+    REJECTED (reason SELF_TRADE_BLOCKED, sin tradeId) hacia los consumidores del
+    motor. La épica 09 excluye deliberadamente ese evento del transporte:
+    HU-09-04 RN-5 fija que no existe evento WS REJECTED (los rechazos responden
+    sólo por REST) y el objeto orden REST no lleva reason. El efecto observable
+    (422 SELF_TRADE_BLOCKED, cero trades, libro/balances intactos, orden
+    terminal REJECTED) sí se verifica en AT-03-06-02/06/07 y AT-03-03-10; la
+    emisión del evento en sí se evalúa white-box en H8.
+  referencia: spec/03-motor-de-matching/HU-03-05-emision-eventos-de-ejecucion.md
+
+- at_id: AT-03-07-04
+  motivo: >-
+    Exige inducir una caída EN MEDIO de un fill (settlement no completado) para
+    verificar la atomicidad de la recuperación; la propia HU indica el mecanismo
+    ("inyección de fallo... usando un hook de test o una simulación de I/O",
+    AT-03-07-04). No hay superficie black-box para abortar el proceso en ese
+    punto interno de forma determinista (un kill externo no sincroniza con el
+    settlement). Se evalúa white-box (hook de inyección de fallos) en H8; la
+    persistencia ante reinicio abrupto "en reposo" sí se cubre en
+    AT-03-07-01/02/03/06.
+  referencia: spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md
+
+- at_id: AT-03-07-09
+  motivo: >-
+    El Dado exige una caída ocurrida DESPUÉS de persistir los fills de una
+    MARKET pero ANTES de grabar su estado terminal, para verificar la inferencia
+    del estado (RN-13). Ese instante intermedio es interno y no puede provocarse
+    black-box de forma determinista (en operación normal el estado terminal
+    queda grabado junto con el 201). La recuperación del estado terminal de una
+    MARKET tras un reinicio normal queda cubierta indirectamente por
+    AT-03-07-06 (estado idéntico tras reinicio); la inferencia desde fills sin
+    estado terminal se evalúa white-box en H8.
+  referencia: spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md
+
+# --- Épica 04 (fusionado desde no_automatizables_ep04.yaml) ---
+- at_id: AT-04-01-11
+  motivo: >-
+    Exige reiniciar el SUT a mitad de la corrida y verificar que la orden OPEN y
+    su reserva se reconstruyen (INV-8). El harness no controla el ciclo de vida
+    del SUT (lo arranca el evaluador según el contrato de arranque de
+    entorno/README.md) y el contrato REST/WS no expone ninguna operación de
+    reinicio. Se evalúa en H8 con un reinicio del SUT orquestado manualmente por
+    el evaluador sobre estado construido por esta suite (protocolo, chequeo de
+    INV-8), comparando órdenes abiertas y balances antes y después.
+  referencia: spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md
+
+- at_id: AT-04-04-12
+  motivo: >-
+    Exige reiniciar el SUT tras una cancelación y verificar que el estado
+    CANCELLED, la ausencia en el orderbook y la liberación de fondos persisten
+    (INV-8). Sin control black-box del ciclo de vida del SUT ni superficie
+    REST/WS para provocar un reinicio, no es automatizable desde esta suite. Se
+    evalúa en H8 con reinicio manual orquestado por el evaluador, comparando
+    estado de la orden y balances antes y después.
+  referencia: spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md
+
+- at_id: AT-04-05-13
+  motivo: >-
+    Exige reiniciar el SUT con órdenes en varios estados (OPEN,
+    PARTIALLY_FILLED, FILLED, CANCELLED) y verificar que cada una conserva
+    estado, executedQty y prioridad precio-tiempo (INV-7, INV-8). El harness no
+    controla el ciclo de vida del SUT y no hay superficie REST/WS para provocar
+    el reinicio. Se evalúa en H8 con reinicio manual del evaluador sobre estado
+    construido por esta suite.
+  referencia: spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md
+
+- at_id: AT-04-05-14
+  motivo: >-
+    Exige interrumpir un alta en curso (crash del proceso entre la reserva de
+    fondos y el registro del estado) y recuperar: requiere inyección de fallas
+    en un punto interno del SUT, sin superficie black-box para provocarla ni
+    para observar el instante exacto. La parte observable (ninguna consulta
+    devuelve NEW) queda cubierta de forma indirecta por los tests de estados
+    (el status de cada respuesta/consulta se asserta contra estados
+    observables). El caso de crash se evalúa en H8 por inspección de código
+    (atomicidad del alta, HU-04-05 RN-11) más el chequeo manual de reinicio.
+  referencia: spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md
+
+# --- Épica 05 (fusionado desde no_automatizables_ep05.yaml) ---
+- at_id: AT-05-01-06
+  motivo: >-
+    Exige provocar una falla a mitad del settlement (después de debitar la base y
+    antes de acreditar la quote): la propia HU fija como mecanismo de prueba la
+    inyección de falla en la capa de persistencia (mock que lanza excepción tras el
+    primer asiento) o el kill del proceso en vuelo, sin superficie REST/WS/on-chain
+    para dispararla en el instante requerido. El efecto observable en operación
+    normal (nunca hay estado parcial: balances y trades consistentes tras cada fill,
+    INV-4) queda cubierto como propiedad por los tests de AT-05-01-01..05/08/10/11;
+    el rollback ante falla se evalúa white-box/inspección de transaccionalidad en H8.
+  referencia: spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md
+
+- at_id: AT-05-01-07
+  motivo: >-
+    El "Cuando" es el reproceso (redelivery/reintento) del evento interno de fill
+    entre matching y settlement: el contrato de la épica 09 no expone ninguna
+    operación para reinyectar un fill ya liquidado, y sin ese trigger el test sería
+    vacuo (pasaría también en una implementación sin idempotencia). Se evalúa
+    white-box en H8 (manejo del tradeId como clave de idempotencia, HU-05-01 RN-10).
+  referencia: spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md
+
+- at_id: AT-05-01-09
+  motivo: >-
+    Requiere un evento de fill que pida consumir más q_wei que el bloqueado del
+    vendedor: un estado interno inconsistente inalcanzable a través del contrato
+    (el bloqueo previo de la épica 04 y las validaciones de fondos lo impiden por
+    construcción; la HU misma lo describe como "no debería ocurrir"). Se evalúa
+    white-box en H8 (verificación de la precondición RN-9 antes de aplicar asientos).
+  referencia: spec/05-settlement-y-fees/HU-05-01-settlement-atomico-al-match.md
+
+- at_id: AT-05-03-05
+  motivo: >-
+    Mismo trigger interno que AT-05-01-07: el reproceso del evento de fill no puede
+    provocarse black-box, y la mera unicidad de tradeId en operación normal (sin
+    redelivery) ya queda verificada por los tests de AT-05-03-01/02/03. La no
+    duplicación del registro ante redelivery se evalúa white-box en H8 junto con la
+    idempotencia del settlement.
+  referencia: spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md
+
+- at_id: AT-05-03-06
+  motivo: >-
+    Depende de la misma inyección de falla interna que AT-05-01-06 (settlement
+    revertido a mitad de la transacción): sin fault injection no existe ningún
+    settlement revertido que inspeccionar desde el contrato. La propiedad
+    "no hay trade sin settlement" se evalúa white-box en H8 junto con AT-05-01-06
+    (trade y asientos en la misma transacción, HU-05-03 RN-1 / INV-4).
+  referencia: spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md
+
+- at_id: AT-05-03-07
+  motivo: >-
+    Exige (a) reiniciar el SUT, cuyo ciclo de vida no es orquestable desde la suite
+    (el arranque/parada de la implementación evaluada es del evaluador,
+    entorno/README.md), y (b) reconciliar la suma de fees contra lo acreditado a la
+    cuenta EX, que no tiene superficie en el contrato de la épica 09. Se evalúa en
+    H8 con reinicio orquestado por el evaluador (re-ejecución de la suite tras el
+    reinicio) e inspección de la reconciliación Σ fees == acreditado a EX (INV-8,
+    HU-05-03 RN-8/RN-9).
+  referencia: spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md
+
+# --- Épica 06 (fusionado desde no_automatizables_ep06.yaml) ---
+- at_id: AT-06-01-03
+  motivo: >-
+    Determinismo de la derivación de seed: exige derivar dos veces la seed
+    binaria desde un (mnemonic, passphrase) elegido y compararlas byte a byte
+    (RN-7). La seed nunca sale del sistema (RN-5) y la función de derivación no
+    es invocable por REST/WS. Se evalúa white-box (known-answer tests propios
+    del SUT o inspección) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-04
+  motivo: >-
+    Exige generar dos mnemonics independientes y compararlos, pero el SUT
+    provisiona un único seed por despliegue (RN-4) y no expone mnemonic ni seed
+    (RN-5): no hay superficie black-box para obtener dos generaciones ni sus
+    valores. Se evalúa en H8 ejecutando dos provisioning en entornos limpios e
+    inspeccionando white-box que difieren.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-05
+  motivo: >-
+    Rechazo de mnemonic con checksum BIP-39 inválido: el provisioning es un
+    proceso interno de arranque, no un endpoint (la spec fija abort con exit
+    code != 0 y code VALIDATION_ERROR en stderr). Exige inyectar el mnemonic por
+    la configuración del despliegue (mecanismo que la spec no fija y el entorno
+    de evaluación no provee) y observar exit code/stderr del proceso. Se evalúa
+    en H8 con un procedimiento de arranque orquestado (white-box operativo).
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-07
+  motivo: >-
+    Persistencia del seed tras reinicio: exige reiniciar el SUT, y la suite
+    corre contra una instancia viva sin controlar su ciclo de vida (el arranque
+    del SUT es del evaluador, entorno/README.md). Se evalúa en H8 con el
+    procedimiento de reinicio del evaluador, comparando las direcciones de
+    depósito de cuentas existentes antes y después del reinicio (INV-8).
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-08
+  motivo: >-
+    Re-ejecutar el provisioning equivale a re-arrancar el proceso interno del
+    SUT: no hay superficie black-box para dispararlo (no es un endpoint) y
+    verificar que el seed no se regeneró requiere el reinicio orquestado de
+    AT-06-01-07. Se evalúa en H8 junto con ese procedimiento (reinicio +
+    direcciones idénticas ⇒ mismo seed, RN-4/RN-8).
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-09
+  motivo: >-
+    Rechazo de mnemonic de 12 palabras (longitud != 24, RN-2a): igual que
+    AT-06-01-05, requiere inyectar un mnemonic elegido en la configuración del
+    despliegue y observar el abort del proceso de arranque (exit code/stderr),
+    sin superficie REST/WS. Se evalúa en H8 con arranque orquestado white-box.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-10
+  motivo: >-
+    Rechazo de mnemonic con palabra fuera del wordlist BIP-39 (RN-2b): igual que
+    AT-06-01-05/09, exige inyección del mnemonic por configuración del
+    despliegue y observación del abort del proceso de arranque. Se evalúa en H8
+    con arranque orquestado white-box.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-11
+  motivo: >-
+    Fallo de descifrado del seed al arrancar: exige corromper el almacenamiento
+    cifrado o remover/alterar la credencial AES-256-GCM del entorno (estado
+    interno del SUT) y observar el abort con exit code != 0 e INTERNAL_ERROR en
+    stderr. Sin superficie black-box para provocarlo ni observarlo. Se evalúa en
+    H8 manipulando el despliegue (white-box operativo).
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-01-13
+  motivo: >-
+    Smoke test de integridad al arrancar: el propio escenario prescribe que "por
+    inyección del test harness" el seed cargado no derive la dirección
+    persistida (simular corrupción), lo que requiere manipular estado interno y
+    observar el abort del arranque. Se evalúa white-box en H8 (inyección +
+    verificación del error crítico antes de procesar operaciones).
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
+
+- at_id: AT-06-02-01
+  motivo: >-
+    Known-answer test de derivación con MNEMONIC_HARDHAT e índice 0: exige
+    invocar la derivación con un mnemonic elegido. El seed del SUT lo genera o
+    importa el propio SUT y el entorno de evaluación no se lo fija
+    (entorno/README.md, contrato de arranque), y la función de derivación no es
+    invocable por REST/WS. Se evalúa white-box (tests del SUT o derivación de
+    referencia con el mnemonic de la corrida) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
+
+- at_id: AT-06-02-02
+  motivo: >-
+    Known-answer test de los índices 1..3 con MNEMONIC_HARDHAT: mismo motivo que
+    AT-06-02-01 (mnemonic elegido + función interna sin superficie REST/WS). La
+    parte "cada índice distinto produce una dirección distinta" sí es observable
+    y está cubierta como unicidad entre cuentas (tests de AT-06-03-01/03-05). Se
+    evalúa white-box en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
+
+- at_id: AT-06-02-04
+  motivo: >-
+    Componentes hardened del path (indices 2147483692/2147483708/2147483648):
+    la construcción de los índices de derivación es interna y el contrato
+    público no expone el path (derivationPath es opcional en HU-06-04 RN-6, no
+    exigible a toda implementación). Se evalúa por inspección de código en H8;
+    la corrección de la cadena completa se cubre con los KAT white-box
+    (AT-06-02-01/02) y con AT-06-03-07.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
+
+- at_id: AT-06-02-05
+  motivo: >-
+    Reproducibilidad de la derivación "en momentos y procesos distintos":
+    procesos distintos implica reinicio del SUT o invocación directa de la
+    función pura, sin superficie black-box (la suite no controla el ciclo de
+    vida del SUT). Su consecuencia observable (la dirección de una cuenta nunca
+    cambia entre consultas) está cubierta por los tests de AT-06-03-02 y
+    AT-06-04-08; la pureza de la función se evalúa white-box (KATs) y con el
+    procedimiento de reinicio de H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
+
+- at_id: AT-06-02-06
+  motivo: >-
+    Reconstrucción de direcciones tras reinicio: exige reiniciar el SUT, fuera
+    del alcance de la suite (no controla el ciclo de vida del SUT). Se evalúa en
+    H8 con el procedimiento de reinicio del evaluador comparando direcciones
+    antes/después (INV-8), junto con AT-06-01-07 y AT-06-03-06.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
+
+- at_id: AT-06-02-08
+  motivo: >-
+    Índice con clave BIP-32 inválida (I_L >= n o k_hijo == 0): el escenario
+    prescribe inyectar un mock/stub de HMAC-SHA512 en el SUT porque la condición
+    (~2^-127) no se activa de forma natural. Es instrumentación white-box por
+    definición; sin superficie black-box para provocarla. Se evalúa por
+    inspección/tests del SUT en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
+
+- at_id: AT-06-02-09
+  motivo: >-
+    address_index fuera del rango no-hardened (>= 2^31): ninguna superficie
+    pública acepta un address_index (GET /deposit-address solo recibe asset; la
+    asignación es interna), y llevar al asignador a 2^31 requeriría 2^31 altas
+    de cuenta (inalcanzable). El VALIDATION_ERROR de RN-9 no es provocable
+    black-box. Se evalúa white-box (tests del SUT sobre su función de
+    derivación/asignación) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
+
+- at_id: AT-06-03-03
+  motivo: >-
+    Exige estado limpio (sin asignaciones previas) y observar address_index = 0
+    y 1: el índice no se expone por el contrato público (derivationPath opcional,
+    HU-06-04 RN-6) y la suite no puede garantizar estado limpio ni orden de
+    ejecución (cualquier test previo crea cuentas con asignación eager). La
+    proyección observable (direcciones distintas entre cuentas) está cubierta
+    por los tests de AT-06-03-01 y AT-06-03-05; la contigüidad desde 0 se evalúa
+    sobre el estado persistido (INV-EPICA-06-A) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
+
+- at_id: AT-06-03-06
+  motivo: >-
+    Reconstrucción del mapeo cuenta -> índice tras reinicio: exige reiniciar el
+    SUT, fuera del alcance de la suite. Se evalúa en H8 con el procedimiento de
+    reinicio del evaluador: consultar GET /deposit-address de cuentas existentes
+    antes y después del reinicio y comparar (RN-7, INV-8).
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
+
+- at_id: AT-06-03-07
+  motivo: >-
+    Propiedad de coherencia índice -> dirección contra una derivación BIP-44 de
+    referencia "sobre ese mismo mnemonic": requiere conocer el mnemonic de 24
+    palabras del SUT, que es secreto por diseño (HU-06-01 RN-5) y no lo fija ni
+    provee el entorno de evaluación (entorno/README.md). Se evalúa en H8: el
+    evaluador obtiene white-box el mnemonic de la corrida (custodia controlada)
+    y ejecuta la derivación de referencia externa comparando con las direcciones
+    asignadas.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
+
+- at_id: AT-06-03-08
+  motivo: >-
+    ACCOUNT_NOT_FOUND por cuenta inexistente: la asignación es una operación
+    interna sin endpoint propio (HU-06-03, "Naturaleza de la operación") y el
+    endpoint público no acepta selector de cuenta (la identidad se toma
+    exclusivamente del token, HU-06-04 RN-2); un token que no corresponde a una
+    cuenta válida falla antes con UNAUTHENTICATED (precedencia HU-06-04 RN-9) y
+    la baja de cuentas está fuera de alcance. No hay forma black-box de
+    referenciar una cuenta inexistente ante el asignador. Se evalúa white-box
+    (tests del SUT sobre su asignador) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
+
+- at_id: AT-06-03-09
+  motivo: >-
+    Asignación eager al alta: distinguir eager (al crear la cuenta) de lazy
+    (primera consulta) exige leer el estado persistido o el evento interno antes
+    de toda consulta, pero cualquier observación black-box pasa por
+    GET /deposit-address, que dispararía el fallback idempotente (HU-06-04 RN-5)
+    y vuelve indistinguibles ambos disparos. El registro persistido (accountId,
+    addressIndex, derivationPath, network, chainId) tampoco es observable por el
+    contrato público. Se evalúa sobre el estado persistido / evento de dominio
+    (white-box) en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
+
+- at_id: AT-06-03-10
+  motivo: >-
+    Evento DepositAddressAssigned y consulta interna: el evento es de dominio
+    interno y GET /internal/deposit-addresses es explícitamente no público
+    (RN-11), fuera del contrato de la épica 09 al que la suite está restringida.
+    Su efecto (toda dirección monitoreada desde la asignación) se observa solo
+    indirectamente vía la acreditación de depósitos, cubierta por los ATs de la
+    épica 07. Se evalúa white-box/integración en H8.
+  referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
+
+# --- Épica 07 (fusionado desde no_automatizables_ep07.yaml) ---
+- at_id: AT-07-03-03
+  motivo: >-
+    El escenario exige "forzar/solicitar la acreditación o uso" de un depósito
+    con confirmaciones < 12 y observar DEPOSIT_NOT_CONFIRMED (409) con
+    details = { txHash, confirmations, required }. Esa solicitud explícita no
+    tiene superficie black-box: la épica 09 (HU-09-01, mapa de endpoints) solo
+    expone lectura de depósitos, y "usar" fondos aún no acreditados por otras
+    vías (orden o retiro) produce INSUFFICIENT_FUNDS de la épica 02/04/08, no
+    este código. La faceta observable (antes de 12 confirmaciones no se
+    acredita ni se mueven balances) está automatizada en AT-07-03-02. El código
+    y sus details (enteros JSON) se evalúan white-box/inspección en H8.
+  referencia: spec/07-depositos-on-chain/HU-07-03-confirmaciones-y-acreditacion.md
+
+- at_id: AT-07-04-01
+  motivo: >-
+    Reprocesar una identidad YA ACREDITADA exige que el indexador reobserve el
+    bloque de inclusión DESPUÉS de la acreditación. Black-box eso requeriría
+    (a) reiniciar el SUT para que reindexe (la suite no controla su proceso;
+    no hay contrato de arranque/parada invocable por tests), (b) una reorg de
+    profundidad >= 13 (la acreditación implica >= 12 confirmaciones), excluida
+    por el supuesto de HU-07-04 §Contexto, o (c) una solicitud explícita de
+    acreditación que observe DEPOSIT_ALREADY_CREDITED (409), sin endpoint en
+    la épica 09. La idempotencia pre-acreditación (misma identidad observada
+    N veces => una sola acreditación) sí está automatizada (AT-07-01-07,
+    AT-07-02-08, AT-07-04-05, AT-07-04-08). Se evalúa en H8 con el reinicio
+    orquestado por el evaluador (junto con AT-07-04-07/11) e inspección.
+  referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
+
+- at_id: AT-07-04-02
+  motivo: >-
+    El escenario prescribe un harness de concurrencia determinístico interno:
+    dos workers que comparten el store del SUT, sincronizados con una barrera,
+    invocando la operación de acreditación de la misma identidad. Black-box no
+    existe esa operación (la superficie de depósitos es de solo lectura) ni
+    forma de forzar dos acreditaciones internas simultáneas de la misma
+    identidad, ni de observar cuál worker obtuvo DEPOSIT_ALREADY_CREDITED. Se
+    evalúa white-box en H8: inspección del mecanismo de exclusión mutua en
+    persistencia exigido por RN-2 (UNIQUE sobre (asset, txHash, logIndex) con
+    INSERT ... ON CONFLICT, o transacción serializable) y tests de concurrencia
+    propios del SUT.
+  referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
+
+- at_id: AT-07-04-03
+  motivo: >-
+    Variante ETH nativo (identidad (txHash, 0)) del reproceso de un depósito ya
+    acreditado: mismas razones que AT-07-04-01 — reobservar el bloque tras la
+    acreditación exige reinicio del SUT (no orquestable por la suite) o una
+    reorg de profundidad >= 13 excluida por el supuesto de la HU; no hay
+    endpoint de acreditación explícita. Que la identidad ETH usa logIndex = 0 y
+    que múltiples observaciones pre-acreditación no duplican está automatizado
+    en AT-07-01-07 y AT-07-04-08 (ambos con identidad (txHash, 0)). Se evalúa
+    en H8 con reinicio orquestado por el evaluador.
+  referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
+
+- at_id: AT-07-04-07
+  motivo: >-
+    El escenario requiere reiniciar el proceso del SUT a mitad del flujo
+    ("cuando el sistema reinicia y reprocesa los bloques históricos"). La
+    suite interactúa solo por REST/WS y por el JSON-RPC del anvil; no tiene
+    contrato para detener/arrancar el SUT (el contrato de arranque de
+    entorno/README.md es para el evaluador humano, no invocable desde un
+    test). Se evalúa en H8 con el reinicio orquestado por el evaluador,
+    verificando que el depósito no se reacredita y que los balances
+    reconstruidos coinciden con los previos (INV-1, INV-8).
+  referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
+
+- at_id: AT-07-04-11
+  motivo: >-
+    Igual que AT-07-04-07: exige un reinicio del SUT (reanudación desde el
+    checkpoint persistido en max(BLOQUE_INICIO_CONFIGURADO, N + 1)), que la
+    suite no puede orquestar black-box; además el valor del checkpoint es
+    estado interno sin superficie REST. Los efectos observables sin reinicio
+    (no se pierden bloques, no se reacredita al reprocesar) están cubiertos
+    por AT-07-01-07/AT-07-02-08 (rescan tras reorg) y AT-07-04-08. Se evalúa
+    en H8 con el reinicio orquestado por el evaluador: detener el SUT, minar
+    bloques con depósitos nuevos durante el downtime, reiniciar y verificar
+    que los detecta sin reacreditar los anteriores.
+  referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
+
+# --- Épica 08 (fusionado desde no_automatizables_ep08.yaml) ---
+- at_id: AT-08-03-08
+  motivo: >-
+    El "Cuando" del escenario es un reinicio del SUT (INV-8: tras reiniciar no se
+    reasigna el nonce ni se re-firma un retiro ya BROADCAST). La suite corre
+    contra un SUT ya arrancado y su contrato de arranque (entorno/README.md) no
+    define ningún mecanismo estandarizado de stop/start invocable por el harness,
+    de modo que el disparador no es provocable desde los tests. Las propiedades
+    adyacentes sin reinicio (nonce único/secuencial/contiguo, una sola tx por
+    retiro, no re-firma) quedan cubiertas por AT-08-03-03/-04/-05 y
+    AT-08-01-12/-12b. Se evalúa en H8 con reinicio del SUT orquestado por el
+    evaluador (mismo criterio que los demás ATs de persistencia INV-8).
+  referencia: spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md
+
+- at_id: AT-08-03-09a
+  motivo: >-
+    El "Cuando" ("se intenta firmarlo/broadcastearlo de nuevo como si fuera
+    PENDING") es una operación interna del servicio de firma: el contrato de la
+    épica 09 no expone ningún endpoint que dispare la firma/broadcast de un
+    retiro existente, por lo que el CONFLICT (409) por transición inválida
+    (HU-08-03 RN-1) no tiene superficie black-box que lo provoque. El único
+    reenvío posible por API (POST /withdrawals con la misma clave de
+    idempotencia, HU-08-01 RN-10) NO debe intentar firmar: devuelve el retiro
+    existente, y eso se verifica en AT-08-01-12 (con nonce/txHash estables). Se
+    evalúa white-box (guardas de la máquina de estados) en H8.
+  referencia: spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md
+
+- at_id: AT-08-03-09b
+  motivo: >-
+    Igual que AT-08-03-09a con el retiro en estado terminal CONFIRMED: no existe
+    superficie REST/WS que dispare una re-firma de un retiro existente, por lo
+    que el CONFLICT (409) de transición inválida es inobservable black-box. El
+    efecto adyacente observable (el reenvío idempotente sobre un retiro terminal
+    no genera nueva transacción ni re-bloquea) está cubierto por AT-08-01-12/-12b.
+    Se evalúa white-box en H8.
+  referencia: spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md
+
+- at_id: AT-08-03-09c
+  motivo: >-
+    Igual que AT-08-03-09a con el retiro en estado terminal FAILED: la operación
+    "volver a firmar" no es invocable por el contrato de la épica 09 (el reenvío
+    idempotente devuelve el mismo retiro FAILED sin re-firmar, verificado en
+    AT-08-01-12b). Se evalúa white-box en H8.
+  referencia: spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md
+
+- at_id: AT-08-04-10
+  motivo: >-
+    El "Cuando" ("se intenta forzar una transición a FAILED o re-BROADCAST" sobre
+    un retiro CONFIRMED) no tiene superficie en el contrato de la épica 09: no
+    existe endpoint que mute el estado de un retiro, y la única mutación de
+    usuario prevista por la spec (la cancelación, HU-08-04 RN-13) no tiene ruta
+    fijada (ver AT-08-04-12). El CONFLICT (409) por transición inválida entre
+    estados terminales es, por lo tanto, inobservable black-box; que los
+    terminales son efectivamente finales se verifica indirectamente en
+    AT-08-04-07 (reprocesar la confirmación es no-op). Se evalúa white-box en H8.
+  referencia: spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md
+
+- at_id: AT-08-04-12
+  motivo: >-
+    TODO-REVISAR (discrepancia de spec): HU-08-04 RN-13 define la cancelación de
+    un retiro PENDING y delega el nombre del endpoint en la épica 09 ("los
+    nombres de endpoint los fija la épica 09"), pero HU-09-01 no fija ninguna
+    ruta/método de cancelación de retiros (su mapa sólo tiene POST/GET de
+    /withdrawals; RN-18 sí define el failureReason USER_CANCELLED). Sin contrato
+    de wire estable, la suite no puede invocar la cancelación de forma portable
+    entre las 4 implementaciones (adivinar rutas, p. ej. DELETE
+    /withdrawals/{id}, penalizaría elecciones igualmente conformes). Se evalúa
+    manualmente en H8 con la documentación de rutas de cada SUT, verificando la
+    transición PENDING→FAILED (USER_CANCELLED), la liberación total de la
+    reserva y los errores CONFLICT/NOT_FOUND de RN-13.
+  referencia: spec/08-retiros-on-chain/HU-08-04-seguimiento-de-confirmaciones.md
+
+# --- Épica 09 (fusionado desde no_automatizables_ep09.yaml) ---
+- at_id: AT-09-04-11
+  motivo: >-
+    Expiración del token durante una sesión WS activa: exige un token con TTL
+    corto, pero el TTL es configuración fija del SUT al arranque (HU-01-02 RN-3,
+    default 3600 s, mínimo 60 s) y la API no permite emitir tokens con TTL
+    arbitrario por request. Esperar la expiración real excede toda ventana
+    razonable de test y depende de la configuración de la corrida. Se evalúa en
+    H8 de forma manual/semiautomática arrancando el SUT con TTL mínimo (60 s) y
+    observando el cierre 4001 con { error: UNAUTHENTICATED } (HU-09-04 RN-13).
+  referencia: spec/09-api-http-websocket/HU-09-04-websocket-privado-usuario.md
+
+- at_id: AT-09-05-09
+  motivo: >-
+    INTERNAL_ERROR (500) sin fuga de información: requiere provocar una "falla
+    interna no clasificada" determinista, y el contrato HTTP/WS no expone
+    ninguna operación que la induzca (cualquier entrada inválida cae en códigos
+    4xx del catálogo). Inyectar la falla exigiría manipular el interior del SUT
+    (romper su base de datos o proceso), lo que viola el black-box. Se evalúa en
+    H8 por inspección de código del manejador global de errores (que el 500 use
+    el envelope y no exponga stack traces/secretos, HU-09-05 RN-9).
+  referencia: spec/09-api-http-websocket/HU-09-05-modelo-de-errores-api.md
