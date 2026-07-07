@@ -9,7 +9,7 @@ oficial: true              # false para pilotos
 
 # 2. Insumos pinneados (deben ser idénticos entre las 4 corridas oficiales)
 spec:
-  tag: "spec-v1.0"
+  tag: "spec-v1.1"           # re-freeze de ADR-006; spec-v1.0 quedó como tag histórico
   commit: ""               # hash del commit taggeado
 corpus:                    # sólo celdas con RAG; null en sin-RAG
   commit: ""               # commit de corpus/ usado para indexar
