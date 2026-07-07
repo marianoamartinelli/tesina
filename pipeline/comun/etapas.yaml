@@ -9,8 +9,9 @@ etapas:
   - id: backend
     prompt: comun/prompts/etapa-1-backend.md
     # Criterio de avance (lo verifica el evaluador humano, no el harness):
-    # el backend arranca y responde el health-check de la épica 09.
-    smoke_check: "backend levanta y responde health-check"
+    # el backend arranca y responde el health-check que el prompt de etapa le
+    # pide elegir y documentar en su README (la spec no define ninguno).
+    smoke_check: "backend levanta y responde el health-check documentado en su README"
     presupuesto_proporcional: 0.60
   - id: web
     prompt: comun/prompts/etapa-2-web.md

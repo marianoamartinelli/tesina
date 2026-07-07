@@ -55,7 +55,14 @@ def construir_opciones(corrida: Corrida, registro: RegistroJSONL | None) -> Clau
     """Traduce la corrida a ClaudeAgentOptions.
 
     Decisiones (idénticas entre celdas A, registradas para el manifest):
-    - system_prompt: el prompt de sistema compartido, verbatim.
+    - system_prompt: prompt nativo de Claude Code (preset "claude_code") + el
+      prompt de sistema compartido appendeado verbatim — espejo de la
+      composición base+instructions del SandboxAgent de B (ADR-005, Decisión 1:
+      stack nativo out-of-the-box; pasar el string solo REEMPLAZARÍA el prompt
+      nativo y rompería la paridad).
+    - disallowed_tools=["WebSearch", "WebFetch"]: sin recuperación web indexada,
+      para no contaminar el factor RAG (ADR-008, propuesto). El canal residual
+      (curl vía Bash, red abierta) queda igual en ambos harnesses.
     - cwd: el repo satélite; el toolset nativo opera ahí.
     - permission_mode="bypassPermissions": corrida headless sin prompts
       interactivos; el confinamiento efectivo lo da el protocolo (repo satélite
@@ -94,11 +101,19 @@ def construir_opciones(corrida: Corrida, registro: RegistroJSONL | None) -> Clau
     return ClaudeAgentOptions(
         model=corrida.modelo,
         cwd=str(corrida.ruta_repo),
-        system_prompt=corrida.prompt_sistema,
+        system_prompt={
+            "type": "preset",
+            "preset": "claude_code",
+            "append": corrida.prompt_sistema,
+        },
         permission_mode="bypassPermissions",
         setting_sources=[],
         mcp_servers=servidores_mcp,
         allowed_tools=herramientas_permitidas,
+        # ADR-008 (propuesto): B no tiene herramientas de recuperación web; una
+        # celda a-sin-rag podría recuperar los BIPs/EIPs con búsqueda indexada,
+        # diluyendo el contraste con/sin RAG que el experimento mide.
+        disallowed_tools=["WebSearch", "WebFetch"],
         max_turns=MAX_TURNS,
     )
 
