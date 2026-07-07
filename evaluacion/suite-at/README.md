@@ -6,8 +6,11 @@ HTTP/WebSocket de la épica 09** (más el estado on-chain del entorno local). Se
 escribió **una sola vez, antes de que existiera implementación alguna**, y corre
 **idéntica** contra las 4 implementaciones del factorial 2×2 (ADR-004).
 
-Cubre los **521 ATs backend (épicas 01–09)**. Los de épicas 10–11 (web/mobile,
-172 ATs) se evalúan con las rúbricas de `../rubricas/`.
+Cubre los **521 ATs backend (épicas 01–09)**: 455 con test automatizado (449
+funciones de test; la relación test↔AT es muchos-a-muchos) + 66 declarados en
+`no-automatizables.yaml`, que se evalúan en H8 vía el agente white-box de
+ADR-007. Los de épicas 10–11 (web/mobile, 172 ATs) se evalúan con las rúbricas
+de `../rubricas/`.
 
 ## Regla de no-exposición del holdout (obligatoria)
 
