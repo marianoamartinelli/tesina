@@ -2,6 +2,12 @@
 
 Artefactos de los hitos H8–H9.
 
+## Contenido
+
+- **[`amenazas-validez.md`](amenazas-validez.md)** — registro consolidado de las
+  amenazas a la validez ya pre-registradas (fuente, mitigación, estado); insumo
+  directo del capítulo 4.
+
 ## Contenido previsto
 
 - **`dataset/`** — dataset consolidado del experimento: una fila por (corrida × AT-id)
