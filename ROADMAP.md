@@ -12,9 +12,9 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   A partir del tag, la spec es **inmutable** para el experimento: las 4 corridas
   reciben exactamente ese commit. *(2026-07-05 — tag `spec-v1.0`; 57 HUs,
   693 AT-ids; ~50 correcciones de consistencia, ver journal. Re-freeze como
-  **`spec-v1.1`** el mismo día, antes de toda corrida: 17 defectos hallados al
-  construir la suite de H5, corregidos por ADR-006 con AT-ids intactos; las
-  corridas pinnean v1.1.)*
+  **`spec-v1.1`** el mismo día, antes de toda corrida: ADR-006 cierra 17 decisiones
+  (defectos hallados al construir la suite de H5 más 2 menores ya conocidos de H1)
+  con AT-ids intactos; las corridas pinnean v1.1.)*
 - [x] **H2 — Protocolo experimental pre-registrado.** Documento que fija, antes de
   cualquier corrida: criterios de intervención humana (cuándo intervenir, cómo se
   clasifica según las 8 causas raíz de la propuesta), orden de construcción
@@ -37,16 +37,23 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   contra el contrato HTTP/WS de la épica 09, escrita una sola vez y reutilizable
   contra las 4 implementaciones; rúbricas para clientes web/mobile; procedimiento de
   detección de alucinaciones de dominio; tooling de métricas estáticas. Construida
-  **antes** de las corridas para eliminar sesgo del evaluador. *(2026-07-05 — 431
-  tests / 521 ATs backend cubiertos (439 con test + 82 no-automatizables
-  justificados); rúbricas 78+94 ATs; entorno on-chain local determinista; ~15
-  hallazgos de spec documentados como TODO-REVISAR, ver journal.)*
+  **antes** de las corridas para eliminar sesgo del evaluador. *(2026-07-05 — 449
+  funciones de test / 521 ATs backend cubiertos (455 con test + 66 no-automatizables
+  justificados, que evalúa el agente white-box de ADR-007 en H8); rúbricas 78+94 ATs;
+  entorno on-chain local determinista; los hallazgos de spec detectados al construir
+  la suite se corrigieron vía ADR-006 (re-freeze `spec-v1.1`, ver H1); quedan 2
+  TODO-REVISAR (status HTTP del reenvío idempotente de retiros,
+  `test_ep08_solicitud.py`) a resolver en la piloto.)*
 
 ## Fase de ejecución comparativa
 
 - [ ] **H6 — Corrida piloto.** Una corrida completa con configuración descartable
   (no cuenta para el 2×2) para debuggear protocolo, harness, registro y evaluación.
   Los defectos encontrados ajustan H2–H5 antes de congelar el protocolo definitivo.
+  Entrada y salida de la ventana:
+  [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md). La ventana
+  comprende `piloto-01` (corrida completa con el harness A) y `piloto-02` (smoke
+  end-to-end del harness B).
 - [ ] **H7 — Corridas oficiales.** Las 4 celdas del factorial, en ventana temporal
   corta (los modelos comerciales cambian): A-sin-RAG, A-con-RAG, B-sin-RAG, B-con-RAG.
   Cada corrida: repo propio + manifest + log de intervenciones + métricas.

@@ -13,7 +13,8 @@ centralizado y simplificado.
 Hitos **H0–H5 completos**: spec congelada en el tag `spec-v1.1` (57 HUs, 693 AT-ids),
 protocolo experimental pre-registrado (ADR-004), corpus RAG de 9 documentos con
 manifest + SHA-256, pipeline de agentes con paridad A/B verificable (ADR-005) y harness
-de evaluación black-box (521 AT-ids backend + 78 web / 94 mobile con rúbrica).
+de evaluación: suite black-box más agente evaluador white-box (ADR-007) para los ATs
+no automatizables (521 AT-ids backend + 78 web / 94 mobile con rúbrica).
 
 Próximo hito: **H6 — corrida piloto**, que valida el pipeline end-to-end antes de las
 4 corridas oficiales de H7. Plan completo de hitos en [ROADMAP.md](ROADMAP.md).
@@ -28,7 +29,7 @@ Próximo hito: **H6 — corrida piloto**, que valida el pipeline end-to-end ante
 | `journal/`    | Bitácora fechada de sesiones de trabajo (materia prima del meta-análisis).    |
 | `corpus/`     | Corpus curado de BIPs/EIPs para las condiciones con RAG.                      |
 | `pipeline/`   | Configuración y código del harness de agentes (Claude Agent SDK / OpenAI Agents SDK). |
-| `evaluacion/` | Harness de evaluación: suite de tests de aceptación black-box y rúbricas.     |
+| `evaluacion/` | Harness de evaluación: suite black-box, agente evaluador white-box (ADR-007) y rúbricas. |
 | `runs/`       | Un directorio por corrida: manifest, log de intervenciones, métricas. Las implementaciones generadas viven en **repos separados** referenciados desde cada manifest. |
 | `analisis/`   | Dataset comparativo y análisis de resultados.                                 |
 | `tesis/`      | Documento final en LaTeX, un archivo por capítulo.                           |
@@ -41,12 +42,13 @@ de claude.ai:
 
 | | Artifact | Descripción |
 |---|---|---|
+| 🎓 | [Avance para directores](https://claude.ai/code/artifact/5bf48c1c-62a2-4d99-94fa-b8eb30b4aa4f) | Presentación visual del estado del proyecto para la dirección: diseño 2×2, hitos, vara de evaluación y decisiones abiertas. |
 | 🧭 | [Roadmap y protocolo (hub)](https://claude.ai/code/artifact/064ea0c6-f229-4a71-b998-3d9bef9d719b) | Página central: enlaza el roadmap de hitos y el protocolo experimental. |
 | 🧊 | [H1 — Spec freeze](https://claude.ai/code/artifact/13d3543f-2fa3-4144-991e-fbf625daf04e) | Snapshot del freeze de la especificación (`spec-v1.1`): alcance, convenciones y auditoría. |
 | 📋 | [H2 — Protocolo](https://claude.ai/code/artifact/9950ffe5-3009-441c-8ce2-e6370e091e19) | Protocolo experimental pre-registrado: criterios de intervención, orden de construcción, presupuestos. |
 | 📚 | [H3 — Corpus](https://claude.ai/code/artifact/c26967c0-6b61-440d-b647-d6aca6f9482b) | Curaduría del corpus RAG de BIPs/EIPs. |
 | ⚙️ | [H4 — Pipeline](https://claude.ai/code/artifact/327d3e4e-e12d-4e14-8c79-b7b8de3287b0) | Configuración de los dos harness de agentes y verificación de paridad A/B. |
-| 🧪 | [H5 — Harness](https://claude.ai/code/artifact/53690139-1893-4c56-ad47-af495f2e667e) | Suite de tests de aceptación black-box y rúbricas de evaluación. |
+| 🧪 | [H5 — Harness](https://claude.ai/code/artifact/53690139-1893-4c56-ad47-af495f2e667e) | La vara de evaluación: suite black-box, agente white-box y rúbricas, con la partición de los 693 ATs. |
 | 🔎 | [Doc técnica — Arquitectura RAG](https://claude.ai/code/artifact/d37185ee-517c-407c-99d1-6161ae98d301) | Detalle de la arquitectura de recuperación usada en las condiciones "con RAG". |
 | 🤖 | [Doc técnica — Pipelines A y B](https://claude.ai/code/artifact/c3407398-8438-47f7-8087-6be55db8a62b) | Detalle de la implementación de ambos harness de agentes. |
 | ⚖️ | [Doc técnica — Harness de evaluación](https://claude.ai/code/artifact/f489fda2-e18c-48a3-ba95-3ea7fad71cac) | Detalle del harness, incluido el agente evaluador white-box (ADR-007). |
