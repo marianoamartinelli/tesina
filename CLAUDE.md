@@ -37,6 +37,24 @@ Todo queda versionado para meta-análisis posterior:
 - Las implementaciones generadas por las corridas viven en **repos separados**
   (ADR-001); nunca dentro de este repo.
 
+## Mantenimiento del README
+
+El `README.md` de la raíz incluye una sección "Estado del proyecto" y una tabla de los
+*artifacts* de claude.ai publicados (documentación visual del roadmap, los hitos y la
+infraestructura técnica). Mantenerla al día:
+
+- Al publicar un artifact nuevo o redeployar uno existente, agregar/actualizar su fila
+  en la tabla del README (favicon, nombre, link, descripción de una línea) y reflejar
+  el mismo cambio en la memoria de sesión `artifacts-publicados` para que sesiones
+  futuras puedan redeployarlo sin perder la URL. Si un artifact se descontinúa, quitar
+  su fila del README.
+- Al cerrar un hito del `ROADMAP.md` (marcarlo `[x]`) o al congelar un nuevo tag de
+  spec, revisar si "Estado del proyecto" sigue siendo preciso (hitos completos, hito
+  próximo, contadores de AT-ids) y actualizarlo si no.
+- Esta revisión es parte del cierre de sesión (junto con el journal), no un paso
+  aparte: no hace falta un commit dedicado sólo para el README salvo que sea el único
+  cambio pendiente.
+
 ## El doble rol de la spec (contexto crítico antes de tocar nada)
 
 Esta spec es simultáneamente:
