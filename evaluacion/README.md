@@ -13,7 +13,9 @@ evaluador) y del hito H2 (protocolo experimental pre-registrado).
 - **`rubricas/`** — rúbricas manuales pre-registradas para los clientes (una fila por
   AT-id, veredicto PASA/FALLA/NO_EVALUABLE): `epica-10-web.md` (78 AT + `AT-10-E2E-01`)
   y `epica-11-mobile.md` (94 AT). Se completan una sola vez por corrida en H8, por el
-  mismo evaluador, en el mismo orden.
+  mismo evaluador, en el mismo orden. El procedimiento de archivado y export por
+  corrida (copia completada + CSV en `runs/<id>/rubricas/`) está en
+  [`rubricas/README.md`](rubricas/README.md).
 - **`alucinaciones.md`** — procedimiento pre-registrado de detección y conteo de
   alucinaciones de dominio (categorías C1–C6, regla de doble conteo con fallos de AT,
   barrido mecánico por grep + verificación contra el corpus congelado, unidad de
@@ -29,8 +31,10 @@ evaluador) y del hito H2 (protocolo experimental pre-registrado).
   congeladas, pasadas verbatim en cada celda), `rubrica-white-box.md` (checklist
   operativo 66/66: familias de procedimiento, pasos, evidencia mínima y criterio
   cerrado por AT) y `plantilla-resultados.yaml` (formato de salida obligatorio).
-  Doble pasada por celda; resultados en `runs/<id>/no-automatizables/`, nunca
-  mezclados con la suite; el veredicto de registro lo firma el humano (ADR-004 §2.5).
+  Incluye `validar-resultados.py`, que valida mecánicamente cada pasada
+  (`pasada-N.yaml`) antes del arbitraje humano. Doble pasada por celda; resultados
+  en `runs/<id>/no-automatizables/`, nunca mezclados con la suite; el veredicto de
+  registro lo firma el humano (ADR-004 §2.5).
 - **`suite-at/`** — suite de tests de aceptación **black-box** contra el contrato
   HTTP/WebSocket de la épica 09. Se escribe una sola vez y corre idéntica contra las
   4 implementaciones; reporta por **AT-id** (`resultados-at.csv`). Cubre backend
@@ -40,6 +44,10 @@ evaluador) y del hito H2 (protocolo experimental pre-registrado).
   la declaración de ATs no automatizables. **Sólo se corre en H8** (regla de
   no-exposición, ver su README).
 
-## Contenido previsto (H5)
-- **`rubricas/`** — rúbrica del rol revisor del agente (análisis cualitativo),
-  complementaria a las de épicas 10–11 ya existentes.
+## Contenido pendiente de decisión (H6)
+- **`rubricas/`** — la "rúbrica del rol revisor del agente" (análisis cualitativo),
+  complementaria a las de épicas 10–11, quedó anunciada en H5 pero no construida.
+  Su estado se decide en la ventana de la piloto: construirla y pre-registrarla
+  antes de las corridas, o descartarla con constancia
+  (ver [`runs/piloto-01/checklist-h6.md`](../runs/piloto-01/checklist-h6.md),
+  ítem 12).

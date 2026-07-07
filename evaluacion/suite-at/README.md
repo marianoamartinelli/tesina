@@ -74,11 +74,22 @@ indexador. Antes de los tests de retiros, fondear su hot wallet:
 cd evaluacion/suite-at
 export EXCHANGE_API_URL="http://localhost:3000"          # URL raíz del SUT (sin /api/v1)
 export EXCHANGE_WS_URL="ws://localhost:3000/api/v1/ws"   # endpoint WS (RG-API-11)
+export SUITE_CMD_REINICIO_SUT="..."                      # reinicio abrupto del SUT (ver nota)
 ../../.venv/bin/python -m pytest tests/ -q
 ```
 
+`SUITE_CMD_REINICIO_SUT` es un comando de shell provisto por el evaluador que
+**termina abruptamente** el proceso del SUT (equivalente a `kill -9`,
+HU-03-07 RN-1), preserva su persistencia y lo vuelve a levantar; la suite espera
+la readiness por polling de `GET /market/ticker` (timeouts de 90–120 s ya
+codificados en los helpers).
+
 Sin `EXCHANGE_API_URL`/`EXCHANGE_WS_URL` los tests contra el SUT **se saltan
 solos** (y el reporte los marca `skip`): la suite nunca "inventa" un veredicto.
+Sin `SUITE_CMD_REINICIO_SUT` quedan `skip` los tests de reinicio (AT-03-07-01/
+02/03/05/06/07/08, AT-01-03-08, AT-01-03-10, AT-01-01-11 y AT-02-04-06), con lo
+que la corrida **viola la regla `skip = 0`** de una corrida H8 válida (ver
+"Cómo leer `resultados-at.csv`").
 
 ### 4. Guardar los resultados
 

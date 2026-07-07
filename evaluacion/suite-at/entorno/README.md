@@ -10,7 +10,7 @@ mismo `chainId` (**11155111**) que la spec fija como única red
 
 | Archivo              | Qué es                                                                  |
 |----------------------|-------------------------------------------------------------------------|
-| `docker-compose.yml` | Nodo **anvil** (foundry) con `--chain-id 11155111`, automine, puerto 8545 |
+| `docker-compose.yml` | Nodo **anvil** (foundry) con `--chain-id 11155111`, automine, puerto 8545. Imagen pinneada por digest: `ghcr.io/foundry-rs/foundry:stable@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46` (tag `stable` resuelto el 2026-07-07 contra el registry de ghcr; manifest index multi-arch amd64+arm64, build del 2025-12-22, commit foundry `b0a9dd9c`) |
 | `UsdcMock.sol`       | Fuente del ERC-20 mock (6 decimales, `mint(address,uint256)` público)   |
 | `usdc-mock.bin/.abi.json` | Artefactos compilados (solc 0.8.28, vendoreados: el despliegue no requiere toolchain Solidity) |
 | `desplegar-usdc.py`  | Despliega el mock vía `eth_sendTransaction` (cuenta 0 de anvil) y escribe `usdc-mock.address` + `entorno.env` |
@@ -42,6 +42,13 @@ corrida de evaluación parte de una cadena limpia y un mock recién desplegado.
   depósitos simulados) sin necesidad de firmar del lado del test. Nota: el
   escaneo de depósitos del SUT parte de `BLOQUE_INICIO` (≥ bloque de despliegue
   del mock), de modo que los saldos de génesis no cuentan como depósitos.
+- **Imagen de anvil pinneada por digest.** El tag `stable` de ghcr es flotante;
+  el compose fija `stable@sha256:0437526…` (manifest index multi-arch), de modo
+  que un `docker pull` entre la piloto y las corridas oficiales no pueda traer
+  un anvil distinto. Verificación: `docker manifest inspect
+  ghcr.io/foundry-rs/foundry:stable` debe devolver ese digest; si el proyecto
+  decide adoptar un `stable` más nuevo, se actualiza el digest acá y en el
+  compose en el mismo commit (nunca entre celdas de una misma ventana de corridas).
 - **Sin fork de Sepolia real.** La spec sólo exige el `chainId` y el
   comportamiento JSON-RPC estándar (`eth_getLogs`, `eth_getTransactionReceipt`,
   `eth_chainId`, etc.), que anvil provee; una testnet real haría los tests lentos

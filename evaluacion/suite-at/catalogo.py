@@ -18,7 +18,7 @@ Uso:
     python catalogo.py --check    # no escribe; sólo valida y reporta conteos
 
 El script es determinista: mismas fuentes ⇒ mismo CSV (ordenado por at_id).
-La spec está congelada (spec-v1.0): el total esperado es 693 ATs.
+La spec está congelada (spec-v1.1, re-freeze por ADR-006): el total esperado es 693 ATs.
 """
 
 import argparse
@@ -31,7 +31,7 @@ RAIZ_REPO = Path(__file__).resolve().parents[2]
 DIR_SPEC = RAIZ_REPO / "spec"
 CSV_SALIDA = Path(__file__).resolve().parent / "catalogo-at.csv"
 
-TOTAL_ESPERADO = 693  # spec-v1.0 congelada; si cambia, es un error a investigar
+TOTAL_ESPERADO = 693  # spec-v1.1 congelada (re-freeze por ADR-006); si cambia, es un error a investigar
 
 # Encabezado de escenario con su AT-id: '### Escenario 1: Registro de cuenta [AT-09-01-01]'
 RE_ESCENARIO = re.compile(

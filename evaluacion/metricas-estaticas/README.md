@@ -18,7 +18,7 @@
 | **LOC efectivas** | Líneas de código sin blancos ni comentarios (`SUM.code` de cloc), excluyendo directorios generados (§1.1). Se registran también `archivos` y `lenguaje_principal` (el de mayor `code`). | **cloc v2.10** |
 | **Complejidad ciclomática (CCN)** | Por función, según la definición de lizard (CCN clásico). Se reportan **promedio** y **p90** sobre todas las funciones del componente, más el total de `funciones`. Percentil: **nearest-rank** (`p90 = valor en la posición ⌈0.9·n⌉` de la lista ordenada). | **lizard 1.23.0** (pip) |
 | **Duplicación** | Porcentaje de líneas duplicadas (`statistics.total.percentage` del reporte JSON), con los parámetros por defecto de la herramienta (min-tokens 50). | **jscpd 5.0.11** (npm) |
-| **Dependencias directas** | Conteo de dependencias **declaradas de primer nivel** en el manifiesto del ecosistema, separando producción y desarrollo (§1.2). No cuenta transitiveas. | manifiesto del ecosistema + `medir.sh` |
+| **Dependencias directas** | Conteo de dependencias **declaradas de primer nivel** en el manifiesto del ecosistema, separando producción y desarrollo (§1.2). No cuenta transitivas. | manifiesto del ecosistema + `medir.sh` |
 | **Cobertura de tests propios** | % de líneas cubiertas por los tests **que el agente generó**, medida con el runner nativo del ecosistema (§5). **Nunca** con la suite holdout. `NA` si el agente no dejó tests o no ejecutan. | runner nativo (se registra cuál y su versión en `notas`) |
 
 ### 1.1 Exclusiones de conteo (idénticas para las 4 celdas)

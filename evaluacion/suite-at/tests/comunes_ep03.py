@@ -18,6 +18,23 @@ Aislamiento: el orderbook es global, por lo que cada test de la épica opera en
 si hay estado residual de otra corrida (mismo criterio que HELPERS.md /
 test_ep09_contrato.py: sin el Dado no hay veredicto).
 
+Mapeo banda↔HU (niveles de precio USDC usados por cada archivo de la épica; los
+montos de fondeo ``usdc_min`` no son precios):
+
+- HU-03-01 → ``test_ep03_orderbook.py``: 2000.00–2025.00 (más 2999.00 en el
+  test de profundidad)
+- HU-03-02 → ``test_ep03_insercion_pasiva.py``: 2030.00–2055.00
+- HU-03-03 → ``test_ep03_matching_limit.py``: 2060.00–2115.00
+- HU-03-04 → ``test_ep03_market.py``: 2119.50–2145.00 (conserva los literales
+  2000.00/2000.50 de la spec en el AT cuyo assert depende del floor exacto)
+- HU-03-05 → ``test_ep03_eventos.py``: 2150.00–2180.50
+- HU-03-06 → ``test_ep03_stp.py``: 2185.00–2220.50
+- HU-03-07 → ``test_ep03_persistencia.py``: 2225.00–2250.00
+
+Un traslado de los valores del escenario a una banda propia sólo es válido si
+ninguna aserción del AT depende del valor literal (regla en HELPERS.md); el
+docstring de cada test trasladado declara su mapeo.
+
 Reinicio del SUT (HU-03-07): no hay superficie REST para reiniciar el SUT, así
 que los tests de persistencia usan la env var ``SUITE_CMD_REINICIO_SUT``: un
 comando de shell provisto por el evaluador que **termina abruptamente** el

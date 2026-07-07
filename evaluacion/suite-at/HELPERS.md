@@ -33,6 +33,16 @@ directorio (qué es la suite, cómo se corre) y tener a mano la spec
   cuerpo (ver ejemplo completo abajo y `tests/test_ep09_contrato.py`).
 - Preferir **un test por AT**. Un test puede declarar varios ATs sólo si un
   mismo flujo los verifica de punta a punta (todos fallan/pasan juntos).
+- **Traslado de valores de escenario a bandas propias.** Cuando el aislamiento
+  de estado global lo exige (p. ej. el orderbook compartido de la épica 03,
+  `tests/comunes_ep03.py`), un test puede trasladar los valores literales del
+  escenario a una banda de precios propia — **sólo si ninguna aserción del AT
+  depende del valor literal** (bordes de floor/ceil, tick/lot/notional exactos).
+  Si alguna aserción depende del literal, el test conserva los valores de la
+  spec (así lo hace `test_ep03_market.py` con el presupuesto de floor exacto
+  `2_499_924_950`). El docstring del test debe **declarar el mapeo**: "valores
+  del escenario (X) trasladados a la banda Y por aislamiento del libro
+  compartido; propiedad invariante al traslado".
 
 ## Configuración (env vars)
 
@@ -47,6 +57,7 @@ directorio (qué es la suite, cómo se corre) y tener a mano la spec
 | `SUITE_POLL_TIMEOUT_SEGUNDOS`  | `30`    | timeout default de `esperar_hasta`           |
 | `SUITE_POLL_INTERVALO_SEGUNDOS`| `0.5`   | intervalo default de `esperar_hasta`         |
 | `SUITE_RESULTADOS_AT`          | `./resultados-at.csv` | destino del reporte por AT     |
+| `SUITE_CMD_REINICIO_SUT`       | —       | comando de shell que **termina abruptamente** el proceso del SUT (equivalente `kill -9`, HU-03-07 RN-1), preserva su persistencia y lo vuelve a levantar; la suite espera la readiness por polling de `/market/ticker` (timeouts 90–120 s ya codificados en los helpers). Sin ella, los tests de reinicio saltan (`skip`) y la corrida H8 no es válida |
 
 ## Fixtures (conftest.py)
 
