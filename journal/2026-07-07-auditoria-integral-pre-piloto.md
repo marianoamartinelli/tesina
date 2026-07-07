@@ -56,9 +56,9 @@ confirmados se aplicaron en la misma sesión:
 
 - **Regla non-slop** como convención del repo (CLAUDE.md): ningún dato inventado, no
   sobre-informar, sin relleno; los documentos congelados no se reescriben por estilo.
-- **ADR-008 (Propuesto, no aceptado):** `disallowed_tools=["WebSearch","WebFetch"]`
-  en el harness A para no contaminar el factor RAG. El tesista lo ratifica o rechaza
-  en la ventana H6 (el código ya está en la rama; revertible).
+- **ADR-008 (Aceptado):** `disallowed_tools=["WebSearch","WebFetch"]` en el harness
+  A para no contaminar el factor RAG. Propuesto durante la sesión y ratificado por el
+  tesista el mismo día en la revisión del PR #1.
 - Extensión de la plantilla de manifest y política de archivado de logs: se tratan
   como operacionalización de ADR-003/ADR-004 (precedente del commit 861a56a), sin ADR
   nuevo.
@@ -67,7 +67,8 @@ confirmados se aplicaron en la misma sesión:
 
 ## Pendientes
 
-- **El tesista:** revisar y mergear el PR de la rama; ratificar o rechazar ADR-008.
+- **El tesista:** revisar y mergear el PR de la rama (ADR-008 ya ratificado en esa
+  misma revisión).
 - La deuda de la piloto vive ahora en `runs/piloto-01/checklist-h6.md` (6
   precondiciones + 16 ítems de salida) — es la fuente única; no buscar pendientes
   dispersos.

@@ -114,13 +114,11 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
          Decisión esperada: protocolo v1.1 congelado por ADR nuevo antes de la
          primera corrida oficial.
 
-10. - [ ] **ADR-008 (restricción de WebSearch/WebFetch en el harness A):**
-          ratificar o rechazar. Si se rechaza, revertir el cambio correspondiente
-          en `pipeline/harness_a/correr.py`.
-          Fuente: `decisiones/ADR-008-restriccion-recuperacion-web-harness-a.md`
-          (estado Propuesto).
-          Decisión esperada: estado del ADR resuelto (Aceptado o Rechazado) y
-          código consistente con la decisión.
+10. - [x] **ADR-008 (restricción de WebSearch/WebFetch en el harness A):**
+          **resuelto** — ratificado por el tesista el 2026-07-07 en la revisión
+          del PR #1; el ADR pasó a Aceptado y el código de
+          `pipeline/harness_a/correr.py` ya es consistente con la decisión.
+          Fuente: `decisiones/ADR-008-restriccion-recuperacion-web-harness-a.md`.
 
 11. - [ ] **Confinamiento del harness A:** probar sandbox de bash con network
           allowlist **y** restricción de lectura (deny rules /

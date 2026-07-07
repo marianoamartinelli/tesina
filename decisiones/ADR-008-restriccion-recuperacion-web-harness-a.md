@@ -1,7 +1,7 @@
 # ADR-008 — Restricción de recuperación web en el harness A (WebSearch/WebFetch)
 
-- **Estado:** **Propuesto** (se ratifica o rechaza en la ventana de la corrida piloto,
-  H6 — la decisión la toma el tesista al revisar el PR)
+- **Estado:** **Aceptado** (ratificado por el tesista el 2026-07-07 en la revisión
+  del PR #1)
 - **Fecha:** 2026-07-07
 - **Contexto:** complementa a [ADR-005](ADR-005-arquitectura-pipeline-y-model-ids.md)
   (Decisión 1: stack nativo out-of-the-box) sin editarlo; surge de la auditoría de

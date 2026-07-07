@@ -25,7 +25,7 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-005](ADR-005-arquitectura-pipeline-y-model-ids.md) | Arquitectura del pipeline, paridad entre harnesses y pinneo de model IDs | Aceptado |
 | [ADR-006](ADR-006-reapertura-controlada-spec-v1.1.md) | Reapertura controlada de la spec (17 decisiones cerradas) y re-freeze como spec-v1.1 | Aceptado |
 | [ADR-007](ADR-007-agente-evaluador-white-box.md) | Agente evaluador LLM para los 66 ATs no automatizables (rúbrica white-box) | Aceptado |
-| [ADR-008](ADR-008-restriccion-recuperacion-web-harness-a.md) | Restricción de WebSearch/WebFetch en el harness A (paridad del factor RAG) | Propuesto |
+| [ADR-008](ADR-008-restriccion-recuperacion-web-harness-a.md) | Restricción de WebSearch/WebFetch en el harness A (paridad del factor RAG) | Aceptado |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan
