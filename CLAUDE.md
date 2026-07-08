@@ -37,6 +37,29 @@ Todo queda versionado para meta-análisis posterior:
 - Las implementaciones generadas por las corridas viven en **repos separados**
   (ADR-001); nunca dentro de este repo.
 
+## Regla non-slop (estilo obligatorio de todo lo que se escribe acá)
+
+Vale para spec, journal, ADRs, READMEs, prompts, artifacts y la tesis. La vara: cada
+oración aporta algo que el lector necesita; lo que no, se corta.
+
+- **Ningún dato inventado.** Toda cifra, conteo o afirmación fáctica sale de una fuente
+  primaria del repo — contar/medir antes de escribir. Lo no verificado se marca como tal
+  o no se escribe. Un número plausible pero falso es peor que ningún número.
+- **No sobre-informar.** Un dato entra si cambia lo que el lector hace o decide; la
+  exhaustividad no es un valor en sí misma. Mejor una afirmación verificada que tres
+  plausibles.
+- **Sin relleno retórico.** Nada de "cabe destacar", "es importante mencionar",
+  superlativos promocionales ni cierres que repiten lo ya dicho. Emojis, negritas y
+  estructura (tablas, listas, encabezados) sólo cuando organizan contenido real, nunca
+  como decoración.
+- **Simple es mejor que complejo, pero complejo es mejor que complicado.** Elegir la
+  representación más simple que no mienta. Cuando el dominio es genuinamente complejo
+  (matching, settlement, paridad experimental), se lo representa con precisión en vez de
+  esconderlo tras una simplificación falsa o una maraña de detalle accidental.
+
+Slop preexistente en un documento vivo se corrige al tocarlo. Los documentos congelados
+(ADRs aceptados, spec taggeada, protocolo pre-registrado) no se reescriben por estilo.
+
 ## Mantenimiento del README
 
 El `README.md` de la raíz incluye una sección "Estado del proyecto" y una tabla de los

@@ -18,6 +18,7 @@ protocolo:
 
 # 3. Configuración del pipeline
 pipeline_commit: ""        # commit de pipeline/ con el que se ejecutó
+paridad_verificada: ""     # timestamp + commit de pipeline/ con verificar_paridad.py exit 0
 modelo:
   proveedor: ""            # anthropic | openai
   model_id: ""             # ID exacto pinneado, p. ej. claude-x-y-fecha
@@ -25,6 +26,17 @@ modelo:
 harness:
   sdk: ""                  # claude-agent-sdk | openai-agents-sdk
   version: ""
+entorno_host:              # toolchain del host del que dependen las 3 etapas
+  os: ""                   # sw_vers -productVersion (macOS) | uname -sr
+  node: ""                 # node --version
+  npm: ""                  # npm --version
+  python: ""               # python3 --version
+  docker: ""               # docker --version
+  foundry: ""              # docker exec <contenedor-anvil> anvil --version
+entorno_onchain:           # entorno del smoke check de backend (anvil + USDC-mock)
+  url_rpc: ""              # p. ej. http://127.0.0.1:8545
+  direccion_usdc_mock: ""  # dirección del contrato desplegado (desplegar-usdc.py)
+  version_anvil: ""        # docker inspect --format '{{index .RepoDigests 0}}' <imagen-anvil>
 presupuesto:
   tokens_max: null
   costo_max_usd: null
@@ -39,6 +51,32 @@ repo:
 inicio: ""                 # timestamp ISO-8601
 fin: ""
 repo_commit_final: ""
+etapas:                    # desglose por etapa (presupuesto proporcional, protocolo §6)
+  backend:
+    inicio: ""             # timestamp ISO-8601
+    fin: ""
+    tokens: null
+    costo_usd: null
+    intervenciones: null
+    estado: ""             # completa | incompleta (vocabulario del protocolo §5.7)
+    motivo_cierre: ""      # criterio de avance cumplido | presupuesto agotado | 3 estancamientos
+  web:
+    inicio: ""
+    fin: ""
+    tokens: null
+    costo_usd: null
+    intervenciones: null
+    estado: ""
+    motivo_cierre: ""
+  mobile:
+    inicio: ""
+    fin: ""
+    tokens: null
+    costo_usd: null
+    intervenciones: null
+    estado: ""
+    motivo_cierre: ""
+logs_jsonl: []             # JSONL copiados a runs/<id>/logs/ (puede haber varios por etapa)
 costo_total_usd: null
 tokens_totales: null
 intervenciones_total: null # detalle en intervenciones.md

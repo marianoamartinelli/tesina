@@ -19,7 +19,11 @@
 
 services:
   anvil:
-    image: ghcr.io/foundry-rs/foundry:stable
+    # Imagen pinneada por digest (el tag `stable` es flotante y la imagen es
+    # multi-arch: el digest fija el manifest index exacto, amd64+arm64).
+    # Resuelto el 2026-07-07 desde el registry de ghcr; ver la tabla de
+    # componentes del README de este directorio.
+    image: ghcr.io/foundry-rs/foundry:stable@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46
     container_name: suite-at-anvil
     entrypoint: ["anvil"]
     command:

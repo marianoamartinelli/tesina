@@ -26,18 +26,30 @@ pipeline/
 **Paridad estructural:** ningún `correr.py` define prompts, etapas, parámetros de
 RAG ni lógica de carga propios; todo eso vive una sola vez en `comun/` y ambos
 adaptadores lo consumen vía `comun/nucleo.py`. Cada harness aporta únicamente su
-stack agéntico nativo (ADR-005, Decisión 1):
+stack agéntico nativo (ADR-005, Decisión 1), y en ambos el prompt de sistema
+compartido se **compone** con el scaffolding nativo del SDK — nunca lo reemplaza
+(A: preset `claude_code` + `append`; B: prompt base del `SandboxAgent` +
+`instructions`):
 
 - **A:** toolset nativo de coding del Claude Agent SDK (Read/Write/Edit/Bash/…)
-  con `cwd` = repo satélite, `permission_mode="bypassPermissions"` (corrida
-  headless) y `setting_sources=[]` (aislado de settings/CLAUDE.md de la máquina).
+  con `cwd` = repo satélite, `system_prompt` = preset `claude_code` con el prompt
+  compartido en `append` (espejo de la composición base+`instructions` de B),
+  `permission_mode="bypassPermissions"` (corrida headless), `setting_sources=[]`
+  (aislado de settings/CLAUDE.md de la máquina) y
+  `disallowed_tools=["WebSearch", "WebFetch"]`: sin recuperación web indexada,
+  para no contaminar el factor RAG
+  ([ADR-008](../decisiones/ADR-008-restriccion-recuperacion-web-harness-a.md),
+  propuesto — el canal residual por shell con red abierta queda igual en ambos
+  harnesses).
 - **B:** `SandboxAgent` (capabilities default: shell + archivos + `apply_patch`)
   sobre `UnixLocalSandboxClient` con `Manifest(root=<repo satélite>)`: el
   workspace del sandbox **es** el repo satélite en el filesystem del host. Con un
   root custom el SDK marca `workspace_root_owned=False`, por lo que la limpieza
   de la sesión no borra el repo (verificado contra el código de `openai-agents`
   0.17.7). Se corre con `tracing_disabled=True` para no subir trazas a la
-  plataforma de OpenAI (el registro del experimento es el JSONL local).
+  plataforma de OpenAI (el registro del experimento es el JSONL local). El
+  manifest fija `TMPDIR` en `<repo-satelite>/../tmp-sandbox`: el seatbelt de
+  macOS deniega escribir el TMPDIR heredado (ver "Pendiente para la piloto").
 
 Único parámetro no-default compartido: `MAX_TURNS = 500` (en `comun/nucleo.py`),
 tope de seguridad contra loops descontrolados, aplicado en ambos harnesses.
@@ -70,10 +82,52 @@ cd pipeline/harness_b
 - Credenciales: harness A requiere `ANTHROPIC_API_KEY`; harness B, `OPENAI_API_KEY`.
 - **Registro**: cada etapa escribe
   `<repo-satelite>/../logs/<celda>-<etapa>-<timestamp>.jsonl` con un evento por
-  línea (flush línea a línea: una corrida interrumpida conserva todo): evento
-  `inicio` (modelo, versión de SDK, SHA-256 de los prompts, config RAG), los
-  mensajes/ítems del agente (incluidas las consultas RAG), y `resumen_final`
-  (turnos, tokens, duración y costo — ver limitaciones).
+  línea (flush línea a línea: una corrida interrumpida conserva todo lo emitido):
+  evento `inicio` (modelo, versión de SDK, SHA-256 de los prompts, config RAG),
+  los mensajes/ítems del agente (incluidas las consultas RAG; en B, además, un
+  `uso_parcial` por pedido a la API) y `resumen_final` al cierre — también al
+  agotar `max_turns`, en ambos harnesses. Sólo un error inesperado del harness
+  deja como último evento un `error_harness` sin resumen.
+
+### Smoke check del backend (entorno on-chain)
+
+El criterio de avance de la etapa backend (`etapas.yaml`) es que el backend
+levante y responda el health-check que su README documenta. La spec exige
+verificar `eth_chainId == 11155111` al iniciar
+(`spec/07-depositos-on-chain/README.md`): con el nodo caído aplica **reintentos
+con backoff** (el proceso puede llegar a servir HTTP igual), pero un `chainId`
+distinto ⇒ **terminación con error**. Para que el smoke se haga con los mismos
+valores pre-registrados en todas las celdas, el operador levanta el entorno
+on-chain de `evaluacion/suite-at/entorno/` antes de verificar el arranque:
+
+```bash
+cd evaluacion/suite-at/entorno
+docker compose up -d --wait   # nodo anvil en http://127.0.0.1:8545 (chainId 11155111)
+python desplegar-usdc.py      # imprime dirección del USDC-mock y bloque de despliegue
+```
+
+y configura el SUT según el README del repo satélite con esos valores: URL RPC
+`http://127.0.0.1:8545`, la dirección del USDC-mock y el bloque de inicio que
+imprime `desplegar-usdc.py`. El entorno on-chain es **infraestructura
+compartida** (nodo + contrato mock): usarlo durante la generación **no expone la
+suite de ATs** — los tests del holdout nunca entran al repo satélite ni al
+contexto del agente.
+
+### Monitoreo de presupuesto durante la corrida
+
+El tope operativo principal es `costo_max_usd = 200` por corrida (ADR-004); el
+operador lo vigila sobre el JSONL en vivo:
+
+- **B**: eventos `uso_parcial` (uno por pedido a la API) con tokens acumulados y
+  `costo_estimado_usd` — misma estimación y salvedad que `resumen_final`
+  (precios planos de ADR-005, sin descuento por caché). Si la corrida se corta
+  antes del resumen, el último `uso_parcial` preserva el costo consumido.
+- **A**: el `usage` de cada evento `mensaje` de tipo `AssistantMessage` es **por
+  llamada a la API, no acumulado**: para monitorear hay que acumular sobre el
+  JSONL (p. ej. `tail` + suma). El `total_cost_usd` nativo del SDK recién llega
+  en el `ResultMessage` final.
+- La verdad final, en ambos casos, son los **dashboards de billing** de cada
+  proveedor.
 
 ### Dry-run (sin API keys)
 
@@ -129,20 +183,36 @@ Lo que **no** se pudo validar sin API keys (todo marcado con
 - **Ejecución real end-to-end** de ambos harnesses: ningún `correr.py` llamó
   todavía a una API; sólo se validaron los dry-runs, la construcción de
   opciones/agentes y las firmas contra la doc oficial y el código instalado de
-  los SDKs (`claude-agent-sdk` 0.2.110, `openai-agents` 0.17.7).
+  los SDKs (`claude-agent-sdk` 0.2.110, `openai-agents` 0.17.7). La ventana
+  piloto cubre ambos harnesses: `config/piloto-01.yaml` (A) y
+  `config/piloto-02.yaml` (B), las dos descartables.
 - **Costo del harness B**: el OpenAI Agents SDK expone tokens
-  (`Usage.input_tokens/output_tokens`) pero no costo monetario; el
-  `resumen_final` registra una **estimación** con los precios de ADR-005 (sin
-  descuento por caché). Contrastar contra el dashboard de billing en la piloto.
-  El harness A sí registra el `total_cost_usd` nativo del SDK.
+  (`Usage.input_tokens/output_tokens`) pero no costo monetario; los eventos
+  `uso_parcial` y el `resumen_final` registran una **estimación** con los
+  precios de ADR-005 (sin descuento por caché). Contrastar contra el dashboard
+  de billing en la piloto. El harness A sí registra el `total_cost_usd` nativo
+  del SDK.
 - **Confinamiento del harness A**: se corre con `permission_mode="bypassPermissions"`
   (headless, sin prompts interactivos); el confinamiento al repo satélite lo da
-  el protocolo (repo dedicado + supervisión), no el SO. Evaluar en la piloto si
-  `SandboxSettings(enabled=True)` aísla bash sin romper builds que necesitan
-  red (npm/pip install). En B, el seatbelt de `UnixLocalSandboxClient` es el
-  comportamiento nativo del SDK y puede imponer sus propias restricciones de
-  red/paths a los comandos del agente: observar en la piloto si bloquea
-  `npm install` o similares.
+  el protocolo (repo dedicado + supervisión), no el SO. Ese confinamiento es
+  además una **condición de no-exposición del holdout** (protocolo §9): sin
+  sandbox, el Bash y la tool Read de A pueden leer fuera de su cwd, incluida
+  `evaluacion/`. Evaluar en la piloto `SandboxSettings(enabled=True)` — aísla
+  sólo los comandos Bash; la restricción de lectura de la tool Read va por deny
+  rules de permisos, no por el sandbox — verificando que no rompa builds que
+  necesitan red (npm/pip install). Si la asimetría de confinamiento A/B no se
+  iguala, se declara como limitación en la tesis.
+- **Seatbelt de B**: verificado contra el código del SDK y probado bajo el
+  seatbelt: la red **no** está bloqueada (el perfil arranca con `(allow
+  default)` y no tiene reglas de red, así que TCP directo y `npm install`
+  funcionan) y **docker sí funciona** (el connect al socket es una operación de
+  red permitida). El riesgo específico es `$TMPDIR`: el perfil deniega
+  `file-write*` sobre el TMPDIR heredado (`/var/folders/…`, bajo `/private`) y
+  las herramientas node que usan `os.tmpdir()` sin fallback (metro/expo,
+  node-gyp, postinstall scripts) fallarían con EPERM; `npm install` puro y
+  pip/Python no se ven afectados. Mitigado fijando `TMPDIR` a
+  `<repo-satelite>/../tmp-sandbox` vía el manifest del sandbox — a validar en
+  piloto-02 (npm install, npx tsc, expo export).
 - **Semántica de `max_turns`**: en A un turno es un intercambio
   usuario/asistente; en B, una invocación al modelo dentro del loop. `MAX_TURNS=500`
   es un tope de seguridad holgado en ambos, pero la equivalencia exacta se

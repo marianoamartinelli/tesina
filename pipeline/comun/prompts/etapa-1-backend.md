@@ -14,9 +14,11 @@ Indicaciones:
   siguientes y contra el que se verificará el sistema: respetalo literalmente.
 - La interacción con la red (chainId 11155111) se hace vía JSON-RPC contra el endpoint
   configurable definido por la spec; no asumas servicios de terceros no especificados.
-- La etapa se considera completa cuando el backend compila/arranca, expone el
-  health-check definido en la épica 09, y las funcionalidades de las épicas 01–09 están
-  implementadas según sus criterios de aceptación.
+- Exponé un endpoint de health-check simple, p. ej. `GET /health` — elegí la ruta y
+  documentala en el README del proyecto.
+- La etapa se considera completa cuando el backend compila/arranca, responde ese
+  health-check, y las funcionalidades de las épicas 01–09 están implementadas según
+  sus criterios de aceptación.
 
 Al terminar, dejá documentado en el README cómo instalar dependencias, configurar el
 entorno (variables, RPC, base de datos si aplica) y levantar el servidor.

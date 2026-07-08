@@ -1,0 +1,5 @@
+celda: piloto-02      # corrida descartable (no cuenta para el 2x2)
+harness: b            # smoke de B: valida seatbelt/TMPDIR, max_turns, costo estimado
+modelo: gpt-5.5
+rag: true             # con RAG para ejercitar también ese camino
+etapas: ../comun/etapas.yaml

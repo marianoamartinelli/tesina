@@ -47,6 +47,9 @@ def test_fill_total_contra_un_unico_maker(api, usuario, usuario_b, rpc):
       con quote_min = floor(10^18 × 2060000000 / 10^18) (RN-5)
     - Y taker y maker quedan FILLED; el maker se retira del libro (RN-9)
     - Y U1 recibe mejora de precio: pagó a 2060.00, no a 2061.00 (RN-3, RN-14)
+
+    Valores del escenario (2000.00/2001.00) trasladados a la banda 2060.00/2061.00
+    por aislamiento del libro compartido; propiedad invariante al traslado.
     """
     precio_maker, limite = 2_060_000_000, 2_061_000_000
     requerir_sin_asks_cruzables(api, limite)
@@ -92,6 +95,9 @@ def test_fill_parcial_del_taker_remanente_se_posa(api, usuario, usuario_b, rpc):
     - Entonces ejecuta 0.4 ETH a 2065.00, el maker queda FILLED y se retira (RN-4, RN-9)
     - Y el remanente 0.6 ETH del taker se posa en bids @ 2066.00, PARTIALLY_FILLED (RN-8)
     - Y el libro no queda cruzado (RN-11)
+
+    Valores del escenario (2000.00/2001.00) trasladados a la banda 2065.00/2066.00
+    por aislamiento del libro compartido; propiedad invariante al traslado.
     """
     precio_maker, limite = 2_065_000_000, 2_066_000_000
     requerir_sin_asks_cruzables(api, limite)
@@ -132,6 +138,9 @@ def test_fill_parcial_del_maker_taker_se_completa(api, usuario, usuario_b, rpc):
     - Entonces ejecuta 1 ETH y el taker queda FILLED (RN-4, RN-9)
     - Y el maker queda PARTIALLY_FILLED con remanente 1 ETH y permanece como
       best ask conservando su prioridad (RN-9)
+
+    Valores del escenario (2000.00) trasladados a la banda 2070.00 por
+    aislamiento del libro compartido; propiedad invariante al traslado.
     """
     precio = 2_070_000_000
     requerir_libro_vacio(api)  # el "permanece como best ask" exige libro propio
@@ -166,6 +175,10 @@ def test_recorrido_por_prioridad_precio_tiempo(api, usuario, usuario_b, rpc):
     - Cuando ingresa BUY 1 ETH @ 2076.00
     - Entonces consume A1 y luego A2 (FIFO dentro del nivel, RN-2)
     - Y el taker queda FILLED; A1 y A2 FILLED; A3 no se toca y sigue en el libro
+
+    Valores del escenario (2000.00/2000.50/2001.00) trasladados a la banda
+    2075.00/2075.50/2076.00 por aislamiento del libro compartido; propiedad
+    invariante al traslado.
     """
     precio_nivel, precio_a3, limite = 2_075_000_000, 2_075_500_000, 2_076_000_000
     requerir_sin_asks_cruzables(api, limite)
@@ -208,6 +221,10 @@ def test_cruce_a_traves_de_multiples_niveles(api, usuario, usuario_b, rpc):
     - Entonces ejecuta A1 a 2080.00 y luego A2 a 2080.50, cada fill al precio de
       SU maker, no a un precio promedio (RN-2, RN-3, RN-5)
     - Y el taker queda FILLED
+
+    Valores del escenario (2000.00/2000.50/2001.00) trasladados a la banda
+    2080.00/2080.50/2081.00 por aislamiento del libro compartido; propiedad
+    invariante al traslado.
     """
     p1, p2, limite = 2_080_000_000, 2_080_500_000, 2_081_000_000
     requerir_sin_asks_cruzables(api, limite)
@@ -241,6 +258,9 @@ def test_precio_limite_igual_al_best_opuesto_si_cruza(api, usuario, usuario_b, r
     - Dado un libro con best_ask = 2085.00
     - Cuando ingresa BUY 1 ETH @ 2085.00
     - Entonces cruza porque ask_price ≤ L (condición con ≤, RN-1) y ejecuta a 2085.00
+
+    Valores del escenario (2000.00) trasladados a la banda 2085.00 por
+    aislamiento del libro compartido; propiedad invariante al traslado.
     """
     precio = 2_085_000_000
     requerir_sin_asks_cruzables(api, precio)
@@ -268,6 +288,10 @@ def test_sin_contraparte_cruzable_se_posa_completo(api, usuario, usuario_b, rpc)
     - Entonces no cruza (ask > L) y se posa completa como bid @ 2090.00, OPEN
       (RN-7, RN-8, deriva a HU-03-02)
     - Y no se emite evento de trade
+
+    Valores del escenario (best_ask 2001.00 / L 2000.00) trasladados a la banda
+    2091.00/2090.00 por aislamiento del libro compartido; propiedad invariante
+    al traslado.
     """
     precio_ask, limite = 2_091_000_000, 2_090_000_000
     requerir_sin_asks_cruzables(api, precio_ask)  # nuestro ask será el best cruzable
@@ -300,6 +324,9 @@ def test_sell_entrante_cruza_bids_por_prioridad_descendente(api, usuario, usuari
     - Entonces cruza primero B1 (mejor bid, 1 ETH @ 2095.00) y luego B2
       (0.5 ETH @ 2094.50) (RN-1, RN-2)
     - Y el taker queda FILLED; B1 FILLED; B2 PARTIALLY_FILLED con remanente 0.5 ETH
+
+    Valores del escenario (2000.00/1999.50) trasladados a la banda 2095.00/2094.50
+    por aislamiento del libro compartido; propiedad invariante al traslado.
     """
     p1, p2 = 2_095_000_000, 2_094_500_000
     requerir_sin_bids_cruzables(api, p2)
@@ -340,6 +367,11 @@ def test_mejora_de_precio_libera_excedente_del_buy(api, usuario, usuario_b, rpc)
     - Entonces el quote realmente pagado es el de 2100.00, no el de 2101.00
     - Y la diferencia bloqueada de más se libera (bloqueado→disponible) (RN-14)
     - Y se conserva Σ total(·, USDC) (INV-1, RN-13)
+
+    Valores del escenario (2000.00/2001.00) trasladados a la banda 2100.00/2101.00
+    por aislamiento del libro compartido; la propiedad (excedente liberado =
+    quote(L) − quote(maker), acá 1000000) es invariante al traslado porque la
+    separación L − maker = 1.00 se preserva.
     """
     precio_maker, limite = 2_100_000_000, 2_101_000_000
     requerir_sin_asks_cruzables(api, limite)
@@ -426,6 +458,11 @@ def test_liberacion_acumulada_de_excedente_en_buy_multifill(api, usuario, usuari
       liberado_fill = floor(q×L/10^18) − floor(q×maker/10^18) (RN-14)
     - Y el total pagado + excedente liberado reconstituye el bloqueo inicial
       (INV-1, INV-3); el taker queda FILLED
+
+    Valores del escenario (2000.00/2000.50/2001.00) trasladados a la banda
+    2110.00/2110.50/2111.00 por aislamiento del libro compartido; la propiedad
+    (excedente por fill = quote(L) − quote(maker), acá 500000 y 250000) es
+    invariante al traslado porque las separaciones de precio se preservan.
     """
     p1, p2, limite = 2_110_000_000, 2_110_500_000, 2_111_000_000
     requerir_sin_asks_cruzables(api, limite)
@@ -479,6 +516,10 @@ def test_sell_con_mejora_de_precio_no_libera_usdc(api, usuario, usuario_b, rpc):
       su límite (RN-3, RN-15)
     - Y no hay transición bloqueado→disponible en USDC del vendedor: su bloqueo
       estaba en ETH y se consumió íntegro (RN-15, INV-2, INV-3)
+
+    Valores del escenario (best_bid 2000.00 / L 1999.50) trasladados a la banda
+    2115.00/2114.50 por aislamiento del libro compartido; propiedad invariante
+    al traslado.
     """
     precio_maker, limite = 2_115_000_000, 2_114_500_000
     requerir_sin_bids_cruzables(api, limite)
