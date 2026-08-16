@@ -26,6 +26,7 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-006](ADR-006-reapertura-controlada-spec-v1.1.md) | Reapertura controlada de la spec (17 decisiones cerradas) y re-freeze como spec-v1.1 | Aceptado |
 | [ADR-007](ADR-007-agente-evaluador-white-box.md) | Agente evaluador LLM para los 66 ATs no automatizables (rúbrica white-box) | Aceptado |
 | [ADR-008](ADR-008-restriccion-recuperacion-web-harness-a.md) | Restricción de WebSearch/WebFetch en el harness A (paridad del factor RAG) | Aceptado |
+| [ADR-009](ADR-009-harnesses-como-cli-y-orquestador-de-roles.md) | Los harnesses pasan a ser los CLI de cada proveedor; orquestador de roles; re-pinneo de model IDs | **Propuesto** |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan
@@ -34,3 +35,8 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 > Ambas correcciones textuales se aplicarán en la revisión del protocolo de la
 > ventana H6 (ADR-004); los estados de ADR-001/ADR-005 permanecen «Aceptado» porque
 > sus decisiones de fondo siguen vigentes.
+
+> **Nota (2026-08-16):** ADR-009 propone reemplazar a **ADR-005** por completo (harnesses
+> como CLI, RAG por MCP stdio único, re-pinneo de model IDs). Mientras ADR-009 esté en
+> estado «Propuesto», ADR-005 sigue «Aceptado» y vigente; al ratificarse ADR-009, el
+> estado de ADR-005 pasa a «Reemplazado por ADR-009» sin editar su contenido.
