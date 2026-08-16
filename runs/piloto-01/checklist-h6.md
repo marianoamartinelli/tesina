@@ -103,7 +103,7 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
          manifest de cada corrida oficial.
 
 8. - [x] **Flagships y plan B de tier medio:** **resuelto** por ADR-009 Decisión 3
-         (2026-08-16, pendiente de ratificación) — re-pinneo a `claude-opus-5` y
+         (2026-08-16, Aceptado) — re-pinneo a `claude-opus-5` y
          `gpt-5.6-sol`, con effort fijado en `xhigh` en ambas familias. Los pinneos de
          ADR-005 (`claude-opus-4-8` / `gpt-5.5`) habían quedado una generación atrás.
          **Queda vivo un residuo:** verificar el precio por token de `gpt-5.6-sol`
