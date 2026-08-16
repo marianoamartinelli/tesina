@@ -2,7 +2,8 @@
 
 - **Hito:** H6 (ventana de la piloto), todavía sin iniciar.
 - **Contexto:** primera sesión desde el 2026-07-07. En el medio el proyecto estuvo
-  detenido 5 semanas y medias; el PR #1 de la auditoría quedó mergeado en `origin/main`.
+  detenido unas cinco semanas y media; el PR #1 de la auditoría quedó mergeado en
+  `origin/main`.
 
 ## Qué se hizo
 
@@ -29,9 +30,11 @@ La evaluación se hizo contra los CLI instalados, no contra documentación. Lo v
   cargada, el prompt de Codex incluía `<apps_instructions>`, `<plugins_instructions>` y
   `<recommended_plugins>`, y `<skills_instructions>` medía 15 485 caracteres; con
   `CODEX_HOME` limpio esos bloques desaparecen y el de skills baja a 5 237.
-- El catálogo del propio CLI (`codex debug models`) reporta **272 000** de ventana para
-  `gpt-5.6-sol` y también para el `gpt-5.5` que ADR-005 había pinneado como "1M
-  contexto", contra 1M en el lado Claude.
+- **Ventanas de contexto medidas en la herramienta, no en la documentación:** el catálogo
+  del propio CLI (`codex debug models`) reporta **272 000** para `gpt-5.6-sol` y también
+  para el `gpt-5.5` que ADR-005 había pinneado como "1M contexto"; del lado Claude,
+  `modelUsage.contextWindow` de una corrida real de `claude -p --model claude-opus-5`
+  bajo suscripción confirma **1 000 000**.
 
 Con eso se escribió **ADR-009 (Propuesto)**, que reemplaza a ADR-005 completo, más la
 actualización del índice de `decisiones/` y de `runs/piloto-01/checklist-h6.md`.
@@ -73,17 +76,18 @@ actualización del índice de `decisiones/` y de `runs/piloto-01/checklist-h6.md
 ## Observaciones para el meta-análisis
 
 - **El experimento se desincronizó de su objeto de estudio por estar quieto.** Cinco
-  semanas de pausa bastaron para que los dos flagships pinneados quedaran una generación
-  atrás. El protocolo ya preveía esto para las corridas (ventana de ≤2 semanas entre la
+  semanas y media de pausa bastaron para que los dos flagships pinneados quedaran una
+  generación atrás. El protocolo ya preveía esto para las corridas (ventana de ≤2 semanas entre la
   primera y la última), pero no para la fase preparatoria: la deriva de los modelos
   comerciales también erosiona las decisiones tomadas *antes* de correr. Es un costo de
   la parálisis que ninguna checklist estaba midiendo.
-- **Un pareo verificado puede dejar de serlo sin que nadie lo toque.** ADR-005 pareó
-  ambos modelos como "1M contexto" el 2026-07-05 y hoy el catálogo del CLI reporta 272K
-  del lado GPT. Sea porque el dato original estaba mal o porque el CLI expone menos que
-  la API, el efecto es el mismo: una variable declarada como controlada no lo estaba. Las
-  afirmaciones de paridad necesitan re-verificarse contra la herramienta efectiva, no
-  contra la documentación del proveedor.
+- **Un pareo declarado no es un pareo verificado.** ADR-005 pareó ambos modelos como "1M
+  contexto" el 2026-07-05, y hoy la herramienta reporta 272K del lado GPT — también para
+  el `gpt-5.5` de aquel pinneo. Una variable declarada como controlada no lo estaba, y
+  nadie lo habría notado sin medir. La lección operativa apareció dentro de esta misma
+  sesión: la primera versión del ADR verificó el lado B contra la herramienta y el lado A
+  contra documentación, y hubo que volver a medir A para que la comparación fuera
+  simétrica. Verificar un solo lado de una afirmación de paridad no es verificarla.
 - **El defecto de costura reaparece una capa más arriba.** La auditoría del 07-07
   observó que los defectos vivían en las costuras entre componentes, no dentro de ellos.
   Hoy la misma clase de problema apareció entre el experimento y sus herramientas: el

@@ -48,7 +48,7 @@ documentación.
 | Sandbox del shell | permission modes; sin sandbox por default en headless | `-s read-only\|workspace-write\|danger-full-access`, con sandbox por default |
 | Delegación a sub-agentes | herramienta `Task`, nativa | herramientas `spawn_agent`/`followup_task`/… con agente primario `/root`, nativas y gateadas por `<multi_agent_mode>` a pedido explícito |
 | Effort | `--effort low\|medium\|high\|xhigh\|max` | `-c model_reasoning_effort=…`, mismos cinco niveles más `ultra` (con delegación automática); **default del flagship: `low`** |
-| Ventana de contexto del flagship | 1 000 000 | 272 000 (`codex debug models`) |
+| Ventana efectiva del flagship, medida en el CLI | 1 000 000 (`modelUsage.contextWindow` de `claude -p --model claude-opus-5`, bajo suscripción) | 272 000 (`codex debug models`) |
 
 Dos verificaciones instrumentales, hechas con `codex debug prompt-input` (que renderiza
 el prompt visible por el modelo):
@@ -142,11 +142,13 @@ sería introducir una diferencia sistemática entre celdas. `xhigh` existe en la
 familias y es el nivel que cada proveedor recomienda para coding agéntico.
 
 **Asimetría de ventana de contexto — se declara, no se iguala.** ADR-005 pareó ambos
-modelos como «1M contexto». El catálogo del CLI de Codex reporta hoy **272 000** tanto
-para `gpt-5.6-sol` como para el `gpt-5.5` originalmente pinneado, contra 1M en A. Con
-una spec de 57 HUs, es una diferencia que puede afectar cuántas veces cada harness
-compacta contexto. Va a `analisis/amenazas-validez.md` como amenaza al pareo, y la
-piloto debe registrar los eventos de compactación de ambos.
+modelos como «1M contexto». Medido contra la herramienta efectiva y no contra la
+documentación de cada proveedor: A reporta **1 000 000** y B reporta **272 000** — este
+último tanto para `gpt-5.6-sol` como para el `gpt-5.5` que ADR-005 había pinneado, con lo
+cual el pareo por ventana **ya era incorrecto** en la versión original. Con una spec de
+57 HUs, la diferencia puede afectar cuántas veces compacta contexto cada harness. Va a
+`analisis/amenazas-validez.md` como amenaza al pareo, y la piloto debe registrar los
+eventos de compactación de ambos.
 
 **Pendiente antes de congelar (bloquea las corridas oficiales, no la piloto):** el precio
 por token de `gpt-5.6-sol` **no se pudo verificar desde una fuente primaria** — el
