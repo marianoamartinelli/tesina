@@ -83,8 +83,8 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
          Decisión esperada: convención de entorno fijada (o fallback ratificado),
          registrada donde corresponda.
 
-6. - [ ] **Chequeo espejo con `gpt-5.5`** (ver ítem 21: el modelo del espejo quedó una
-         generación detrás tras el re-pinneo de ADR-009) — muestra de 10 ATs por celda,
+6. - [ ] **Chequeo espejo con `gpt-5.6-sol`** (re-pinneado por ADR-010 D3) — muestra de
+         10 ATs por celda,
          pre-registrado como opcional condicionado a presupuesto): decidir su
          ejecución u omisión según el costo observado en la piloto y registrar la
          decisión en el journal.
@@ -218,35 +218,44 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
           oficiales, no la piloto.
           Fuente: ADR-009 Decisión 3.
 
-21. - [ ] **Modelos del agente evaluador y del chequeo espejo:** ADR-009 re-pinneó los
-          modelos **generadores** pero no tocó ADR-007, que fija el juez white-box en
-          `claude-opus-4-8` y el espejo opcional en `gpt-5.5`. Con A generando en
-          `claude-opus-5`, el juez dejó de ser el mismo modelo que el generador —lo que
-          en principio *reduce* el self-preference— y el espejo quedó una generación
-          detrás de B. Decidir si se re-pinnean (ADR que complete ADR-007) o se ratifican
-          con la justificación explícita de independencia juez/generador.
-          Fuente: ADR-007 §3; ADR-009 Decisión 3; `analisis/amenazas-validez.md`.
-          Decisión esperada: pinneo del evaluador cerrado y consistente antes de H8.
+21. - [x] **Modelos del agente evaluador y del chequeo espejo:** **resuelto** por
+          ADR-010 Decisión 3 — juez white-box `claude-opus-4-8` → **`claude-opus-5`**,
+          espejo `gpt-5.5` → **`gpt-5.6-sol`**, y el runtime pasa del Claude Agent SDK a
+          `claude -p`. Restaura el diseño original de ADR-007 (juez == generador de la
+          celda A), bajo el cual se pre-registraron sus cinco mitigaciones de
+          self-preference. El briefing congelado no se toca. Queda por aplicarlo a
+          `evaluacion/agente-evaluador/` al implementar el ítem 17.
 
-22. - [ ] **Techo de contexto del harness B — dos mitigaciones a verificar, en orden.**
-          El límite de 272 000 (con compactación al 95 %, ≈ 258 400) es, según el
-          tesista, un *enforcement del harness Codex* y no del modelo; el catálogo del
-          CLI reporta `max_context_window: 272000`, así que la afirmación **no está
-          verificada** contra fuente primaria. Orden de verificación:
-          **(a)** probar `-c model_context_window=<mayor>` en un `codex exec` real con
-          contexto largo. La clave parsea, pero eso sólo prueba que el TOML es válido:
-          si el valor supera lo que acepta la API, el fallo aparece a mitad de corrida.
-          Es la mitigación preferible porque es configuración y no cambia el
-          comportamiento del agente que se está midiendo.
-          **(b)** si (a) no funciona, instruir delegación fuerte en subagentes para que
-          ni el agente principal ni sus hijos se acerquen al techo. Requiere **enmendar
-          ADR-009 Decisión 4** con un ADR nuevo (hoy los prompts de rol explícitamente
-          **no** piden delegación) y declarar la asimetría de respuesta: la misma
-          instrucción cae sobre un modelo que ya delega con ganas (A) y sobre otro cuyo
-          bloque `<multi_agent_mode>` la mantiene apagada hasta que se la pide (B).
-          En cualquiera de los dos casos, el JSONL debe capturar la actividad de
-          subagentes para el meta-análisis (en A existe `--forward-subagent-text`; en B
-          son eventos de thread) — verificarlo en la piloto.
-          Fuente: ADR-009 Decisión 3 y Decisión 4; `analisis/amenazas-validez.md`.
-          Decisión esperada: techo de contexto de B resuelto o declarado como
-          limitación, con la mitigación elegida pre-registrada antes de H7.
+22. - [ ] **Compactación del harness B con historia larga (multi-turno).** ADR-010 D2
+          fija `-c model_context_window=1000000`, pero su efecto **no está verificado**.
+          Lo que sí se verificó el 2026-08-16: un turno único con 294 318 tokens de input
+          completa **con y sin** el override, o sea que los 272 000 del catálogo **no son
+          un tope a nivel de request**; lo que el parámetro gobierna, junto con
+          `effective_context_window_percent: 95`, es el umbral de **auto-compactación** al
+          acumular historia entre turnos (≈ 258 400 por default, ≈ 950 000 con el
+          override), y un turno único no ejercita eso.
+          A verificar en la piloto: correr una etapa cuya historia supere los 258 400
+          tokens y registrar si el harness compacta. Si compacta igual, el override es
+          inocuo pero inútil y la asimetría vuelve a estar viva.
+          Fuente: ADR-010 Decisión 2.
+          Decisión esperada: efecto del parámetro medido, y la asimetría de compactación
+          A/B cerrada o declarada como limitación antes de H7.
+
+23. - [ ] **Techo de 1 048 576 caracteres por input en el CLI de Codex** (verificado:
+          `turn/start` rechaza con `input_too_large` / `max_chars`, independiente de los
+          tokens). Los prompts de etapa y de rol están muy por debajo, pero el archivo de
+          handoff bajo `.pipeline/` puede crecer: si un `revisor` produce una revisión
+          enorme, el pase correctivo puede chocar con el techo. Vigilar en la piloto y, si
+          aparece, acotar el tamaño del handoff por prompt (idéntico en las 4 celdas).
+          Fuente: ADR-010 Decisión 2.
+
+24. - [ ] **Fan-out efectivo de la delegación en cada familia.** ADR-010 D1 instruye
+          delegación con texto byte-idéntico, pero la instrucción cae sobre un modelo que
+          ya delega por default (A) y sobre otro cuyo `<multi_agent_mode>` la mantiene
+          apagada hasta que se la piden (B). Medir cuántos subagentes abre cada familia y
+          con qué profundidad. Si la diferencia es desproporcionada, **no** se tunea la
+          instrucción por familia (rompería la paridad de prompts): se declara, o se pone
+          un tope numérico idéntico en el texto compartido vía ADR antes de H7.
+          Además: verificar que el JSONL capture la actividad de subagentes y no sólo la
+          del agente principal (en A, `--forward-subagent-text`; en B, eventos de thread).
+          Fuente: ADR-010 Decisión 1.

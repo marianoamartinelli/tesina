@@ -134,3 +134,53 @@ publicaron antes de poder redeployarlos.
   sondear con `--strict-config` y `debug prompt-input` como oráculos. El patrón —
   convertir la herramienta en su propia fuente primaria — es replicable y vale para el
   cap. 4.
+
+## Segundo tramo del día — ADR-010
+
+El tesista aportó una lectura del techo de contexto de B: no sería una limitación de
+`gpt-5.6-sol` sino un enforcement del harness de Codex, y la vía para esquivarlo sería
+instruir delegación fuerte en subagentes, de modo que ni el principal ni sus hijos se
+acerquen al umbral. Su argumento de fondo no es el contexto sino el foco: el agente
+principal conserva la tarea general y delega problemas acotados.
+
+Antes de escribir nada se probó la config. Tres hallazgos:
+
+- **Un turno con 294 318 tokens de input completa, y el modelo lee un marcador plantado
+  al final.** O sea que los 272 000 del catálogo **no son un tope a nivel de request**.
+- **Da idéntico con y sin `-c model_context_window=1000000`.** El override no fue lo que
+  habilitó ese turno; lo que ese parámetro gobierna, junto con
+  `effective_context_window_percent: 95`, es el umbral de **auto-compactación** entre
+  turnos (≈ 258 400 por default, ≈ 950 000 con override), y un turno único no lo
+  ejercita. Se fija igual —el costo es nulo— pero declarado como hipótesis a validar.
+- **Límite duro nuevo:** el CLI rechaza en `turn/start` cualquier input de más de
+  **1 048 576 caracteres** (`input_too_large`), independiente de los tokens. Apareció al
+  primer intento del test, con 1 367 963.
+
+Con eso se escribió **ADR-010 (Aceptado)**: los prompts de rol pasan a instruir
+delegación (enmienda ADR-009 D4), se fija `model_context_window=1000000` en B, y el
+evaluador white-box y su espejo se re-pinnean a `claude-opus-5` / `gpt-5.6-sol` con
+runtime `claude -p` (enmienda ADR-007, cierra el ítem 21). La checklist queda con 24
+ítems; los nuevos 22, 23 y 24 son las tres verificaciones que la piloto debe cerrar.
+
+### Observaciones para el meta-análisis
+
+- **La hipótesis del usuario era correcta en el diagnóstico y equivocada en el
+  mecanismo**, y sólo medir lo distinguió. El techo existe, pero no donde parecía: no
+  limita lo que la API acepta, limita cuándo el harness decide compactar. Si hubiéramos
+  escrito el ADR con la explicación intuitiva, habríamos pinneado un parámetro
+  afirmando un efecto que no probamos — y sonaría igual de convincente.
+- **La contraprueba costó lo mismo que la prueba y cambió la conclusión.** Correr el
+  test sólo con el override habría "confirmado" que funciona. El segundo run, idéntico
+  salvo por la ausencia del flag, es el que convirtió una confirmación en un hallazgo.
+  Barato y decisivo: vale como patrón para el resto del proyecto.
+- **El límite de 1 MiB apareció por accidente**, al pasarme de tamaño en el primer
+  intento. No estaba en ningún catálogo ni en ninguna ayuda de la CLI; sólo emerge
+  cuando se lo cruza. Es un recordatorio de que la superficie efectiva de una
+  herramienta no coincide con su superficie documentada — el mismo tema que ya venía
+  apareciendo con las ventanas de contexto y los defaults de effort.
+- **Segunda decisión del día que revierte una anterior del mismo día.** ADR-009 D4 fijó
+  que los prompts no pidieran delegación; ADR-010 D1 la instruye. No es inconsistencia:
+  es que la primera se tomó sin el dato del techo de contexto y sin que el tesista
+  hubiera explicitado que la orquestación multi-agente le interesa como diseño y no
+  como parche. La trazabilidad ADR por ADR permite ver exactamente qué información
+  nueva movió la decisión, que es justamente lo que ADR-003 buscaba.
