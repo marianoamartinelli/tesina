@@ -32,7 +32,12 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   integración RAG conmutable, paridad de prompts/etapas entre condiciones.
   *(2026-07-05 — ADR-005: paridad por equivalencia funcional, RAG BM25 determinista,
   `claude-opus-4-8` vs `gpt-5.5`; verificador de paridad con 39 chequeos; ejecución
-  end-to-end con API keys pendiente para la piloto.)*
+  end-to-end con API keys pendiente para la piloto. **Revisado el 2026-08-16 por
+  ADR-009**, que reemplaza a ADR-005 dentro de la ventana H6: los harness pasan a ser
+  los CLI de cada proveedor, el RAG se entrega como un único servidor MCP stdio y los
+  model IDs se re-pinnean a `claude-opus-5` / `gpt-5.6-sol` con effort `xhigh`. El
+  algoritmo BM25 y la paridad de etapas/prompts no cambian; la reescritura del código
+  es el ítem 17 de la checklist H6.)*
 - [x] **H5 — Harness de evaluación.** Suite de tests de aceptación **black-box**
   contra el contrato HTTP/WS de la épica 09, escrita una sola vez y reutilizable
   contra las 4 implementaciones; rúbricas para clientes web/mobile; procedimiento de
@@ -53,7 +58,9 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   Entrada y salida de la ventana:
   [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md). La ventana
   comprende `piloto-01` (corrida completa con el harness A) y `piloto-02` (smoke
-  end-to-end del harness B).
+  end-to-end del harness B). Desde ADR-009 incluye además la reescritura del pipeline
+  para orquestar los CLI (ítem 17) y la validación del set de roles
+  implementador/revisor.
 - [ ] **H7 — Corridas oficiales.** Las 4 celdas del factorial, en ventana temporal
   corta (los modelos comerciales cambian): A-sin-RAG, A-con-RAG, B-sin-RAG, B-con-RAG.
   Cada corrida: repo propio + manifest + log de intervenciones + métricas.

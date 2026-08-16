@@ -6,7 +6,8 @@ vive en un repo propio, referenciado desde el manifest.
 ## Nomenclatura
 
 - Celdas oficiales del 2×2: `a-sin-rag`, `a-con-rag`, `b-sin-rag`, `b-con-rag`
-  (A = Claude / Claude Agent SDK; B = GPT / OpenAI Agents SDK).
+  (A = Claude / Claude Code CLI; B = GPT / Codex CLI — ADR-009, que reemplaza el
+  pareo por SDK de ADR-005).
 - Piloto: `piloto-NN` (no cuenta para el análisis factorial).
 
 ## Contenido mínimo por corrida
@@ -45,4 +46,13 @@ de las corridas oficiales: [`piloto-01/checklist-h6.md`](piloto-01/checklist-h6.
    corrida), los JSONL que el pipeline escribe en `<repo-satelite>/../logs/` se
    copian a `runs/<id>/logs/` y se listan en el campo `logs_jsonl` del manifest
    (§5). Una etapa puede tener varios JSONL (reintentos — intervención tipo (d)
-   del protocolo §5); se copian todos.
+   del protocolo §5); se copian todos. Con ADR-009 hay más de un JSONL por etapa
+   también en el camino feliz: cada rol (implementador, revisor, pase correctivo) es
+   una invocación fresca del CLI.
+5. **Versiones de CLI en el manifest:** desde ADR-009 se pinnean `claude --version` y
+   `codex --version` junto a los model IDs, el `effort` y el commit del corpus. Antes
+   se pinneaban las versiones de los SDK.
+6. **`.pipeline/` del repo satélite no es producto medido:** es el directorio de
+   handoff entre roles (ADR-009 Decisión 4). Queda excluido de las métricas estáticas
+   (`evaluacion/metricas-estaticas/README.md` §1.1) y no se evalúa como código
+   generado.

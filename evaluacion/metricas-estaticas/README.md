@@ -25,9 +25,16 @@
 
 Directorios excluidos en cloc/lizard/jscpd: `node_modules`, `.git`, `dist`, `build`,
 `out`, `coverage`, `vendor`, `Pods`, `__pycache__`, `.next`, `.expo`, `target`,
-`generated`. Los lockfiles y archivos binarios quedan fuera (cloc los ignora; jscpd/lizard
-sólo procesan fuentes). Los **tests propios del agente sí cuentan** en LOC/CCN/duplicación
-(son código generado; se anota en `notas` si su ubicación es separable).
+`generated`, **`.pipeline`**. Los lockfiles y archivos binarios quedan fuera (cloc los
+ignora; jscpd/lizard sólo procesan fuentes). Los **tests propios del agente sí cuentan**
+en LOC/CCN/duplicación (son código generado; se anota en `notas` si su ubicación es
+separable).
+
+`.pipeline/` se excluye por ADR-009 Decisión 4: contiene los artefactos de handoff entre
+roles (p. ej. `revision-<etapa>.md`), que son mecánica del orquestador y no producto
+generado. La regla se fija **antes** de la piloto y de ver implementación alguna, por el
+mismo criterio de congelamiento del protocolo §9 que gobierna la suite de ATs; queda
+pendiente reflejarla en el código de `medir.sh` (checklist H6, ítem 18).
 
 ### 1.2 Dependencias directas por ecosistema (mapeo fijado antes de medir)
 

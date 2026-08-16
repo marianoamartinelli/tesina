@@ -12,12 +12,20 @@ centralizado y simplificado.
 
 Hitos **H0–H5 completos**: spec congelada en el tag `spec-v1.1` (57 HUs, 693 AT-ids),
 protocolo experimental pre-registrado (ADR-004), corpus RAG de 9 documentos con
-manifest + SHA-256, pipeline de agentes con paridad A/B verificable (ADR-005) y harness
-de evaluación: suite black-box más agente evaluador white-box (ADR-007) para los ATs
-no automatizables (521 AT-ids backend + 78 web / 94 mobile con rúbrica).
+manifest + SHA-256, pipeline de agentes con paridad A/B verificable (ADR-009, que
+reemplaza a ADR-005) y harness de evaluación: suite black-box más agente evaluador
+white-box (ADR-007) para los ATs no automatizables (521 AT-ids backend + 78 web /
+94 mobile con rúbrica).
 
 Próximo hito: **H6 — corrida piloto**, que valida el pipeline end-to-end antes de las
 4 corridas oficiales de H7. Plan completo de hitos en [ROADMAP.md](ROADMAP.md).
+
+**En curso (2026-08-16):** ADR-009 cambió la base de los harness —dejan de construirse
+sobre los SDK de agentes y pasan a ser los CLI de cada proveedor (`claude -p` y
+`codex exec`), con los model IDs re-pinneados a `claude-opus-5` / `gpt-5.6-sol`—. La
+decisión está aceptada; la reescritura del código de `pipeline/` es el ítem 17 de
+[`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) y todavía no se hizo,
+así que lo que hay bajo `pipeline/` sigue siendo la implementación sobre SDK.
 
 ## Mapa del repositorio
 
@@ -28,7 +36,7 @@ Próximo hito: **H6 — corrida piloto**, que valida el pipeline end-to-end ante
 | `decisiones/` | ADRs: decisiones estructurales del proyecto, numeradas e inmutables.          |
 | `journal/`    | Bitácora fechada de sesiones de trabajo (materia prima del meta-análisis).    |
 | `corpus/`     | Corpus curado de BIPs/EIPs para las condiciones con RAG.                      |
-| `pipeline/`   | Configuración y código del harness de agentes (Claude Agent SDK / OpenAI Agents SDK). |
+| `pipeline/`   | Configuración y código del harness de agentes. Por ADR-009 pasa a orquestar los CLI de cada proveedor (Claude Code / Codex CLI); el código actual todavía es el basado en SDK (ítem 17 de la checklist H6). |
 | `evaluacion/` | Harness de evaluación: suite black-box, agente evaluador white-box (ADR-007) y rúbricas. |
 | `runs/`       | Un directorio por corrida: manifest, log de intervenciones, métricas. Las implementaciones generadas viven en **repos separados** referenciados desde cada manifest. |
 | `analisis/`   | Dataset comparativo y análisis de resultados.                                 |

@@ -1,6 +1,6 @@
 # ADR-009 — Los harnesses pasan a ser los CLI de cada proveedor; orquestador de roles
 
-- **Estado:** **Propuesto** (2026-08-16) — pendiente de ratificación del tesista
+- **Estado:** **Aceptado** (ratificado por el tesista el 2026-08-16)
 - **Fecha:** 2026-08-16
 - **Contexto:** ventana H6 (única ventana legítima de ajuste según
   [ADR-004](ADR-004-protocolo-experimental-preregistrado.md)), con la corrida piloto

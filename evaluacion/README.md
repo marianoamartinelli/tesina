@@ -44,10 +44,12 @@ evaluador) y del hito H2 (protocolo experimental pre-registrado).
   la declaración de ATs no automatizables. **Sólo se corre en H8** (regla de
   no-exposición, ver su README).
 
-## Contenido pendiente de decisión (H6)
+## Contenido pendiente de construcción (H6)
 - **`rubricas/`** — la "rúbrica del rol revisor del agente" (análisis cualitativo),
   complementaria a las de épicas 10–11, quedó anunciada en H5 pero no construida.
-  Su estado se decide en la ventana de la piloto: construirla y pre-registrarla
-  antes de las corridas, o descartarla con constancia
+  **Deja de ser una decisión abierta:** ADR-009 Decisión 4 incorpora un rol `revisor`
+  al set de roles del pipeline (implementador → revisor → pase correctivo), así que la
+  rúbrica **se construye y se pre-registra** antes de H7. Si el set de roles cambia al
+  validarse en la piloto, la rúbrica lo sigue
   (ver [`runs/piloto-01/checklist-h6.md`](../runs/piloto-01/checklist-h6.md),
   ítem 12).

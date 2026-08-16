@@ -32,21 +32,21 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
 
 ## Salida — pendientes que la ventana debe resolver
 
-1. - [ ] **Ejecución end-to-end del harness A** con piloto-01: primera corrida
-         real contra la API (hasta hoy sólo dry-runs).
-         Fuente: `pipeline/README.md` §"Pendiente para la piloto";
-         `pipeline/harness_a/correr.py:70` (`# PENDIENTE-PILOTO`).
+1. - [ ] **Ejecución end-to-end del harness A** con piloto-01: primera corrida real
+         (hasta hoy sólo dry-runs). Con ADR-009 es contra `claude -p` bajo
+         suscripción, no contra la API, y depende de que el ítem 17 esté hecho.
+         Fuente: `pipeline/README.md` §"Pendiente para la piloto".
          Decisión esperada: harness A validado de punta a punta o defectos
          registrados y corregidos dentro de la ventana.
 
 2. - [ ] **Smoke end-to-end del harness B** con piloto-02: etapa acotada sobre un
          repo descartable, con manifest e intervenciones marcados como
-         descartables. Valida: costo estimado del `resumen_final` vs dashboard de
-         billing de OpenAI, comportamiento del seatbelt (`npm install`,
-         `npx tsc`, `expo export`, fix de `TMPDIR`), semántica de `max_turns` y
-         granularidad del JSONL.
-         Fuente: `pipeline/README.md` §"Pendiente para la piloto";
-         `pipeline/harness_b/correr.py:78` (`# PENDIENTE-PILOTO`).
+         descartables. Reformulado por ADR-009 — valida: el sandbox propio de
+         `codex exec` con builds reales (`npm install`, `npx tsc`, `expo export`),
+         la granularidad del JSONL de `--json`, y la estimación local de costo
+         desde tokens contra el dashboard de billing de OpenAI. El fix de `TMPDIR`
+         y la semántica de `max_turns` **dejan de aplicar**: eran del `SandboxAgent`.
+         Fuente: `pipeline/README.md` §"Pendiente para la piloto".
          Decisión esperada: harness B validado en cada punto o ajustes
          registrados antes de las corridas oficiales.
 
@@ -83,7 +83,8 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
          Decisión esperada: convención de entorno fijada (o fallback ratificado),
          registrada donde corresponda.
 
-6. - [ ] **Chequeo espejo con `gpt-5.5`** (muestra de 10 ATs por celda,
+6. - [ ] **Chequeo espejo con `gpt-5.5`** (ver ítem 21: el modelo del espejo quedó una
+         generación detrás tras el re-pinneo de ADR-009) — muestra de 10 ATs por celda,
          pre-registrado como opcional condicionado a presupuesto): decidir su
          ejecución u omisión según el costo observado en la piloto y registrar la
          decisión en el journal.
@@ -91,8 +92,13 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
          Decisión esperada: ejecución u omisión, registrada en journal.
 
 7. - [ ] **Presupuestos definitivos:** los valores de protocolo §6 (200 USD /
-         24 h / tokens sin tope) son provisionales; pinnear los definitivos.
-         Fuente: ADR-004, punto 4 de la Decisión.
+         24 h / tokens sin tope) son provisionales; pinnear los definitivos. Con
+         ADR-009 el presupuesto de turnos desaparece (ítem 14) y, si las oficiales
+         corren sobre suscripción, `costo_max_usd` deja de ser el tope vinculante:
+         pasan a serlo los rate limits, que son asimétricos entre proveedores y no
+         se controlan. La piloto mide el consumo real y de ahí sale la decisión
+         suscripción contra API key.
+         Fuente: ADR-004, punto 4 de la Decisión; ADR-009 §Consecuencias.
          Decisión esperada: presupuestos definitivos en el protocolo v1.1 y en el
          manifest de cada corrida oficial.
 
@@ -111,14 +117,22 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
          `SUITE_CMD_REINICIO_SUT` como parte del procedimiento H8;
          `validar-resultados.py` como paso previo al arbitraje de pasadas del
          agente evaluador; regla de continuación de etapa interrumpida
-         (re-ejecutar el mismo `correr.py` sobre el estado actual del repo,
-         corrida fresca sin resume de ningún SDK, clasificada D2 + intervención
-         tipo (d), cubriendo que A termina con subtype `error_max_turns` y B con
-         `MaxTurnsExceeded`); procedimiento del smoke de backend con el entorno
+         (re-invocar el orquestador sobre el estado actual del repo, sesión fresca
+         del CLI sin resume, clasificada D2 + intervención tipo (d); los cortes por
+         tope de turnos —`error_max_turns` en A, `MaxTurnsExceeded` en B— dejan de
+         existir con ADR-009 y la regla debe cubrir en cambio el corte por rate
+         limit); procedimiento del smoke de backend con el entorno
          on-chain; formato CSV de las rúbricas en §10; incorporación del agente
          evaluador white-box ya prevista (ADR-007 §5); y constancia de que la
          ventana H6 comprendió piloto-01 (A completa) y piloto-02 (B smoke).
-         Fuente: ADR-004; `evaluacion/protocolo.md`; ADR-006; ADR-007 §5.
+         **Sumado por ADR-009 (2026-08-16):** §1 y §2 punto 3 definen el factor
+         «modelo» como «Claude / Claude Agent SDK» vs «GPT / OpenAI Agents SDK» — pasa
+         a ser Claude Code CLI vs Codex CLI; §2 punto 4 refiere los model IDs a
+         ADR-005 (hoy ADR-009); §6 pierde el presupuesto de turnos y gana la salvedad
+         de que, bajo suscripción, el tope vinculante son los rate limits y no
+         `costo_max_usd`; §10 suma la regla de exclusión de `.pipeline/` en las
+         métricas estáticas (ítem 18).
+         Fuente: ADR-004; `evaluacion/protocolo.md`; ADR-006; ADR-007 §5; ADR-009.
          Decisión esperada: protocolo v1.1 congelado por ADR nuevo antes de la
          primera corrida oficial.
 
@@ -203,3 +217,13 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
           pareo y la estimación de costo del harness B). Bloquea las corridas
           oficiales, no la piloto.
           Fuente: ADR-009 Decisión 3.
+
+21. - [ ] **Modelos del agente evaluador y del chequeo espejo:** ADR-009 re-pinneó los
+          modelos **generadores** pero no tocó ADR-007, que fija el juez white-box en
+          `claude-opus-4-8` y el espejo opcional en `gpt-5.5`. Con A generando en
+          `claude-opus-5`, el juez dejó de ser el mismo modelo que el generador —lo que
+          en principio *reduce* el self-preference— y el espejo quedó una generación
+          detrás de B. Decidir si se re-pinnean (ADR que complete ADR-007) o se ratifican
+          con la justificación explícita de independencia juez/generador.
+          Fuente: ADR-007 §3; ADR-009 Decisión 3; `analisis/amenazas-validez.md`.
+          Decisión esperada: pinneo del evaluador cerrado y consistente antes de H8.

@@ -62,10 +62,33 @@ actualización del índice de `decisiones/` y de `runs/piloto-01/checklist-h6.md
   cruza al otro factor, así que no aplica el criterio de ADR-008. Se registra su uso en
   el JSONL y se declara como asimetría.
 
+## Cierre de la sesión: ADR-009 aceptado y propagado
+
+El tesista ratificó ADR-009 el mismo día. ADR-005 pasó a «Reemplazado por ADR-009» (sin
+editar su contenido) y se propagó la decisión a los documentos vivos: `README.md`,
+`ROADMAP.md` (H4 y H6), `pipeline/README.md` (banner de estado: el código sigue siendo el
+de SDK hasta el ítem 17), `runs/README.md`, `evaluacion/README.md` (la rúbrica del rol
+revisor deja de ser decisión abierta), `evaluacion/metricas-estaticas/README.md`
+(`.pipeline/` a la lista de exclusiones), `analisis/amenazas-validez.md` (cuatro amenazas
+nuevas y cuatro filas actualizadas) y la checklist H6. `evaluacion/protocolo.md` **no se
+tocó**: está pre-registrado y su corrección va por el ítem 9.
+
+Un hallazgo colateral: al re-pinnear los modelos generadores quedó al descubierto que
+ADR-007 sigue fijando el juez white-box en `claude-opus-4-8` y el espejo en `gpt-5.5`. No
+es incorrecto —el juez ya no es el mismo modelo que genera en A, lo que en principio
+*reduce* el self-preference—, pero necesita decisión explícita: es el ítem 21 nuevo.
+
+**Los 10 artifacts publicados de claude.ai no se pudieron actualizar:** no aparecen en el
+listado de esta cuenta (ni como propios ni como compartidos) y `WebFetch` los reporta como
+inexistentes o no compartidos. Los HTML fuente vivían en el scratchpad de la sesión del
+2026-07-06, que ya no existe en disco. Queda pendiente resolver desde qué cuenta se
+publicaron antes de poder redeployarlos.
+
 ## Pendientes
 
-- **El tesista:** ratificar o rechazar ADR-009 (patrón ADR-008). Mientras esté
-  "Propuesto", ADR-005 sigue vigente y nada del pipeline actual se borra.
+- **Los 10 artifacts de claude.ai:** varios quedaron desactualizados por ADR-009 (sobre
+  todo "Doc técnica — Pipelines A y B", "H4 — Pipeline" y "Doc técnica — Arquitectura
+  RAG"). Requieren resolver el acceso y, sin los HTML fuente, reconstruirlos.
 - Cuatro ítems nuevos en la checklist H6 (17–20): reescritura del pipeline a los CLI;
   regla de exclusión de `.pipeline/` en las métricas estáticas (**deadline duro: antes
   de la piloto**, misma lógica que el ítem 4); verificaciones de `developer_instructions`

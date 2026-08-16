@@ -1,6 +1,6 @@
 # ADR-005 — Arquitectura del pipeline, paridad entre harnesses y pinneo de model IDs
 
-- **Estado:** aceptado (2026-07-05)
+- **Estado:** **Reemplazado por [ADR-009](ADR-009-harnesses-como-cli-y-orquestador-de-roles.md)** (2026-08-16). Aceptado originalmente el 2026-07-05; el contenido no se edita.
 - **Contexto:** hito H4 del [ROADMAP](../ROADMAP.md); requisitos de paridad del
   [protocolo pre-registrado](../evaluacion/protocolo.md) §2 (variables controladas).
 

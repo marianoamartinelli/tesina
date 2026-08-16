@@ -1,8 +1,24 @@
 # Pipeline — harness de agentes
 
+> **Estado (2026-08-16): este documento describe la implementación vigente, que
+> ADR-009 reemplaza.**
+> [ADR-009](../decisiones/ADR-009-harnesses-como-cli-y-orquestador-de-roles.md)
+> (Aceptado) sustituye a ADR-005: los harness dejan de construirse sobre los SDK de
+> agentes y pasan a orquestar los **CLI** de cada proveedor (`claude -p` y
+> `codex exec`); el RAG BM25 conserva el algoritmo pero se entrega como un **único
+> servidor MCP stdio**; los model IDs se re-pinnean a **`claude-opus-5`** y
+> **`gpt-5.6-sol`** con `effort` fijado en `xhigh`; aparecen prompts de rol
+> (implementador / revisor) bajo `comun/prompts/roles/`; y se elimina el presupuesto
+> de turnos (`MAX_TURNS`).
+>
+> **La reescritura del código todavía no se hizo** — es el ítem 17 de
+> [`runs/piloto-01/checklist-h6.md`](../runs/piloto-01/checklist-h6.md), y nada del
+> pipeline actual se borra hasta que la piloto valide el reemplazo. Todo lo que sigue
+> documenta lo que hay hoy en el árbol, no lo que ADR-009 fija.
+
 Código y configuración de los dos harness del experimento factorial 2×2
-(hito H4; arquitectura y model IDs fijados por
-[ADR-005](../decisiones/ADR-005-arquitectura-pipeline-y-model-ids.md)):
+(hito H4; arquitectura y model IDs fijados originalmente por
+[ADR-005](../decisiones/ADR-005-arquitectura-pipeline-y-model-ids.md), hoy reemplazado):
 
 - **Harness A:** Claude Agent SDK (`claude-agent-sdk`), modelo `claude-opus-4-8`.
 - **Harness B:** OpenAI Agents SDK (`openai-agents`, Sandbox Agents), modelo `gpt-5.5`.
