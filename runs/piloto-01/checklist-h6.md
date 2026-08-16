@@ -227,3 +227,26 @@ cambios van por nueva versión de documento + ADR nuevo donde corresponda.
           con la justificación explícita de independencia juez/generador.
           Fuente: ADR-007 §3; ADR-009 Decisión 3; `analisis/amenazas-validez.md`.
           Decisión esperada: pinneo del evaluador cerrado y consistente antes de H8.
+
+22. - [ ] **Techo de contexto del harness B — dos mitigaciones a verificar, en orden.**
+          El límite de 272 000 (con compactación al 95 %, ≈ 258 400) es, según el
+          tesista, un *enforcement del harness Codex* y no del modelo; el catálogo del
+          CLI reporta `max_context_window: 272000`, así que la afirmación **no está
+          verificada** contra fuente primaria. Orden de verificación:
+          **(a)** probar `-c model_context_window=<mayor>` en un `codex exec` real con
+          contexto largo. La clave parsea, pero eso sólo prueba que el TOML es válido:
+          si el valor supera lo que acepta la API, el fallo aparece a mitad de corrida.
+          Es la mitigación preferible porque es configuración y no cambia el
+          comportamiento del agente que se está midiendo.
+          **(b)** si (a) no funciona, instruir delegación fuerte en subagentes para que
+          ni el agente principal ni sus hijos se acerquen al techo. Requiere **enmendar
+          ADR-009 Decisión 4** con un ADR nuevo (hoy los prompts de rol explícitamente
+          **no** piden delegación) y declarar la asimetría de respuesta: la misma
+          instrucción cae sobre un modelo que ya delega con ganas (A) y sobre otro cuyo
+          bloque `<multi_agent_mode>` la mantiene apagada hasta que se la pide (B).
+          En cualquiera de los dos casos, el JSONL debe capturar la actividad de
+          subagentes para el meta-análisis (en A existe `--forward-subagent-text`; en B
+          son eventos de thread) — verificarlo en la piloto.
+          Fuente: ADR-009 Decisión 3 y Decisión 4; `analisis/amenazas-validez.md`.
+          Decisión esperada: techo de contexto de B resuelto o declarado como
+          limitación, con la mitigación elegida pre-registrada antes de H7.
