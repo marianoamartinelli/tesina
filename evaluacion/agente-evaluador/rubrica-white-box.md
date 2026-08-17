@@ -1,10 +1,17 @@
-# Rúbrica white-box — 66 ATs no automatizables (v1.0)
+# Rúbrica white-box — 56 ATs no automatizables (v1.2)
 
-> Checklist operativo del agente evaluador (ADR-007). Cubre **exactamente** los 66
+> Checklist operativo del agente evaluador (ADR-007). Cubre **exactamente** los 56
 > at_id declarados en `evaluacion/suite-at/no-automatizables.yaml` — ni uno más, ni
 > uno menos — agrupados por épica y en **orden ascendente de at_id**. Cada entrada es
 > autosuficiente: propiedad, pasos, evidencia mínima y criterio cerrado de veredicto.
 > Los veredictos y su formato de salida los fija `briefing.md` (se lee primero).
+>
+> **v1.2** (ADR-013, ventana H6): se agrega la convención de descubrimiento del
+> mecanismo de import del mnemonic (§ tras las constantes) y los cuatro ATs que la
+> usan la referencian; ningún criterio de veredicto cambia.
+> **v1.1** (ADR-011, ventana H6): 10 ATs de persistencia salieron de la rúbrica —
+> ahora son tests black-box condicionales de la suite— y los 3 que quedaban en la
+> familia F3 se reclasificaron con su razón real. Versión previa: v1.0, 66 ATs.
 
 ## Precondiciones comunes (verificar antes del primer AT)
 
@@ -65,6 +72,50 @@
 | `MNEMONIC_24_VALIDO`             | `"abandon"` ×23 + `"art"` (24 palabras; mnemonic de la entropía `0x00`×32)              | derivable del algoritmo de `corpus/documentos/bip-0039.mediawiki` §"Generating the mnemonic"; verificarlo con un script en `$COPIA_TMP` antes de usarlo (checksum = primeros 8 bits de `SHA-256(entropía)`) |
 | `MNEMONIC_24_CHECKSUM_INVALIDO`  | `"abandon"` ×24 (24 palabras del wordlist, checksum inválido por construcción)          | variante de la fila anterior (la última palabra correcta es `art`) |
 | `MNEMONIC_24_PALABRA_INVALIDA`   | `"abandon"` ×23 + `"xyzzy"` (24 palabras, la última fuera del wordlist)                 | verificar con `grep -cx xyzzy corpus/documentos/bip-0039-wordlist-english.txt` → `0` |
+
+### Mecanismo de import del mnemonic (convención de descubrimiento)
+
+Aplica a **AT-06-01-05**, **AT-06-01-09**, **AT-06-01-10** y **AT-06-03-07**: los cuatro
+necesitan arrancar el SUT con un mnemonic elegido. La spec **permite** importarlo pero
+**no fija el mecanismo** (HU-06-01 §Supuestos: "puede generarse internamente o importarse
+desde una configuración segura del despliegue"; RN-1: "se admite importar un mnemonic
+externo solo si cumple BIP-39"), así que una implementación conforme puede no exponer
+ninguno. Convención fijada por
+[ADR-013](../../decisiones/ADR-013-mecanismo-importar-mnemonic.md): el mecanismo **se
+busca**; no se supone, no se inventa.
+
+**Búsqueda —una sola vez, al llegar a AT-06-01-05**; su resultado se cita como evidencia
+en los cuatro ATs y su tiempo se imputa a ese primer AT:
+
+1. Entrega operativa de `$COPIA_EVAL`: README y documentación de configuración,
+   `.env.example` o equivalente, archivos de configuración de ejemplo,
+   `docker-compose*`, scripts de arranque/provisioning, y la ayuda del comando de
+   arranque si la tiene.
+2. `grep -rni "mnemonic\|seed.phrase\|seedPhrase" $COPIA_EVAL` (excluyendo directorios de
+   dependencias) y seguir cada hallazgo hasta la lectura de configuración —variable de
+   entorno, archivo, flag de CLI— que alimente al provisioning.
+3. Leer el punto de entrada del provisioning: si toma el mnemonic de una fuente externa,
+   ése es el mecanismo; si siempre lo genera y no admite entrada, no hay mecanismo.
+
+**Reglas duras:**
+
+- **No se agrega ni se parchea un mecanismo de import**, ni en `$COPIA_EVAL` (sólo
+  lectura) ni en `$COPIA_TMP`. Inyectar el mnemonic editando el código sustituye el
+  camino que el AT describe —el provisioning validando su entrada y abortando con su
+  propio exit code y `stderr`— por otro distinto.
+- El resultado de la búsqueda se **declara explícitamente**: "mecanismo hallado:
+  `<cómo se pasa>` (archivo:líneas)" o "no hay mecanismo: `<comandos ejecutados>`, sin
+  hallazgo".
+
+**Si no hay mecanismo:**
+
+| AT | Vía |
+|----|-----|
+| AT-06-01-05 / -09 / -10 | **fallback F1** declarado en cada entrada: verificar en el código la validación de RN-2 correspondiente y que su fallo aborta sin adoptar seed. Veredicto normal (`PASA`/`FALLA`). |
+| AT-06-03-07 | `NO_EVALUABLE:PRECONDICION_IMPOSIBLE` — no hay fallback: RN-5 impide obtener el mnemonic generado y sin él no hay derivación de referencia externa. |
+
+`NO_EVALUABLE` no es `FALLA` (briefing §4): se registra con su causa y la evidencia de la
+búsqueda, y lo arbitra el humano.
 
 ## Familias de procedimiento
 
@@ -409,46 +460,7 @@ aceptar un test del SUT como evidencia:
 - **Evidencia mínima:** archivo:líneas de la lógica de inferencia (camino A) **o** del límite transaccional que une fills y estado terminal (camino B).
 - **Criterio:** PASA si y sólo si (A) la inferencia RN-13 existe con los tres casos, **o** (B) fills y estado terminal son atómicos por construcción. FALLA si la ventana existe (escrituras separadas) y la recuperación no infiere el estado (la orden quedaría en limbo o en un estado no terminal). NO_EVALUABLE típico: `FUNCION_NO_LOCALIZABLE`.
 
-## Épica 04 — Gestión de órdenes (4 ATs)
-
-### AT-04-01-11
-- **Familia:** F3
-- **Propiedad:** una orden `LIMIT` `OPEN` y su reserva sobreviven a un reinicio: mismo
-  estado y campos, prioridad precio-tiempo intacta, `bloqueado`/`disponible`
-  reconstruidos idénticos (HU-04-01 RN-12/Escenario 11; INV-7, INV-8).
-- **Pasos:**
-  1. Crear dos usuarios A y B; fondear USDC a ambos (procedimiento de AT-02-03-01). A coloca `BUY LIMIT 1 ETH @ 2000000000` y B coloca después otra `BUY LIMIT 1 ETH @ 2000000000` (mismo precio, A con prioridad FIFO).
-  2. Registrar ANTES: `GET /orders/{id}` de ambas (status, priceMin, quantityWei, filledWei, remainingWei) y `GET /balances` de A y B.
-  3. Reiniciar: `eval "$SUITE_CMD_REINICIO_SUT"`; esperar readiness.
-  4. Registrar DESPUÉS y comparar campo a campo (igualdad estricta de strings).
-  5. Verificar prioridad: un tercer usuario C (fondeado con ETH) envía `SELL LIMIT 1 ETH @ 2000000000`; la orden de **A** debe quedar `FILLED` y la de B seguir `OPEN`.
-- **Evidencia mínima:** respuestas antes/después + comando de reinicio + resultado del fill dirigido.
-- **Criterio:** PASA si y sólo si ambas órdenes y los balances son idénticos tras el reinicio y el fill dirigido consume primero la orden más antigua (FIFO preservado). FALLA si una orden desaparece/cambia de estado o campos, los balances difieren, o la prioridad se invierte. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
-
-### AT-04-04-12
-- **Familia:** F3
-- **Propiedad:** el estado `CANCELLED`, la ausencia del libro y la liberación de fondos
-  persisten tras un reinicio (HU-04-04 RN-10, INV-8).
-- **Pasos:**
-  1. Usuario fondeado coloca una `BUY LIMIT` que descansa y la cancela (`DELETE /orders/{id}`).
-  2. Registrar ANTES: `GET /orders/{id}` (`status = CANCELLED`), `GET /balances` (reserva liberada) y `GET /orderbook` (la orden no figura).
-  3. Reiniciar con `SUITE_CMD_REINICIO_SUT`; esperar readiness.
-  4. Registrar DESPUÉS y comparar: sigue `CANCELLED`, ausente del libro, balances idénticos.
-- **Evidencia mínima:** respuestas antes/después + comando de reinicio.
-- **Criterio:** PASA si y sólo si tras el reinicio la orden sigue `CANCELLED`, no está en el orderbook y los balances coinciden exactamente. FALLA si la orden reaparece abierta, re-bloquea fondos o los balances difieren. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
-
-### AT-04-05-13
-- **Familia:** F3
-- **Propiedad:** órdenes en estados `OPEN`, `PARTIALLY_FILLED`, `FILLED` y `CANCELLED`
-  conservan estado y `filledWei` tras un reinicio; las abiertas mantienen su prioridad
-  (HU-04-05 RN-10/Escenario 13; INV-7, INV-8).
-- **Pasos:**
-  1. Construir los cuatro estados con usuarios fondeados: O1 `OPEN` (BUY que descansa); O2 `PARTIALLY_FILLED` (BUY 1 ETH contra un SELL ajeno de 0.4 ETH); O3 `FILLED` (BUY marketable total); O4 `CANCELLED` (BUY cancelada).
-  2. Registrar ANTES: `GET /orders/{id}` de las cuatro (status, filledWei, remainingWei) y balances de los involucrados.
-  3. Reiniciar; esperar readiness.
-  4. Registrar DESPUÉS y comparar las cuatro órdenes campo a campo; verificar que O1/O2 siguen en el libro (`GET /orderbook`) y O3/O4 no.
-- **Evidencia mínima:** respuestas antes/después de las cuatro órdenes + comando de reinicio.
-- **Criterio:** PASA si y sólo si cada orden conserva exactamente estado y `filledWei`, y las abiertas siguen en el libro respaldadas. FALLA si algún estado/campo cambia, una abierta desaparece o una terminal "revive". NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
+## Épica 04 — Gestión de órdenes (1 AT)
 
 ### AT-04-05-14
 - **Familia:** F4
@@ -528,7 +540,12 @@ aceptar un test del SUT como evidencia:
 - **Criterio:** PASA si y sólo si trade y asientos comparten la unidad atómica. FALLA si el trade se registra fuera de la transacción (podría quedar trade sin settlement o viceversa). NO_EVALUABLE típico: `FUNCION_NO_LOCALIZABLE`.
 
 ### AT-05-03-07
-- **Familia:** F3
+- **Familia:** F1
+- **Por qué es white-box:** la cuenta `EX` no tiene superficie en el contrato de la
+  épica 09 (ningún endpoint expone su saldo ni sus movimientos), así que la
+  reconciliación `Σ fees` == acreditado a `EX` es inobservable desde afuera. La otra
+  mitad del escenario (los trades sobreviven al reinicio) sí sería automatizable, pero
+  un AT se reporta entero (ADR-011).
 - **Propiedad:** los trades sobreviven al reinicio con `tradeId`/`sequence` y montos
   idénticos, y la reconciliación cierra: `Σ feeBaseWei` == acreditado total a `EX` en
   ETH y `Σ feeQuoteMin` == acreditado a `EX` en USDC (HU-05-03 RN-8/RN-9, INV-1/INV-8).
@@ -540,7 +557,7 @@ aceptar un test del SUT como evidencia:
 - **Evidencia mínima:** listados antes/después + script de reconciliación + salida.
 - **Criterio:** PASA si y sólo si los trades son idénticos tras el reinicio y ambas sumas de fees igualan exactamente lo acreditado a `EX` por activo. FALLA si difiere un trade o la reconciliación no cierra. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
 
-## Épica 06 — Wallet HD y direcciones (25 ATs)
+## Épica 06 — Wallet HD y direcciones (21 ATs)
 
 ### AT-06-01-01
 - **Familia:** F1
@@ -599,42 +616,20 @@ aceptar un test del SUT como evidencia:
   `VALIDATION_ERROR` en stderr, sin filtrar secretos (HU-06-01 RN-2(c)/RN-11, Escenario 5).
 - **Pasos:**
   1. Verificar la constante: script en `$COPIA_TMP` que compute el mnemonic de la entropía `0x00`×32 según `corpus/documentos/bip-0039.mediawiki` §"Generating the mnemonic" (debe dar `MNEMONIC_24_VALIDO`); `MNEMONIC_24_CHECKSUM_INVALIDO` (= `abandon`×24) difiere sólo en la última palabra ⇒ checksum inválido.
-  2. Ubicar el mecanismo de **import** de mnemonic del SUT (config documentada). Levantar instancia descartable limpia con `MNEMONIC_24_CHECKSUM_INVALIDO`; capturar exit code y stderr.
+  2. Ubicar el mecanismo de **import** de mnemonic del SUT según §"Mecanismo de import del mnemonic" (la búsqueda se hace **acá**, una sola vez, y su resultado sirve también a AT-06-01-09/-10 y AT-06-03-07). Con el mecanismo hallado: levantar instancia descartable limpia con `MNEMONIC_24_CHECKSUM_INVALIDO`; capturar exit code y stderr.
   3. Verificar: exit ≠ 0, `VALIDATION_ERROR` en stderr, sin material secreto en stderr, y almacenamiento sin seed persistido.
   4. **Fallback (si no hay mecanismo de import):** F1 — verificar en el código del provisioning la validación de checksum de RN-2(c) (primeros `ENT/32` bits de `SHA-256(entropía)`) y que su fallo aborta sin adoptar seed.
 - **Evidencia mínima:** comando de arranque + exit code + stderr (o archivo:líneas de la validación en el fallback) + verificación de la constante.
 - **Criterio:** PASA si y sólo si el mnemonic se rechaza con esa señal sin persistir seed (o, en fallback, la validación de checksum existe y aborta). FALLA si lo acepta, persiste un seed, o la validación de checksum no existe. NO_EVALUABLE típico: `SUT_NO_ARRANCA` (la instancia no llega ni a validar).
-
-### AT-06-01-07
-- **Familia:** F3
-- **Propiedad:** el seed persiste entre reinicios: no se regenera y las direcciones
-  derivadas después del reinicio son idénticas a las previas (HU-06-01 RN-8, INV-8).
-- **Pasos:**
-  1. En la instancia **principal**: crear una cuenta y registrar `GET /deposit-address?asset=ETH` (y `?asset=USDC`, deben coincidir entre sí, HU-06-03 RN-3).
-  2. Reiniciar con `SUITE_CMD_REINICIO_SUT`; esperar readiness.
-  3. Repetir la consulta para la misma cuenta y comparar.
-- **Evidencia mínima:** direcciones antes/después + comando de reinicio.
-- **Criterio:** PASA si y sólo si la dirección es idéntica tras el reinicio. FALLA si cambia (seed regenerado) o el SUT exige re-provisioning manual. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
-
-### AT-06-01-08
-- **Familia:** F3
-- **Propiedad:** re-ejecutar el provisioning (el arranque con seed ya provisionado) no
-  sobrescribe ni regenera el seed; seed y direcciones permanecen sin cambios
-  (HU-06-01 RN-4/RN-8).
-- **Pasos:**
-  1. Reutilizar el reinicio de AT-06-01-07 (mismo disparador, declararlo): la dirección de la cuenta es idéntica tras el re-arranque.
-  2. F1 complementario: localizar en el código de arranque la guarda "si existe seed → cargar, no generar" y verificar que ningún camino sobrescribe un seed existente.
-- **Evidencia mínima:** direcciones antes/después + archivo:líneas de la guarda.
-- **Criterio:** PASA si y sólo si el arranque con seed existente lo carga sin regenerar/sobrescribir y las direcciones no cambian. FALLA si el provisioning regenera o sobrescribe con seed presente. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
 
 ### AT-06-01-09
 - **Familia:** F5
 - **Propiedad:** un mnemonic de **12 palabras** (válido para 128 bits) se rechaza por
   longitud ≠ 24 con `VALIDATION_ERROR`, sin adoptarse como seed (HU-06-01 RN-2(a), Escenario 9).
 - **Pasos:**
-  1. Levantar instancia descartable limpia importando `MNEMONIC_BIP39_CANONICO` (12 palabras, checksum válido); capturar exit code y stderr.
+  1. Levantar instancia descartable limpia importando `MNEMONIC_BIP39_CANONICO` (12 palabras, checksum válido) con el mecanismo hallado en AT-06-01-05; capturar exit code y stderr.
   2. Verificar: exit ≠ 0, `VALIDATION_ERROR` en stderr, sin seed persistido.
-  3. **Fallback sin import:** F1 — la validación de longitud == 24 palabras existe en el provisioning y su fallo aborta.
+  3. **Fallback sin import** (§"Mecanismo de import del mnemonic")**:** F1 — la validación de longitud == 24 palabras existe en el provisioning y su fallo aborta.
 - **Evidencia mínima:** comando + exit code + stderr (o archivo:líneas de la validación).
 - **Criterio:** PASA si y sólo si el mnemonic de 12 palabras se rechaza con esa señal (o la validación de longitud existe y aborta). FALLA si lo acepta (adoptaría 128 bits de entropía). NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
 
@@ -644,9 +639,9 @@ aceptar un test del SUT como evidencia:
   inglés se rechaza con `VALIDATION_ERROR` (HU-06-01 RN-2(b), Escenario 10).
 - **Pasos:**
   1. Verificar la constante: `grep -cx xyzzy corpus/documentos/bip-0039-wordlist-english.txt` → `0` (la palabra no pertenece al wordlist de 2048).
-  2. Levantar instancia descartable limpia importando `MNEMONIC_24_PALABRA_INVALIDA`; capturar exit code y stderr.
+  2. Levantar instancia descartable limpia importando `MNEMONIC_24_PALABRA_INVALIDA` con el mecanismo hallado en AT-06-01-05; capturar exit code y stderr.
   3. Verificar: exit ≠ 0, `VALIDATION_ERROR`, sin seed persistido.
-  4. **Fallback sin import:** F1 — la validación de pertenencia al wordlist (las 2048 palabras, corpus doc 3) existe y su fallo aborta.
+  4. **Fallback sin import** (§"Mecanismo de import del mnemonic")**:** F1 — la validación de pertenencia al wordlist (las 2048 palabras, corpus doc 3) existe y su fallo aborta.
 - **Evidencia mínima:** salida del grep sobre el wordlist + comando + exit code + stderr (o archivo:líneas de la validación).
 - **Criterio:** PASA si y sólo si el mnemonic se rechaza con esa señal (o la validación de wordlist existe y aborta). FALLA si lo acepta o la validación no contempla el wordlist. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
 
@@ -739,17 +734,6 @@ aceptar un test del SUT como evidencia:
 - **Evidencia mínima:** los dos comandos + salidas idénticas.
 - **Criterio:** PASA si y sólo si ambos procesos producen la misma dirección y el camino no depende de estado mutable. FALLA si difieren. NO_EVALUABLE típico: `HERRAMIENTA_FALTANTE`.
 
-### AT-06-02-06
-- **Familia:** F3
-- **Propiedad:** tras un reinicio, las direcciones de los índices ya derivados se
-  reconstruyen idénticas (HU-06-02 RN-5, INV-8).
-- **Pasos:**
-  1. En la instancia principal, con ≥ 2 cuentas existentes (crearlas si hace falta), registrar `GET /deposit-address?asset=ETH` de cada una.
-  2. Reiniciar con `SUITE_CMD_REINICIO_SUT` (puede ser el mismo reinicio que AT-06-03-06 si los "Dado" ya estaban construidos; declararlo).
-  3. Repetir las consultas y comparar dirección por dirección.
-- **Evidencia mínima:** pares de direcciones antes/después + comando de reinicio.
-- **Criterio:** PASA si y sólo si todas las direcciones son idénticas tras el reinicio. FALLA si alguna cambia. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
-
 ### AT-06-02-08
 - **Familia:** F1
 - **Propiedad:** ante `I_L ≥ n` o `k_hijo = 0` en un paso CKDpriv (probabilidad
@@ -789,17 +773,6 @@ aceptar un test del SUT como evidencia:
 - **Evidencia mínima:** comandos + los dos registros persistidos leídos.
 - **Criterio:** PASA si y sólo si los índices son exactamente 0 y 1 (en orden de alta) y las direcciones difieren. FALLA si la numeración no arranca en 0, hay huecos, se reusa índice o las direcciones coinciden. NO_EVALUABLE típico: `SUT_NO_ARRANCA` o `FUNCION_NO_LOCALIZABLE` (mapeo ilegible).
 
-### AT-06-03-06
-- **Familia:** F3
-- **Propiedad:** el mapeo `cuenta → address_index` persiste: tras un reinicio cada
-  cuenta conserva el mismo índice y la misma dirección (HU-06-03 RN-7, INV-8).
-- **Pasos:**
-  1. En la instancia principal, registrar `GET /deposit-address?asset=ETH` de ≥ 2 cuentas existentes (las de AT-06-02-06 sirven).
-  2. Reiniciar con `SUITE_CMD_REINICIO_SUT` (puede compartirse con AT-06-02-06; declararlo); esperar readiness.
-  3. Repetir las consultas y comparar; opcional: comparar también `addressIndex` en el mapeo persistido antes/después.
-- **Evidencia mínima:** pares de direcciones antes/después + comando de reinicio.
-- **Criterio:** PASA si y sólo si cada cuenta conserva la misma dirección (y el mismo índice, si se leyó). FALLA si alguna cambia. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
-
 ### AT-06-03-07
 - **Familia:** F2
 - **Propiedad:** coherencia índice→dirección contra una derivación BIP-44 de referencia
@@ -807,12 +780,12 @@ aceptar un test del SUT como evidencia:
   coincide exactamente con la derivada externamente para `m/44'/60'/0'/0/i`
   (HU-06-03 Escenario 7; HU-06-02).
 - **Pasos:**
-  1. Levantar una instancia descartable limpia **importando** `MNEMONIC_24_VALIDO` (mecanismo de import del SUT; custodia controlada del mnemonic por el evaluador).
+  1. Levantar una instancia descartable limpia **importando** `MNEMONIC_24_VALIDO` con el mecanismo hallado en AT-06-01-05 (§"Mecanismo de import del mnemonic"; custodia controlada del mnemonic por el evaluador).
   2. Crear 3 cuentas; registrar sus direcciones (`GET /deposit-address`) y sus índices (mapeo persistido).
   3. Derivación de referencia **externa al SUT**: arrancar un anvil efímero con ese mnemonic (`docker run --rm <imagen foundry del entorno> anvil --mnemonic "abandon … art"`), que imprime las direcciones de `m/44'/60'/0'/0/0..9`; tomarlas como referencia.
   4. Comparar dirección por índice (igualdad exacta, EIP-55 incluido). Referencias normativas: corpus docs `bip-0032.mediawiki`, `bip-0044.mediawiki`, `erc-55.md`.
 - **Evidencia mínima:** comandos de ambos arranques + tabla índice→dirección del SUT y de la referencia.
-- **Criterio:** PASA si y sólo si todas las direcciones asignadas coinciden con la referencia para sus índices. FALLA si alguna difiere. NO_EVALUABLE típico: `PRECONDICION_IMPOSIBLE` si el SUT no soporta importar mnemonic (RN-5 impide extraer el generado; documentar la búsqueda del mecanismo).
+- **Criterio:** PASA si y sólo si todas las direcciones asignadas coinciden con la referencia para sus índices. FALLA si alguna difiere. NO_EVALUABLE típico: `PRECONDICION_IMPOSIBLE` si el SUT no soporta importar mnemonic (RN-5 impide extraer el generado); es el único AT de los cuatro sin fallback, y exige citar la búsqueda declarada en AT-06-01-05 (§"Mecanismo de import del mnemonic").
 
 ### AT-06-03-08
 - **Familia:** F1
@@ -853,7 +826,7 @@ aceptar un test del SUT como evidencia:
 - **Evidencia mínima:** archivo:líneas de la emisión/endpoint interno y del punto de consumo en el monitor.
 - **Criterio:** PASA si y sólo si existe al menos uno de los dos mecanismos con los campos requeridos y el monitor se alimenta de él desde la asignación. FALLA si no existe mecanismo o el monitor descubre direcciones con ventana (p. ej. sólo cuando el usuario consulta). NO_EVALUABLE típico: `FUNCION_NO_LOCALIZABLE`.
 
-## Épica 07 — Depósitos on-chain (6 ATs)
+## Épica 07 — Depósitos on-chain (4 ATs)
 
 ### AT-07-03-03
 - **Familia:** F1
@@ -870,17 +843,25 @@ aceptar un test del SUT como evidencia:
 - **Criterio:** PASA si y sólo si la guarda de umbral existe con el borde en 12 y el error con esos campos/tipos exactos. FALLA si el código no existe, `details` difiere (montos como string en confirmations, campos faltantes) o la guarda permite acreditar con < 12. NO_EVALUABLE típico: `FUNCION_NO_LOCALIZABLE`.
 
 ### AT-07-04-01
-- **Familia:** F3
-- **Propiedad:** reprocesar una identidad `(txHash, logIndex)` ya `ACREDITADA` (el
-  indexador reobserva el bloque tras un reinicio) no vuelve a sumar al balance ni crea
-  un segundo depósito; la reobservación se resuelve como `DEPOSIT_ALREADY_CREDITED`
+- **Familia:** F1
+- **Por qué es white-box:** el "Cuando" —reobservar una identidad ya acreditada— no
+  tiene disparador black-box: exigiría una reorg de profundidad ≥ 13 (excluida por el
+  supuesto de HU-07-04 §Contexto) o una solicitud explícita de acreditación, que la
+  épica 09 no define; el reinicio tampoco lo dispara, porque el escaneo reanuda en
+  `max(BLOQUE_INICIO_CONFIGURADO, checkpoint + 1)`. El `DEPOSIT_ALREADY_CREDITED` (409)
+  tampoco tiene endpoint que lo devuelva (ADR-011).
+- **Propiedad:** reprocesar una identidad `(txHash, logIndex)` ya `ACREDITADA` no vuelve
+  a sumar al balance ni crea un segundo depósito; la reobservación se resuelve como
+  resultado idempotente `DEPOSIT_ALREADY_CREDITED` con `details = { txHash, logIndex }`
   (HU-07-04 RN-3/RN-8, INV-5).
 - **Pasos:**
-  1. Producir un depósito USDC acreditado (flujo de AT-02-03-01); registrar `GET /balances` y `GET /deposits` (una entrada, su `depositId`).
-  2. Reiniciar con `SUITE_CMD_REINICIO_SUT` (este reinicio puede compartirse con AT-07-04-03/07; construir antes todos los "Dado"); esperar readiness y un ciclo de re-escaneo (el indexador reprocesa desde su checkpoint/`BLOQUE_INICIO`).
-  3. Verificar DESPUÉS: balance idéntico; `GET /deposits` sigue mostrando **una** entrada para esa identidad; opcional: el log interno registra `DEPOSIT_ALREADY_CREDITED` o equivalente al reobservar.
-- **Evidencia mínima:** respuestas antes/después + comando de reinicio.
-- **Criterio:** PASA si y sólo si tras el reinicio no hay segunda acreditación ni duplicado del depósito. FALLA si el balance aumenta de nuevo o aparece un segundo registro con la misma identidad. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
+  1. `grep -rni "ALREADY_CREDITED\|acredit\|credit" $COPIA_EVAL` en el módulo de depósitos y localizar el camino de acreditación.
+  2. Verificar que ese camino es **idempotente por construcción**: la identidad se consulta/inserta con la exclusión mutua de RN-2 (ver AT-07-04-02) y, cuando ya existe, se retorna el estado previo **sin** sumar al balance (ningún posting nuevo, ninguna llamada al motor de balances en esa rama).
+  3. Verificar que la rama del duplicado construye `DEPOSIT_ALREADY_CREDITED` con `details = { txHash, logIndex }` (`logIndex` entero JSON) y que el `code` está en el catálogo del SUT con status 409.
+  4. Verificar que el registro de identidades acreditadas es **persistente** (tabla/almacenamiento durable, no memoria del proceso), condición de RN-8.
+  5. F6 opcional: si el SUT tiene un test propio que reprocesa la misma identidad, revisarlo y ejecutarlo.
+- **Evidencia mínima:** archivo:líneas del camino de acreditación, de la rama del duplicado y del almacenamiento del registro de identidades.
+- **Criterio:** PASA si y sólo si el reproceso de una identidad ya acreditada no puede sumar al balance (rama sin efecto contable) y produce el resultado idempotente con esos `details`. FALLA si la rama del duplicado no existe (el reproceso volvería a acreditar), si el registro de identidades es volátil, o si el error se construye sin `txHash`/`logIndex`. NO_EVALUABLE típico: `FUNCION_NO_LOCALIZABLE`.
 
 ### AT-07-04-02
 - **Familia:** F1
@@ -897,58 +878,21 @@ aceptar un test del SUT como evidencia:
 - **Criterio:** PASA si y sólo si la garantía vive en persistencia o en una serialización demostrable que cubre check+insert. FALLA si es un check-then-act con ventana de carrera (doble acreditación posible). NO_EVALUABLE típico: `FUNCION_NO_LOCALIZABLE`.
 
 ### AT-07-04-03
-- **Familia:** F3
-- **Propiedad:** variante ETH nativo: identidad `(txHash, logIndex = 0)`; el reproceso
-  tras reinicio no reacredita y la identidad se mantiene con `logIndex = 0`
+- **Familia:** F1
+- **Por qué es white-box:** misma razón que AT-07-04-01 — el reproceso de una identidad
+  ya acreditada no es provocable black-box (ADR-011). Que la identidad ETH nativa use
+  `logIndex = 0` sí es observable y está automatizado (AT-07-01-07, AT-07-04-08).
+- **Propiedad:** variante ETH nativo: la clave de idempotencia es
+  `(asset = ETH, txHash, logIndex = 0)` y el reproceso de esa identidad no reacredita
   (HU-07-04 RN-1/RN-3, Escenario 3).
 - **Pasos:**
-  1. Producir un depósito **ETH** acreditado (transferencia de ETH a la dirección de depósito vía RPC + 12 bloques + esperar `ACREDITADO`); registrar balance y `GET /deposits` (verificar `logIndex: 0` como entero JSON y `depositId` `"<txHash>:0"`).
-  2. Compartir el reinicio de AT-07-04-01 (declararlo) o ejecutar uno propio.
-  3. Verificar DESPUÉS: balance ETH idéntico, una sola entrada para `(txHash, 0)`.
-- **Evidencia mínima:** respuestas antes/después (con el `logIndex` visible) + comando de reinicio.
-- **Criterio:** PASA si y sólo si la identidad usa `logIndex = 0` y no hay reacreditación tras el reinicio. FALLA si se duplica la acreditación o la identidad ETH no usa el centinela 0. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
+  1. Localizar el camino de detección de ETH nativo (HU-07-01) y verificar que construye la identidad con el centinela `logIndex = 0`, no con un índice de log real ni con `null`.
+  2. Verificar que esa identidad entra por el **mismo** registro y la misma exclusión mutua que el camino ERC-20 (AT-07-04-02), con el activo/tipo como parte de la clave efectiva (RN-1: los espacios `(txHash, 0)` de ETH y `(txHash, logIndex)` de USDC son disjuntos por construcción, pero la clave debe ser inequívoca igual).
+  3. Verificar que la rama del duplicado del camino ETH no suma al balance (misma verificación que AT-07-04-01, paso 2).
+- **Evidencia mínima:** archivo:líneas de la construcción de la identidad ETH y de su inserción en el registro de idempotencia.
+- **Criterio:** PASA si y sólo si la identidad ETH usa `logIndex = 0` como centinela, comparte el mecanismo de idempotencia con ERC-20 y su rama de duplicado no acredita. FALLA si el camino ETH tiene un registro/clave propios sin exclusión mutua, o si el reproceso puede sumar al balance. NO_EVALUABLE típico: `FUNCION_NO_LOCALIZABLE`.
 
-### AT-07-04-07
-- **Familia:** F3
-- **Propiedad:** idempotencia persistente: tras reiniciar y **reprocesar los bloques
-  históricos**, los depósitos ya acreditados no se reacreditan y los balances
-  reconstruidos coinciden con los previos (HU-07-04 RN-8, INV-1/INV-8).
-- **Pasos:**
-  1. Con ≥ 2 depósitos acreditados (los de AT-07-04-01/03 sirven), registrar todos los balances involucrados y el listado de depósitos.
-  2. Compartir el mismo reinicio (declararlo); esperar readiness + un ciclo completo de re-escaneo (dar tiempo/poll hasta que el indexador alcance la cabeza).
-  3. Verificar: balances idénticos, mismos depósitos (sin duplicados ni cambios de estado).
-- **Evidencia mínima:** respuestas antes/después + comando de reinicio.
-- **Criterio:** PASA si y sólo si el reproceso histórico no altera balances ni duplica depósitos. FALLA si algo se reacredita o los balances difieren. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
-
-### AT-07-04-11
-- **Familia:** F3
-- **Propiedad:** reanudación desde checkpoint: con checkpoint en `N` y un depósito
-  acreditado en bloque ≤ `N`, al reiniciar el escaneo reanuda desde
-  `max(BLOQUE_INICIO_CONFIGURADO, N + 1)`; los depósitos del downtime se detectan (no
-  se pierden bloques) y los anteriores no se reacreditan (HU-07-04 Escenario 11, INV-8).
-- **Pasos:**
-  1. Producir el depósito D1 acreditado a un usuario; registrar su balance.
-  2. **Detener** el SUT (comando de parada de la entrega operativa; si sólo existe `SUITE_CMD_REINICIO_SUT` atómico, usar el mecanismo de parada del proceso que documente el SUT — declarar cuál).
-  3. Durante el downtime: transferir un depósito D2 a la misma dirección y minar ≥ 12 bloques (`anvil_mine`).
-  4. Arrancar el SUT; esperar el escaneo; verificar: D2 aparece y se acredita (balance = D1 + D2 exactamente); D1 no se duplica; opcional: leer el checkpoint persistido (≥ N+1, avanzando a la cabeza).
-- **Evidencia mínima:** comandos (parada, transferencia, minado, arranque) + balances y listado de depósitos antes/después.
-- **Criterio:** PASA si y sólo si D2 (ocurrido con el SUT caído) se detecta y acredita exactamente una vez y D1 no se reacredita. FALLA si D2 se pierde (bloques salteados) o D1 se duplica. NO_EVALUABLE típico: `SUT_NO_ARRANCA` o `PRECONDICION_IMPOSIBLE` (no hay forma documentada de detener el SUT sin relanzarlo de inmediato).
-
-## Épica 08 — Retiros on-chain (4 ATs)
-
-### AT-08-03-08
-- **Familia:** F3
-- **Propiedad:** tras un reinicio, un retiro ya `BROADCAST` conserva su `(nonce,
-  txHash)` —no se re-firma ni se reasigna nonce— y un retiro nuevo de la misma emisora
-  toma el nonce siguiente contiguo (HU-08-03 RN-9/RN-11/RN-14, INV-6/INV-8).
-- **Pasos:**
-  1. Precondición: hot wallet fondeada (precondiciones comunes §6). Fondear un usuario con ETH (depósito acreditado) y crear un retiro (`POST /withdrawals`, asset ETH, dirección externa EIP-55 válida).
-  2. Esperar `txHash` no nulo en `GET /withdrawals/{id}` (estado `BROADCAST` o posterior — con anvil automine puede llegar a `CONFIRMED`; la propiedad se verifica igual). Registrar `txHash` y el `nonce` real vía RPC: `eth_getTransactionByHash(txHash).nonce`; registrar `eth_getTransactionCount(emisora, "latest")`.
-  3. Reiniciar con `SUITE_CMD_REINICIO_SUT`; esperar readiness.
-  4. Verificar: `GET /withdrawals/{id}` conserva el mismo `txHash`; `eth_getTransactionCount(emisora)` no aumentó por el reinicio (no hubo re-firma/re-broadcast de una tx nueva).
-  5. Crear un retiro nuevo; verificar que su transacción usa `nonce` = anterior + 1 (contiguo, vía `eth_getTransactionByHash`).
-- **Evidencia mínima:** respuestas y consultas RPC antes/después + comando de reinicio + nonce del retiro nuevo.
-- **Criterio:** PASA si y sólo si `(nonce, txHash)` del retiro son estables a través del reinicio y el retiro nuevo toma el nonce contiguo siguiente. FALLA si aparece una segunda transacción para el mismo retiro, cambia el `txHash`, o hay hueco/repetición de nonce. NO_EVALUABLE típico: `SUT_NO_ARRANCA`.
+## Épica 08 — Retiros on-chain (3 ATs)
 
 ### AT-08-03-09a
 - **Familia:** F1
@@ -1019,15 +963,21 @@ aceptar un test del SUT como evidencia:
 
 | Familia | Descripción breve                                        | ATs |
 |---------|-----------------------------------------------------------|-----|
-| F1      | Inspección de código / estado persistido interno          | 31  |
+| F1      | Inspección de código / estado persistido interno          | 34  |
 | F2      | Criptografía / KATs contra funciones internas             | 6   |
-| F3      | Ciclo de vida del SUT (reinicio orquestado)               | 13  |
+| F3      | Ciclo de vida del SUT (reinicio orquestado)               | 0 (migrada, ADR-011) |
 | F4      | Inyección de fallo interno / límites transaccionales      | 9   |
 | F5      | Config-fault (TTL corto, mnemonic elegido, credencial)    | 7   |
 | F6      | Tests propios del generador (evidencia transversal)       | 0 (complementaria) |
-| **Total** |                                                         | **66** |
+| **Total** |                                                         | **56** |
 
-Distribución por épica: 01→3, 02→12, 03→4, 04→4, 05→6, 06→25, 07→6, 08→4, 09→2.
+Distribución por épica: 01→3, 02→12, 03→4, 04→1, 05→6, 06→21, 07→4, 08→3, 09→2.
+
+**F3 quedó vacía** (ADR-011): sus 13 ATs eran de persistencia tras reinicio, y el
+reinicio abrupto lo provee el evaluador vía `SUITE_CMD_REINICIO_SUT`, así que 10 de
+ellos pasaron a tests black-box condicionales de la suite. Los 3 restantes
+(AT-05-03-07, AT-07-04-01, AT-07-04-03) siguen acá por razones que **no** son el
+ciclo de vida del SUT y quedaron reclasificados en F1.
 
 ## Regla de agregación y destino de los resultados
 

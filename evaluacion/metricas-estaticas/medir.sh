@@ -23,7 +23,9 @@ LIZARD_PIN="1.23.0"
 JSCPD_PIN="5.0.11"
 
 # ---------- exclusiones pre-registradas (README §1.1) ----------
-EXCL_DIRS="node_modules,.git,dist,build,out,coverage,vendor,Pods,__pycache__,.next,.expo,target,generated"
+# `.pipeline` = artefactos de handoff entre roles del orquestador (ADR-009 Decisión 4):
+# mecánica del pipeline, no producto generado. No cuenta en ninguna métrica.
+EXCL_DIRS="node_modules,.git,dist,build,out,coverage,vendor,Pods,__pycache__,.next,.expo,target,generated,.pipeline"
 
 # ---------- argumentos ----------
 if [ $# -lt 3 ]; then

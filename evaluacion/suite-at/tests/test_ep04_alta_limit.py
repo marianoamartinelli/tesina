@@ -4,8 +4,8 @@ Spec: spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md
 Contrato observable: POST /orders, GET /orders*, DELETE /orders/{id},
 GET /balances, GET /market/orderbook (épica 09).
 
-AT-04-01-11 (persistencia tras reinicio) está declarado en
-tests/no_automatizables_ep04.yaml: el harness no controla el ciclo de vida del SUT.
+AT-04-01-11 (persistencia tras reinicio) se verifica en
+tests/test_ep04_persistencia.py, con el reinicio orquestado por el evaluador.
 """
 
 import time

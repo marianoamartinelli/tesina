@@ -32,9 +32,24 @@ separable).
 
 `.pipeline/` se excluye por ADR-009 Decisión 4: contiene los artefactos de handoff entre
 roles (p. ej. `revision-<etapa>.md`), que son mecánica del orquestador y no producto
-generado. La regla se fija **antes** de la piloto y de ver implementación alguna, por el
-mismo criterio de congelamiento del protocolo §9 que gobierna la suite de ATs; queda
-pendiente reflejarla en el código de `medir.sh` (checklist H6, ítem 18).
+generado. Contarlos mediría el pipeline, no la implementación, y además introduciría un
+sesgo por celda: el volumen de handoff depende de cuánto escriba el rol `revisor` de cada
+familia. La regla se fija **antes** de la piloto y de ver implementación alguna, por el
+mismo criterio de congelamiento del protocolo §9 que gobierna la suite de ATs
+(ADR-009 §Consecuencias). Su pre-registro en §10 del protocolo v1.1 va con el ítem 9 de
+`runs/piloto-01/checklist-h6.md`.
+
+La exclusión es **por directorio, no por extensión**: cualquier archivo bajo `.pipeline/`
+queda fuera, sea `.md`, código o manifiesto. Está implementada en la lista `EXCL_DIRS` de
+`medir.sh`, que es la única fuente de exclusiones y alimenta a los cuatro consumidores:
+`--exclude-dir` de cloc, `-x "*/<dir>/*"` de lizard, `--ignore "**/<dir>/**"` de jscpd y
+el `find` que busca manifiestos para contar dependencias.
+
+Verificada el 2026-08-16 sobre un árbol de prueba con `revision-backend.md`, un `.py` con
+funciones y un `package.json` bajo `.pipeline/`: la fila resultante es idéntica a la del
+mismo árbol sin ese directorio (5 → 2 archivos, 41 → 17 LOC, 5 → 2 funciones,
+5+3 → 2+1 dependencias). Para duplicación, jscpd sobre un `.pipeline/` con dos archivos
+idénticos reporta 49.30 % sin el ignore y 0.00 % con el que arma `medir.sh`.
 
 ### 1.2 Dependencias directas por ecosistema (mapeo fijado antes de medir)
 

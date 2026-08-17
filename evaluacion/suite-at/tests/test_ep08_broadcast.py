@@ -8,7 +8,10 @@ Verificaciones on-chain black-box (INV-6):
 
 Los escenarios de fallo se provocan manipulando el nodo anvil del entorno
 (anvil_setBalance para rechazar broadcasts, tx competidora impersonada para
-ocupar un nonce).
+ocupar un nonce). La persistencia del nonce y del txHash tras un reinicio
+(AT-08-03-08) usa el reinicio orquestado por el evaluador
+(``SUITE_CMD_REINICIO_SUT``, ``comunes_reinicio``); sin esa env var, ese test
+salta.
 """
 
 from concurrent.futures import ThreadPoolExecutor
@@ -34,6 +37,7 @@ from comunes_ep08 import (
     set_balance,
     tx_impersonada,
 )
+from comunes_reinicio import comando_reinicio, reiniciar_sut, relogin
 
 ETH_1 = 10**18
 RESERVA_1ETH = ETH_1 + FEE_RED_ETH
@@ -300,4 +304,58 @@ def test_la_transaccion_usa_el_gas_price_snapshotteado(usuario, rpc):
     assert hex_int(tx["gas"]) == GAS_LIMIT_ETH
     assert hex_int(tx["gas"]) * hex_int(tx["gasPrice"]) == FEE_RED_ETH, (
         "gas_limit × gas_price debe igualar la previsión reservada (respaldo exacto, RN-5)"
+    )
+
+
+@pytest.mark.at("AT-08-03-08")
+def test_reinicio_no_reasigna_nonce_ni_refirma_un_retiro_broadcast(api, usuario, rpc):
+    """HU-08-03 Escenario 8 (idempotencia/persistencia): reinicio no reasigna nonce.
+
+    - Dado un retiro ya en BROADCAST con nonce n y txHash
+    - Cuando el sistema se reinicia (INV-8) y reanuda el procesamiento
+    - Entonces NO se firma una segunda transacción para ese retiro ni se reasigna
+      su nonce; se conserva (nonce = n, txHash) (RN-9/RN-11)
+    - Y un nuevo retiro de la misma emisora toma nonce = n + 1, manteniendo la
+      contigüidad
+
+    "No se firmó una segunda transacción" se observa on-chain sin salir del
+    black-box: el nonce de cuenta de la emisora es el conteo de transacciones que
+    envió, así que si tras el reinicio siguiera valiendo lo mismo, el SUT no
+    emitió ninguna otra; y el retiro sigue exponiendo el mismo txHash.
+    """
+    comando_reinicio()  # precondición antes del "Dado" caro (retiro real)
+
+    # Dado: un retiro en BROADCAST (sin minar las 12 confirmaciones: no avanza)
+    emisora = descubrir_emisora(usuario, rpc)
+    fondear_eth(usuario, rpc, 3 * ETH_1)
+    resp = crear_retiro(usuario, "ETH", str(ETH_1), destino_fresco(), "w-reinicio-1")
+    assert resp.status_code == 202, resp.text
+    wid = resp.json()["withdrawalId"]
+    retiro_previo, tx_previa = esperar_broadcast(usuario, rpc, wid)
+    nonce_retiro = hex_int(tx_previa["nonce"])
+    nonce_cuenta_previo = rpc.nonce(emisora)
+
+    # Cuando
+    reiniciar_sut(api)
+    relogin(usuario)
+
+    # Entonces: mismo txHash y mismo nonce; ninguna transacción nueva de la emisora
+    reconstruido = esperar_retiro(usuario, wid, ("BROADCAST", "CONFIRMED"), prohibidos=("FAILED",))
+    assert reconstruido["txHash"] == retiro_previo["txHash"], (
+        f"el retiro cambió de txHash tras el reinicio ({retiro_previo['txHash']} → "
+        f"{reconstruido['txHash']}): se re-firmó (viola RN-9/RN-11, INV-8)"
+    )
+    assert hex_int(rpc.transaccion(reconstruido["txHash"])["nonce"]) == nonce_retiro
+    assert rpc.nonce(emisora) == nonce_cuenta_previo, (
+        f"el nonce de cuenta de la emisora avanzó de {nonce_cuenta_previo} a "
+        f"{rpc.nonce(emisora)} sin retiros nuevos: se firmó una segunda transacción"
+    )
+
+    # Y: un retiro nuevo toma el nonce contiguo (n + 1), sin reusar ni saltear
+    resp = crear_retiro(usuario, "ETH", str(ETH_1), destino_fresco(), "w-reinicio-2")
+    assert resp.status_code == 202, resp.text
+    _, tx_nueva = esperar_broadcast(usuario, rpc, resp.json()["withdrawalId"])
+    assert hex_int(tx_nueva["nonce"]) == nonce_retiro + 1, (
+        f"nonce {hex_int(tx_nueva['nonce'])}: se esperaba {nonce_retiro + 1} "
+        "(contigüidad de la secuencia tras el reinicio, RN-3/RN-9)"
     )

@@ -6,9 +6,9 @@ Valida un YAML de pasada (``runs/<id>/no-automatizables/pasada-<n>.yaml``) —o
 fijado por ``plantilla-resultados.yaml`` (la plantilla es la fuente del
 contrato; este script sólo lo mecaniza):
 
-1. Exactamente 66 items cuyos ``at_id`` coinciden uno a uno **y en orden** con
-   los de ``plantilla-resultados.yaml`` (orden canónico ascendente de la
-   rúbrica). ``suite-at/no-automatizables.yaml`` se usa sólo como verificación
+1. Exactamente los items de ``plantilla-resultados.yaml`` (56 tras ADR-011),
+   cuyos ``at_id`` coinciden uno a uno **y en orden** con los de la plantilla
+   (orden canónico ascendente de la rúbrica). ``suite-at/no-automatizables.yaml`` se usa sólo como verificación
    cruzada del **conjunto** de IDs (está agrupado por motivo, no ordenado).
 2. ``veredicto`` ∈ {PASA, FALLA, NO_EVALUABLE}.
 3. ``causa`` presente (no nula) **si y sólo si** veredicto = NO_EVALUABLE, y
@@ -277,7 +277,11 @@ def main() -> int:
         for error in errores:
             print(f"  - {error}")
         return 1
-    print(f"OK: {args.archivo} cumple el contrato de plantilla-resultados.yaml (66 items).")
+    n_items = len(cargar_orden_canonico())
+    print(
+        f"OK: {args.archivo} cumple el contrato de plantilla-resultados.yaml "
+        f"({n_items} items)."
+    )
     return 0
 
 

@@ -322,6 +322,25 @@ def test_retiro_usdc_sin_eth_para_el_gas(usuario, rpc):
     assert details.get("available") == "0"
 
 
+# --- Status HTTP del reenvío idempotente: criterio {200, 202} ------------------
+# Aplica a los dos tests siguientes (AT-08-01-12 / AT-08-02-07 y AT-08-01-12b).
+# Ratificado en la ventana de ajuste H6 (`runs/piloto-01/checklist-h6.md` ítem 3).
+#
+# spec-v1.1 fija 202 para la **creación** del retiro y funda ese status en la
+# asincronía del procesamiento: HU-09-01 RN-11 ("Responde 202 Accepted … porque el
+# procesamiento on-chain (firma EIP-155 + broadcast) es asíncrono"), fila "Crear
+# retiro" del mapa de endpoints. Para el **reenvío idempotente** no fija ninguno:
+# ni HU-08-01 RN-10 ni sus Escenarios 12/12b mencionan status, y lo que ambos
+# exigen —mismo retiro, sin crear otro, sin volver a bloquear fondos— es
+# exactamente lo que estos tests verifican. Un reenvío sobre un retiro ya terminal
+# no acepta nada para procesar, así que 200 es tan defendible como 202 (la spec
+# asigna status por semántica de operación: HU-09-01 RN-21 le da 200 a la
+# cancelación de un retiro).
+# Aceptar ambos mide lo que la spec cierra y no penaliza la lectura que deja
+# abierta. La lectura contraria —que la columna "Éxito 202" del mapa de endpoints
+# vale para toda respuesta exitosa de POST /withdrawals— es defendible, y queda
+# registrada como candidata a reapertura para una eventual spec-v1.2; spec-v1.1
+# está congelada y no se toca.
 @pytest.mark.at("AT-08-01-12", "AT-08-02-07")
 def test_reenvio_idempotente_devuelve_el_mismo_retiro_sin_doble_bloqueo(usuario, rpc):
     """HU-08-01 Escenario 12 / HU-08-02 Escenario 7: reenvío con la misma clave y
@@ -346,9 +365,7 @@ def test_reenvio_idempotente_devuelve_el_mismo_retiro_sin_doble_bloqueo(usuario,
     resp2 = crear_retiro(usuario, "ETH", str(ETH_1), DIRECCION_EIP55, client_id="w-123")
 
     # Entonces: mismo retiro, sin crear otro
-    # TODO-REVISAR: la spec no fija el status HTTP del reenvío idempotente
-    # (HU-09-01 RN-11 fija 202 para la creación); se aceptan 200 y 202.
-    assert resp2.status_code in (200, 202), resp2.text
+    assert resp2.status_code in (200, 202), resp2.text  # {200, 202}: ver nota de arriba
     assert resp2.json()["withdrawalId"] == retiro1["withdrawalId"]
     assert len(listar_retiros(usuario)) == 1
 
@@ -383,7 +400,7 @@ def test_reenvio_idempotente_de_un_retiro_ya_failed(usuario, rpc):
     resp2 = crear_retiro(usuario, "ETH", str(ETH_1), destino, client_id="w-terminal")
 
     # Entonces: mismo retiro FAILED, sin retiro nuevo ni re-bloqueo
-    assert resp2.status_code in (200, 202), resp2.text  # TODO-REVISAR: status del replay
+    assert resp2.status_code in (200, 202), resp2.text  # {200, 202}: ver nota de arriba
     assert resp2.json()["withdrawalId"] == wid
     assert retiro_de(usuario, wid)["status"] == "FAILED"
     assert len(listar_retiros(usuario)) == 1

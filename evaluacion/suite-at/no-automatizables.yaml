@@ -15,6 +15,12 @@
 #   sea indirectamente (p. ej. persistencia vía reinicio del SUT orquestado por el
 #   evaluador), se prefiere automatizarlo. Esta lista es para lo genuinamente
 #   inobservable desde afuera.
+# - Criterio de la partición (ADR-011): un AT queda acá si y sólo si (a) su
+#   "Cuando" no tiene disparador black-box, o (b) alguna afirmación de su
+#   "Entonces" no tiene superficie REST/WS/on-chain. **No** vale invocar el ciclo
+#   de vida del SUT: el reinicio abrupto lo provee el evaluador con
+#   SUITE_CMD_REINICIO_SUT (tests/comunes_reinicio.py), así que la persistencia
+#   (INV-8) se automatiza de forma condicional.
 #
 # Las entradas siguientes son las declaradas al construir el núcleo del harness;
 # los agentes que escriban los tests por épica agregan las suyas con el mismo
@@ -249,37 +255,6 @@
   referencia: spec/03-motor-de-matching/HU-03-07-persistencia-y-recuperacion-del-orderbook.md
 
 # --- Épica 04 (fusionado desde no_automatizables_ep04.yaml) ---
-- at_id: AT-04-01-11
-  motivo: >-
-    Exige reiniciar el SUT a mitad de la corrida y verificar que la orden OPEN y
-    su reserva se reconstruyen (INV-8). El harness no controla el ciclo de vida
-    del SUT (lo arranca el evaluador según el contrato de arranque de
-    entorno/README.md) y el contrato REST/WS no expone ninguna operación de
-    reinicio. Se evalúa en H8 con un reinicio del SUT orquestado manualmente por
-    el evaluador sobre estado construido por esta suite (protocolo, chequeo de
-    INV-8), comparando órdenes abiertas y balances antes y después.
-  referencia: spec/04-gestion-de-ordenes/HU-04-01-colocar-orden-limit.md
-
-- at_id: AT-04-04-12
-  motivo: >-
-    Exige reiniciar el SUT tras una cancelación y verificar que el estado
-    CANCELLED, la ausencia en el orderbook y la liberación de fondos persisten
-    (INV-8). Sin control black-box del ciclo de vida del SUT ni superficie
-    REST/WS para provocar un reinicio, no es automatizable desde esta suite. Se
-    evalúa en H8 con reinicio manual orquestado por el evaluador, comparando
-    estado de la orden y balances antes y después.
-  referencia: spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md
-
-- at_id: AT-04-05-13
-  motivo: >-
-    Exige reiniciar el SUT con órdenes en varios estados (OPEN,
-    PARTIALLY_FILLED, FILLED, CANCELLED) y verificar que cada una conserva
-    estado, executedQty y prioridad precio-tiempo (INV-7, INV-8). El harness no
-    controla el ciclo de vida del SUT y no hay superficie REST/WS para provocar
-    el reinicio. Se evalúa en H8 con reinicio manual del evaluador sobre estado
-    construido por esta suite.
-  referencia: spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md
-
 - at_id: AT-04-05-14
   motivo: >-
     Exige interrumpir un alta en curso (crash del proceso entre la reserva de
@@ -343,13 +318,16 @@
 
 - at_id: AT-05-03-07
   motivo: >-
-    Exige (a) reiniciar el SUT, cuyo ciclo de vida no es orquestable desde la suite
-    (el arranque/parada de la implementación evaluada es del evaluador,
-    entorno/README.md), y (b) reconciliar la suma de fees contra lo acreditado a la
-    cuenta EX, que no tiene superficie en el contrato de la épica 09. Se evalúa en
-    H8 con reinicio orquestado por el evaluador (re-ejecución de la suite tras el
-    reinicio) e inspección de la reconciliación Σ fees == acreditado a EX (INV-8,
-    HU-05-03 RN-8/RN-9).
+    El escenario conjuga dos afirmaciones y la segunda no tiene superficie: la
+    reconciliación Σ feeBaseWei == acreditado histórico a la cuenta EX en ETH y
+    Σ feeQuoteMin == acreditado a EX en USDC (RN-8, INV-1). EX es una cuenta
+    técnica del exchange y ningún endpoint de la épica 09 expone su saldo ni sus
+    movimientos: black-box sólo se ven las fees de la pata propia de cada trade
+    (GET /trades), nunca el lado acreditado. Como un AT se reporta entero, no se
+    automatiza la mitad verificable (persistencia de los N trades tras reinicio,
+    que sí sería observable) y se evalúa el escenario completo white-box en H8:
+    los trades persistidos con tradeId/sequence/montos idénticos más la suma de
+    fees contra los asientos hacia EX (RN-9, INV-8).
   referencia: spec/05-settlement-y-fees/HU-05-03-registro-de-trades.md
 
 # --- Épica 06 (fusionado desde no_automatizables_ep06.yaml) ---
@@ -379,24 +357,6 @@
     la configuración del despliegue (mecanismo que la spec no fija y el entorno
     de evaluación no provee) y observar exit code/stderr del proceso. Se evalúa
     en H8 con un procedimiento de arranque orquestado (white-box operativo).
-  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
-
-- at_id: AT-06-01-07
-  motivo: >-
-    Persistencia del seed tras reinicio: exige reiniciar el SUT, y la suite
-    corre contra una instancia viva sin controlar su ciclo de vida (el arranque
-    del SUT es del evaluador, entorno/README.md). Se evalúa en H8 con el
-    procedimiento de reinicio del evaluador, comparando las direcciones de
-    depósito de cuentas existentes antes y después del reinicio (INV-8).
-  referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
-
-- at_id: AT-06-01-08
-  motivo: >-
-    Re-ejecutar el provisioning equivale a re-arrancar el proceso interno del
-    SUT: no hay superficie black-box para dispararlo (no es un endpoint) y
-    verificar que el seed no se regeneró requiere el reinicio orquestado de
-    AT-06-01-07. Se evalúa en H8 junto con ese procedimiento (reinicio +
-    direcciones idénticas ⇒ mismo seed, RN-4/RN-8).
   referencia: spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md
 
 - at_id: AT-06-01-09
@@ -464,21 +424,18 @@
 
 - at_id: AT-06-02-05
   motivo: >-
-    Reproducibilidad de la derivación "en momentos y procesos distintos":
-    procesos distintos implica reinicio del SUT o invocación directa de la
-    función pura, sin superficie black-box (la suite no controla el ciclo de
-    vida del SUT). Su consecuencia observable (la dirección de una cuenta nunca
-    cambia entre consultas) está cubierta por los tests de AT-06-03-02 y
-    AT-06-04-08; la pureza de la función se evalúa white-box (KATs) y con el
-    procedimiento de reinicio de H8.
-  referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
-
-- at_id: AT-06-02-06
-  motivo: >-
-    Reconstrucción de direcciones tras reinicio: exige reiniciar el SUT, fuera
-    del alcance de la suite (no controla el ciclo de vida del SUT). Se evalúa en
-    H8 con el procedimiento de reinicio del evaluador comparando direcciones
-    antes/después (INV-8), junto con AT-06-01-07 y AT-06-03-06.
+    El escenario exige derivar dos veces "un mismo seed y un mismo
+    address_index" elegidos: el contrato de la épica 09 no permite ni lo uno ni
+    lo otro (GET /deposit-address devuelve la dirección del índice que el SUT ya
+    asignó a la cuenta autenticada, sin parámetro de índice ni de seed). Y aun
+    observando la misma dirección dos veces, la igualdad no distingue una
+    derivación reproducible de una lectura del mapeo persistido o de una caché:
+    la pureza de la función —lo que el AT afirma— es inobservable desde afuera.
+    La consecuencia observable (la dirección de una cuenta nunca cambia entre
+    consultas, ni siquiera tras un reinicio) está cubierta por AT-06-03-02,
+    AT-06-04-08 y AT-06-02-06. Se evalúa white-box en H8 con el KAT de
+    derivación (misma familia que AT-06-02-01) más la inspección de que el
+    camino no depende de RNG, reloj ni estado mutable.
   referencia: spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md
 
 - at_id: AT-06-02-08
@@ -509,14 +466,6 @@
     proyección observable (direcciones distintas entre cuentas) está cubierta
     por los tests de AT-06-03-01 y AT-06-03-05; la contigüidad desde 0 se evalúa
     sobre el estado persistido (INV-EPICA-06-A) en H8.
-  referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
-
-- at_id: AT-06-03-06
-  motivo: >-
-    Reconstrucción del mapeo cuenta -> índice tras reinicio: exige reiniciar el
-    SUT, fuera del alcance de la suite. Se evalúa en H8 con el procedimiento de
-    reinicio del evaluador: consultar GET /deposit-address de cuentas existentes
-    antes y después del reinicio y comparar (RN-7, INV-8).
   referencia: spec/06-wallet-hd-y-direcciones/HU-06-03-asignacion-de-direccion-de-deposito.md
 
 - at_id: AT-06-03-07
@@ -580,17 +529,23 @@
 
 - at_id: AT-07-04-01
   motivo: >-
-    Reprocesar una identidad YA ACREDITADA exige que el indexador reobserve el
-    bloque de inclusión DESPUÉS de la acreditación. Black-box eso requeriría
-    (a) reiniciar el SUT para que reindexe (la suite no controla su proceso;
-    no hay contrato de arranque/parada invocable por tests), (b) una reorg de
-    profundidad >= 13 (la acreditación implica >= 12 confirmaciones), excluida
-    por el supuesto de HU-07-04 §Contexto, o (c) una solicitud explícita de
-    acreditación que observe DEPOSIT_ALREADY_CREDITED (409), sin endpoint en
-    la épica 09. La idempotencia pre-acreditación (misma identidad observada
-    N veces => una sola acreditación) sí está automatizada (AT-07-01-07,
-    AT-07-02-08, AT-07-04-05, AT-07-04-08). Se evalúa en H8 con el reinicio
-    orquestado por el evaluador (junto con AT-07-04-07/11) e inspección.
+    El "Cuando" —que el indexador reobserve el bloque de inclusión DESPUÉS de la
+    acreditación— no tiene disparador black-box. Las dos únicas vías serían (a)
+    una reorg de profundidad >= 13 (acreditar implica >= 12 confirmaciones),
+    excluida por el supuesto explícito de HU-07-04 §Contexto, o (b) una solicitud
+    explícita de acreditación, que la épica 09 no define como endpoint; por eso
+    tampoco es observable la segunda mitad del "Entonces"
+    (DEPOSIT_ALREADY_CREDITED 409 con details {txHash, logIndex}). El reinicio
+    del SUT no sirve de disparador: la reanudación arranca en
+    max(BLOQUE_INICIO_CONFIGURADO, checkpoint + 1) (RN-8, AT-07-04-11), o sea
+    justamente sin volver a leer el bloque ya procesado. La idempotencia
+    pre-acreditación (misma identidad observada N veces => una sola acreditación)
+    sí está automatizada en AT-07-01-07, AT-07-02-08, AT-07-04-05 y AT-07-04-08;
+    la persistencia del registro de identidades, en AT-07-04-07. Se evalúa
+    white-box en H8 inspeccionando el mecanismo de exclusión mutua exigido por
+    RN-2 (UNIQUE sobre (asset, txHash, logIndex) con INSERT ... ON CONFLICT DO
+    NOTHING, o check+insert en transacción serializable) y la construcción de la
+    respuesta idempotente.
   referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
 
 - at_id: AT-07-04-02
@@ -611,52 +566,15 @@
   motivo: >-
     Variante ETH nativo (identidad (txHash, 0)) del reproceso de un depósito ya
     acreditado: mismas razones que AT-07-04-01 — reobservar el bloque tras la
-    acreditación exige reinicio del SUT (no orquestable por la suite) o una
-    reorg de profundidad >= 13 excluida por el supuesto de la HU; no hay
-    endpoint de acreditación explícita. Que la identidad ETH usa logIndex = 0 y
-    que múltiples observaciones pre-acreditación no duplican está automatizado
-    en AT-07-01-07 y AT-07-04-08 (ambos con identidad (txHash, 0)). Se evalúa
-    en H8 con reinicio orquestado por el evaluador.
+    acreditación exigiría una reorg de profundidad >= 13, excluida por el
+    supuesto de HU-07-04 §Contexto, y no hay endpoint de acreditación explícita;
+    el reinicio no lo dispara, porque el escaneo reanuda después del checkpoint.
+    Que la identidad ETH usa logIndex = 0 y que múltiples observaciones
+    pre-acreditación no duplican está automatizado en AT-07-01-07 y AT-07-04-08
+    (ambos con identidad (txHash, 0)). Se evalúa white-box en H8 junto con
+    AT-07-04-01: que la clave de idempotencia del camino ETH nativo sea
+    (asset, txHash, 0) y esté bajo la misma exclusión mutua de RN-2.
   referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
-
-- at_id: AT-07-04-07
-  motivo: >-
-    El escenario requiere reiniciar el proceso del SUT a mitad del flujo
-    ("cuando el sistema reinicia y reprocesa los bloques históricos"). La
-    suite interactúa solo por REST/WS y por el JSON-RPC del anvil; no tiene
-    contrato para detener/arrancar el SUT (el contrato de arranque de
-    entorno/README.md es para el evaluador humano, no invocable desde un
-    test). Se evalúa en H8 con el reinicio orquestado por el evaluador,
-    verificando que el depósito no se reacredita y que los balances
-    reconstruidos coinciden con los previos (INV-1, INV-8).
-  referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
-
-- at_id: AT-07-04-11
-  motivo: >-
-    Igual que AT-07-04-07: exige un reinicio del SUT (reanudación desde el
-    checkpoint persistido en max(BLOQUE_INICIO_CONFIGURADO, N + 1)), que la
-    suite no puede orquestar black-box; además el valor del checkpoint es
-    estado interno sin superficie REST. Los efectos observables sin reinicio
-    (no se pierden bloques, no se reacredita al reprocesar) están cubiertos
-    por AT-07-01-07/AT-07-02-08 (rescan tras reorg) y AT-07-04-08. Se evalúa
-    en H8 con el reinicio orquestado por el evaluador: detener el SUT, minar
-    bloques con depósitos nuevos durante el downtime, reiniciar y verificar
-    que los detecta sin reacreditar los anteriores.
-  referencia: spec/07-depositos-on-chain/HU-07-04-idempotencia-y-reorgs.md
-
-# --- Épica 08 (fusionado desde no_automatizables_ep08.yaml) ---
-- at_id: AT-08-03-08
-  motivo: >-
-    El "Cuando" del escenario es un reinicio del SUT (INV-8: tras reiniciar no se
-    reasigna el nonce ni se re-firma un retiro ya BROADCAST). La suite corre
-    contra un SUT ya arrancado y su contrato de arranque (entorno/README.md) no
-    define ningún mecanismo estandarizado de stop/start invocable por el harness,
-    de modo que el disparador no es provocable desde los tests. Las propiedades
-    adyacentes sin reinicio (nonce único/secuencial/contiguo, una sola tx por
-    retiro, no re-firma) quedan cubiertas por AT-08-03-03/-04/-05 y
-    AT-08-01-12/-12b. Se evalúa en H8 con reinicio del SUT orquestado por el
-    evaluador (mismo criterio que los demás ATs de persistencia INV-8).
-  referencia: spec/08-retiros-on-chain/HU-08-03-firma-eip155-y-broadcast.md
 
 - at_id: AT-08-03-09a
   motivo: >-

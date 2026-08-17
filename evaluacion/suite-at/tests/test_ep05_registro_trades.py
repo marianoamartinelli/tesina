@@ -10,9 +10,12 @@ se verifican por su valor inducido: feeAmount de la pata compradora == feeBaseWe
 feeAmount de la vendedora == feeQuoteMin, y los bps por la igualdad exacta con
 las fórmulas ceil de referencia (HU-05-03 RN-6).
 
-No automatizables black-box (ver tests/no_automatizables_ep05.yaml):
-AT-05-03-05 (redelivery interno), AT-05-03-06 (falla inyectada) y AT-05-03-07
-(reinicio del SUT + reconciliación contra la cuenta EX).
+No automatizables black-box (ver no-automatizables.yaml): AT-05-03-05
+(redelivery interno), AT-05-03-06 (falla inyectada) y AT-05-03-07 — este último
+porque su "Entonces" exige reconciliar Σ fees contra lo acreditado a la cuenta
+EX, que no tiene endpoint en la épica 09 (ADR-011); la mitad automatizable del
+escenario (los trades sobreviven al reinicio) no se separa: el AT se reporta
+entero.
 """
 
 import pytest

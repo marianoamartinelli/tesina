@@ -1,7 +1,8 @@
-# Plantilla de resultados del agente evaluador white-box — v1.0 (ADR-007)
+# Plantilla de resultados del agente evaluador white-box — v1.2
+# (ADR-007; conteo por ADR-011; modelo por ADR-010 D3; rubrica_version por ADR-013)
 #
 # Formato de salida OBLIGATORIO de cada pasada: un único YAML con este esquema,
-# exactamente 66 items, en el orden de la rúbrica (ascendente por at_id).
+# exactamente 56 items, en el orden de la rúbrica (ascendente por at_id).
 # El humano lo archiva como runs/<id>/no-automatizables/pasada-<n>.yaml; tras
 # arbitrar las dos pasadas firma veredicto-final.yaml con el mismo esquema de items.
 # Estos veredictos alimentan sólo la fila `no_automatizado` del dataset (nunca se
@@ -11,9 +12,9 @@ metadatos:
   celda: "celda-en-evaluacion"   # ANONIMIZADA: el agente no sabe (ni intenta saber) qué celda es
   fecha:                          # AAAA-MM-DD de la pasada
   pasada:                         # 1 | 2 (dos sesiones frescas independientes por celda)
-  modelo_evaluador: "claude-opus-4-8"   # pinneado por ADR-007 §1
-  briefing_version: "v1.0"        # versión de evaluacion/agente-evaluador/briefing.md usada
-  rubrica_version: "v1.0"         # versión de evaluacion/agente-evaluador/rubrica-white-box.md usada
+  modelo_evaluador: "claude-opus-5"     # ADR-007 §1, re-pinneado por ADR-010 Decisión 3
+  briefing_version: "v1.1"        # versión de evaluacion/agente-evaluador/briefing.md usada
+  rubrica_version: "v1.2"         # versión de evaluacion/agente-evaluador/rubrica-white-box.md usada
 
 # Por item:
 #   at_id         — ID estable del catálogo (no renombrar, no reordenar).
@@ -173,27 +174,6 @@ resultados:
     justificacion:
     duracion_min:
 
-  - at_id: AT-04-01-11
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
-  - at_id: AT-04-04-12
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
-  - at_id: AT-04-05-13
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
   - at_id: AT-04-05-14
     veredicto:            # PASA | FALLA | NO_EVALUABLE
     causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
@@ -278,20 +258,6 @@ resultados:
     justificacion:
     duracion_min:
 
-  - at_id: AT-06-01-07
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
-  - at_id: AT-06-01-08
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
   - at_id: AT-06-01-09
     veredicto:            # PASA | FALLA | NO_EVALUABLE
     causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
@@ -355,13 +321,6 @@ resultados:
     justificacion:
     duracion_min:
 
-  - at_id: AT-06-02-06
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
   - at_id: AT-06-02-08
     veredicto:            # PASA | FALLA | NO_EVALUABLE
     causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
@@ -377,13 +336,6 @@ resultados:
     duracion_min:
 
   - at_id: AT-06-03-03
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
-  - at_id: AT-06-03-06
     veredicto:            # PASA | FALLA | NO_EVALUABLE
     causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
     evidencia: []
@@ -440,27 +392,6 @@ resultados:
     duracion_min:
 
   - at_id: AT-07-04-03
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
-  - at_id: AT-07-04-07
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
-  - at_id: AT-07-04-11
-    veredicto:            # PASA | FALLA | NO_EVALUABLE
-    causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
-    evidencia: []
-    justificacion:
-    duracion_min:
-
-  - at_id: AT-08-03-08
     veredicto:            # PASA | FALLA | NO_EVALUABLE
     causa:                # sólo si NO_EVALUABLE: SUT_NO_ARRANCA | FUNCION_NO_LOCALIZABLE | PRECONDICION_IMPOSIBLE | HERRAMIENTA_FALTANTE | OTRO
     evidencia: []

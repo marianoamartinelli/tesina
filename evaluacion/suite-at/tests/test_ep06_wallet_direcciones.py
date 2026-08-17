@@ -4,10 +4,14 @@ Superficie observable de la épica (HELPERS.md, black-box estricto): el único
 recurso público es ``GET /api/v1/deposit-address?asset=ETH|USDC`` (HU-06-04;
 contrato fijado por la épica 09, HU-09-01 RN-10). El seed/mnemonic, las claves
 privadas, el ``address_index`` del mapeo persistido, el proceso de provisioning
-(arranque) y el evento interno ``DepositAddressAssigned`` NO tienen superficie
-REST/WS: los ATs que dependen de ellos están declarados en
-``no-automatizables.yaml`` (global, 3 entradas sembradas) o en
-``tests/no_automatizables_ep06.yaml`` (esta épica).
+y el evento interno ``DepositAddressAssigned`` NO tienen superficie REST/WS: los
+ATs que dependen de ellos están declarados en ``no-automatizables.yaml``.
+
+La **persistencia** del provisioning (AT-06-01-07/08, AT-06-02-06, AT-06-03-06)
+sí es observable: el reinicio del SUT lo provee el evaluador vía
+``SUITE_CMD_REINICIO_SUT`` (``comunes_reinicio``) y la dirección emitida antes y
+después del reinicio es la proyección black-box del seed, de la derivación y del
+mapeo cuenta→índice (ADR-011). Sin esa env var, ese test salta.
 
 Lo que sí se verifica acá, con criptografía real (nunca "a ojo"):
 
@@ -36,6 +40,8 @@ import pytest
 from helpers.cuentas import crear_usuario, email_unico, login, registrar
 from helpers.eip55 import a_checksum, assert_direccion
 from helpers.errores import assert_error
+
+from comunes_reinicio import comando_reinicio, reiniciar_sut, relogin
 
 # chainId de Sepolia serializado como string (HU-06-04 RN-8: "de forma
 # consistente en el contrato, los escenarios y details de error").
@@ -576,3 +582,59 @@ def test_primeras_consultas_concurrentes_devuelven_una_sola_direccion(api):
     assert len(direcciones) == 1, (
         f"las consultas concurrentes devolvieron direcciones distintas (dos índices asignados): {direcciones}"
     )
+
+
+# ---------------------------------------------------------------------------------
+# Persistencia del provisioning tras reinicio (HU-06-01/02/03, INV-8)
+# ---------------------------------------------------------------------------------
+
+
+@pytest.mark.at("AT-06-01-07", "AT-06-01-08", "AT-06-02-06", "AT-06-03-06")
+def test_direcciones_asignadas_son_identicas_tras_un_reinicio(api, usuario, usuario_b):
+    """HU-06-01 Esc. 7 y 8; HU-06-02 Esc. 6; HU-06-03 Esc. 6 (persistencia, INV-8).
+
+    - Dado un seed ya provisionado y cuentas con `address_index` y dirección
+      asignados (dos cuentas, para observar también la no-colisión de índices)
+    - Cuando el sistema se reinicia (lo que reejecuta su proceso de provisioning
+      y vuelve a derivar las direcciones de esos índices)
+    - Entonces el seed se recupera del almacenamiento en vez de regenerarse, no
+      se sobrescribe, y cada cuenta conserva su índice: las direcciones
+      reconstruidas son **idénticas** a las previas (HU-06-01 RN-4/RN-8,
+      HU-06-02 RN-5, HU-06-03 RN-7, INV-8)
+
+    **Los cuatro ATs se verifican con la misma evidencia y fallan o pasan juntos**
+    (el caso que HELPERS.md admite para agrupar ATs en un test): la única
+    proyección black-box del seed, de la
+    derivación y del mapeo cuenta→índice es la dirección emitida por
+    `GET /deposit-address`. Un seed regenerado, una derivación no reproducible o
+    un mapeo perdido cambian esa dirección; ninguno de los tres es distinguible
+    de los otros desde afuera. El reinicio es también el único disparador
+    black-box de "reejecutar el provisioning" (AT-06-01-08): la spec no define
+    endpoint alguno para invocarlo (HU-06-01 RN-4 lo pone en el arranque).
+    """
+    comando_reinicio()  # precondición explícita antes de construir el "Dado"
+
+    # Dado: dos cuentas con dirección asignada (ETH y USDC comparten la dirección,
+    # HU-06-03 RN-3: se piden ambas para cubrir las dos rutas de consulta)
+    previas = {
+        (etiqueta, asset): _direccion(quien, asset)["address"]
+        for etiqueta, quien in (("a", usuario), ("b", usuario_b))
+        for asset in ("ETH", "USDC")
+    }
+    assert previas[("a", "ETH")] != previas[("b", "ETH")], (
+        "dos cuentas distintas comparten dirección: los índices colisionaron (HU-06-03 RN-6)"
+    )
+
+    # Cuando
+    reiniciar_sut(api)
+    relogin(usuario)
+    relogin(usuario_b)
+
+    # Entonces: dirección idéntica, cuenta por cuenta y activo por activo
+    for (etiqueta, asset), direccion_previa in previas.items():
+        actual = _direccion(usuario if etiqueta == "a" else usuario_b, asset)["address"]
+        assert actual == direccion_previa, (
+            f"la dirección de la cuenta {etiqueta} ({asset}) cambió tras el reinicio: "
+            f"{direccion_previa} → {actual} (seed regenerado, derivación no reproducible "
+            "o mapeo cuenta→índice perdido; INV-8)"
+        )

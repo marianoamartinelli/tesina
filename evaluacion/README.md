@@ -26,11 +26,13 @@ evaluador) y del hito H2 (protocolo experimental pre-registrado).
   `runs/<id>/metricas-estaticas.csv`. El linting específico de framework y las métricas
   estéticas quedan explícitamente fuera (ver su README §3).
 - **`agente-evaluador/`** — framework del **agente evaluador white-box**
-  ([ADR-007](../decisiones/ADR-007-agente-evaluador-white-box.md)) para los 66 ATs
-  de las épicas 01–09 declarados no automatizables: `briefing.md` (instrucciones
-  congeladas, pasadas verbatim en cada celda), `rubrica-white-box.md` (checklist
-  operativo 66/66: familias de procedimiento, pasos, evidencia mínima y criterio
-  cerrado por AT) y `plantilla-resultados.yaml` (formato de salida obligatorio).
+  ([ADR-007](../decisiones/ADR-007-agente-evaluador-white-box.md)) para los 56 ATs
+  de las épicas 01–09 declarados no automatizables
+  ([ADR-011](../decisiones/ADR-011-particion-automatizable-white-box.md) fija la
+  partición 465/56): `briefing.md` (instrucciones congeladas, pasadas verbatim en
+  cada celda), `rubrica-white-box.md` (checklist operativo 56/56: familias de
+  procedimiento, pasos, evidencia mínima y criterio cerrado por AT) y
+  `plantilla-resultados.yaml` (formato de salida obligatorio).
   Incluye `validar-resultados.py`, que valida mecánicamente cada pasada
   (`pasada-N.yaml`) antes del arbitraje humano. Doble pasada por celda; resultados
   en `runs/<id>/no-automatizables/`, nunca mezclados con la suite; el veredicto de

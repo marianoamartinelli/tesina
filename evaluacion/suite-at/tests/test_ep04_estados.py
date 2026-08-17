@@ -4,8 +4,9 @@ Spec: spec/04-gestion-de-ordenes/HU-04-05-ciclo-de-vida-y-estados.md
 Las transiciones se observan por el `status` de las respuestas del alta y de
 las consultas (`NEW` es transitorio interno y nunca observable, RN-11).
 
-AT-04-05-13 y AT-04-05-14 (persistencia/recuperación tras reinicio) están
-declarados en tests/no_automatizables_ep04.yaml.
+AT-04-05-13 (persistencia de los estados tras reinicio) se verifica en
+tests/test_ep04_persistencia.py. AT-04-05-14 sigue declarado en
+no-automatizables.yaml: exige interrumpir el alta en un punto interno preciso.
 """
 
 import pytest

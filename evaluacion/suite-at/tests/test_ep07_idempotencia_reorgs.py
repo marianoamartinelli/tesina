@@ -12,12 +12,21 @@ Los estados finales se esperan por REST sin sleeps (`helpers.espera`); la
 señal determinista de "el indexador ya procesó estos bloques" es un depósito
 centinela de OTRO activo (ver comunes_ep07.acreditar_centinela).
 
-Declarados no automatizables (tests/no_automatizables_ep07.yaml, con
-justificación): AT-07-04-01 y AT-07-04-03 (reprocesar una identidad YA
-acreditada exige reinicio del SUT o reorg de profundidad ≥ 13, excluida por el
-supuesto de la HU), AT-07-04-02 (concurrencia interna con barrera),
-AT-07-04-07 y AT-07-04-11 (reinicio del SUT, fuera de la superficie black-box).
+La persistencia de la idempotencia (AT-07-04-07, AT-07-04-11) sí se automatiza:
+el reinicio del SUT lo provee el evaluador vía ``SUITE_CMD_REINICIO_SUT``
+(``comunes_reinicio``) y el "Entonces" de ambos escenarios —no reacreditar, no
+perder bloques— es observable por REST. Sin esa env var, esos dos tests saltan.
+
+Declarados no automatizables (``no-automatizables.yaml``, con justificación):
+AT-07-04-01 y AT-07-04-03 (el "Cuando" —reprocesar una identidad YA acreditada—
+no tiene disparador black-box: reobservarla exigiría una reorg de profundidad
+≥ 13, excluida por el supuesto de la HU, o una solicitud explícita de
+acreditación que la épica 09 no define; ADR-011) y AT-07-04-02 (concurrencia
+interna con barrera).
 """
+
+import time
+from concurrent.futures import ThreadPoolExecutor
 
 import pytest
 
@@ -46,6 +55,11 @@ from comunes_ep07 import (
     snapshot,
     tx_cruda,
 )
+from comunes_reinicio import comando_reinicio, reiniciar_sut, relogin
+
+# Margen que el hilo auxiliar espera antes de emitir el depósito "de downtime":
+# tiempo para que el comando de reinicio alcance a matar el proceso del SUT.
+SEGUNDOS_ANTES_DEL_DEPOSITO_EN_DOWNTIME = 3.0
 
 
 @pytest.mark.at("AT-07-04-04")
@@ -152,7 +166,7 @@ def test_transaccion_revertida_nunca_se_acredita(usuario, rpc):
     revertida" se ejercita en AT-07-04-09 (reinclusión revertida); acá se
     verifica que una tx revertida no es acreditable en ninguna etapa, aunque
     supere ampliamente el umbral de confirmaciones. El "intento explícito de
-    acreditarla" no tiene superficie REST (ver no_automatizables_ep07.yaml,
+    acreditarla" no tiene superficie REST (ver no-automatizables.yaml,
     AT-07-03-03).
     """
     # Dado: transfer USDC que revierte (balance insuficiente del remitente)
@@ -324,3 +338,118 @@ def test_deteccion_de_reorg_por_parenthash_y_avance_normal_sin_reevaluacion(usua
     assert dep_1["blockNumber"] == bloque_1, dep_1
     esperar_disponible_exacto(usuario, "ETH", monto_1)
     assert a_int(balance_de(usuario, "ETH")["total"]) == monto_1  # dep_2 no sumó
+
+
+# ------------------------------------------------------------------------------
+# Persistencia de la idempotencia tras reinicio (INV-8)
+# ------------------------------------------------------------------------------
+
+
+@pytest.mark.at("AT-07-04-07")
+def test_reinicio_no_reacredita_un_deposito_ya_acreditado(api, usuario, usuario_b, rpc):
+    """HU-07-04 Escenario 7 (idempotencia persistente tras reinicio, INV-8).
+
+    - Dado un depósito ya ACREDITADO antes de un reinicio del sistema
+    - Cuando el sistema reinicia y reprocesa los bloques históricos
+    - Entonces el depósito NO se reacredita (el registro de identidades
+      acreditadas es persistente, RN-8)
+    - Y los balances reconstruidos desde el ledger coinciden con los previos al
+      reinicio (INV-1, INV-8)
+
+    El "Cuando" es el reinicio; que el SUT reprocese o no los bloques históricos
+    es decisión suya (RN-11 admite ambas estrategias de detección de reorgs). Lo
+    que el AT exige verificar es el "Entonces", y ése es observable: el balance
+    tras el reinicio, con la garantía de que el indexador ya volvió a recorrer
+    bloques (centinela posterior al reinicio, `acreditar_centinela`).
+    """
+    comando_reinicio()  # precondición antes del "Dado" caro (depósito on-chain)
+
+    # Dado: depósito ETH acreditado
+    monto_wei = 10**18
+    direccion = direccion_deposito(usuario, "ETH")
+    tx_hash = rpc.depositar_eth(direccion, monto_wei)  # transfer + 12 confirmaciones
+    dep_id = id_deposito(tx_hash, 0)
+    esperar_estado_deposito(usuario, dep_id, "ACREDITADO")
+    esperar_disponible_exacto(usuario, "ETH", monto_wei)
+
+    # Cuando
+    reiniciar_sut(api)
+    relogin(usuario)
+    relogin(usuario_b)
+
+    # El indexador volvió a correr tras el reinicio: un centinela USDC de OTRA
+    # cuenta acreditado es la señal determinista de que ya procesó bloques.
+    acreditar_centinela(usuario_b, rpc, asset="USDC")
+
+    # Entonces: una sola acreditación — el balance ETH sigue siendo exactamente m
+    esperar_disponible_exacto(usuario, "ETH", monto_wei)
+    assert a_int(balance_de(usuario, "ETH")["available"]) == monto_wei
+
+    # Y: un solo registro para la identidad, en ACREDITADO (RN-8, INV-8)
+    registros = [d for d in listar_depositos(usuario) if d["depositId"] == dep_id]
+    assert len(registros) == 1, f"la identidad {dep_id} quedó duplicada tras el reinicio: {registros}"
+    assert registros[0]["status"] == "ACREDITADO", registros[0]
+    assert_esquema_deposito(registros[0])
+
+
+@pytest.mark.at("AT-07-04-11")
+def test_reanudacion_tras_reinicio_no_reacredita_y_no_pierde_bloques(api, usuario, usuario_b, rpc):
+    """HU-07-04 Escenario 11 (reanudación desde checkpoint sin reacreditar, INV-8).
+
+    - Dado un servicio con checkpoint persistido en el bloque N y un depósito ya
+      ACREDITADO incluido en un bloque <= N
+    - Cuando el servicio reinicia y reanuda el escaneo desde
+      max(BLOQUE_INICIO_CONFIGURADO, N + 1), procesando N+1..N+k
+    - Entonces los depósitos ya acreditados (en bloques <= N) no se reacreditan,
+      y el checkpoint avanza a N+k
+    - Y los nuevos depósitos en N+1..N+k se detectan (no se pierden bloques del
+      downtime)
+
+    El valor del checkpoint es estado interno sin superficie REST; su efecto sí
+    es observable: los bloques N+1..N+k se minan **mientras el SUT está caído**
+    (hilo que emite el depósito nuevo en paralelo al comando de reinicio) y el
+    depósito que contienen tiene que aparecer acreditado después. El solapamiento
+    con la ventana de downtime es best-effort —la suite no puede detener el SUT
+    por separado, `SUITE_CMD_REINICIO_SUT` mata y levanta en un solo comando—:
+    si el SUT alcanzara a ver esos bloques antes del kill, el test sigue
+    verificando el "Entonces" (detección sin reacreditación), sólo que sin
+    ejercitar el hueco. Nunca produce un falso negativo.
+    """
+    comando_reinicio()
+
+    # Dado: depósito ETH acreditado (queda en un bloque <= N, el checkpoint previo)
+    monto_previo = 10**18
+    direccion_previa = direccion_deposito(usuario, "ETH")
+    tx_previa = rpc.depositar_eth(direccion_previa, monto_previo)
+    esperar_estado_deposito(usuario, id_deposito(tx_previa, 0), "ACREDITADO")
+    esperar_disponible_exacto(usuario, "ETH", monto_previo)
+
+    # Cuando: reinicio y, en paralelo, un depósito nuevo minado durante el downtime
+    direccion_nueva = direccion_deposito(usuario_b, "ETH")
+    monto_nuevo = 3 * 10**17
+    resultado_nuevo: dict[str, str] = {}
+
+    def _depositar_durante_el_downtime() -> None:
+        # margen para que el comando de reinicio alcance a matar el proceso
+        time.sleep(SEGUNDOS_ANTES_DEL_DEPOSITO_EN_DOWNTIME)
+        resultado_nuevo["tx"] = rpc.depositar_eth(direccion_nueva, monto_nuevo)
+
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        futuro = pool.submit(_depositar_durante_el_downtime)
+        reiniciar_sut(api)
+        futuro.result()
+    relogin(usuario)
+    relogin(usuario_b)
+
+    # Entonces: el depósito previo no se reacredita
+    esperar_disponible_exacto(usuario, "ETH", monto_previo)
+
+    # Y: el depósito minado durante el downtime se detecta y acredita (el escaneo
+    # reanudó desde el checkpoint, sin perder los bloques de la caída)
+    dep_nuevo = id_deposito(resultado_nuevo["tx"], 0)
+    esperar_estado_deposito(usuario_b, dep_nuevo, "ACREDITADO", timeout=TIMEOUT_REORG)
+    assert a_int(balance_de(usuario_b, "ETH")["available"]) == monto_nuevo
+
+    # Y: el previo sigue con una sola acreditación tras seguir procesando bloques
+    acreditar_centinela(usuario_b, rpc, asset="USDC")
+    assert a_int(balance_de(usuario, "ETH")["available"]) == monto_previo

@@ -3,8 +3,8 @@
 Spec: spec/04-gestion-de-ordenes/HU-04-04-cancelar-orden.md
 Contrato: DELETE /orders/{orderId} (HU-09-01 RN-7).
 
-AT-04-04-12 (persistencia de la cancelación tras reinicio) está declarado en
-tests/no_automatizables_ep04.yaml: el harness no controla el ciclo de vida del SUT.
+AT-04-04-12 (persistencia de la cancelación tras reinicio) se verifica en
+tests/test_ep04_persistencia.py, con el reinicio orquestado por el evaluador.
 """
 
 import pytest

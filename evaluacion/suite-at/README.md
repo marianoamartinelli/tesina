@@ -6,11 +6,12 @@ HTTP/WebSocket de la épica 09** (más el estado on-chain del entorno local). Se
 escribió **una sola vez, antes de que existiera implementación alguna**, y corre
 **idéntica** contra las 4 implementaciones del factorial 2×2 (ADR-004).
 
-Cubre los **521 ATs backend (épicas 01–09)**: 455 con test automatizado (449
-funciones de test; la relación test↔AT es muchos-a-muchos) + 66 declarados en
+Cubre los **521 ATs backend (épicas 01–09)**: 465 con test automatizado (456
+funciones de test; la relación test↔AT es muchos-a-muchos) + 56 declarados en
 `no-automatizables.yaml`, que se evalúan en H8 vía el agente white-box de
-ADR-007. Los de épicas 10–11 (web/mobile, 172 ATs) se evalúan con las rúbricas
-de `../rubricas/`.
+ADR-007. La partición 465/56 la fija [ADR-011](../../decisiones/ADR-011-particion-automatizable-white-box.md).
+Los de épicas 10–11 (web/mobile, 172 ATs) se evalúan con las rúbricas de
+`../rubricas/`.
 
 ## Regla de no-exposición del holdout (obligatoria)
 
@@ -30,7 +31,7 @@ de `../rubricas/`.
 | `pytest.ini`             | registro del marker `at`, testpaths                            |
 | `helpers/`               | clientes HTTP/WS, cuentas, montos, errores, EIP-55, espera, on-chain (API documentada en `HELPERS.md`) |
 | `entorno/`               | anvil local (chainId 11155111) + USDC-mock + fondeo (ver su README: **contrato de arranque del SUT**) |
-| `tests/`                 | tests por épica (`test_epNN_*.py`); incluye `test_ep09_contrato.py` como referencia de estilo |
+| `tests/`                 | tests por épica (`test_epNN_*.py`) y helpers compartidos (`comunes_*.py`, incluido `comunes_reinicio.py`); `test_ep09_contrato.py` es la referencia de estilo |
 | `test_smoke.py`          | tests del propio harness (sin SUT): siempre deben pasar        |
 | `no-automatizables.yaml` | ATs de 01–09 no verificables black-box, con motivo             |
 | `HELPERS.md`             | guía para escribir los tests por épica                         |
@@ -86,10 +87,13 @@ codificados en los helpers).
 
 Sin `EXCHANGE_API_URL`/`EXCHANGE_WS_URL` los tests contra el SUT **se saltan
 solos** (y el reporte los marca `skip`): la suite nunca "inventa" un veredicto.
-Sin `SUITE_CMD_REINICIO_SUT` quedan `skip` los tests de reinicio (AT-03-07-01/
-02/03/05/06/07/08, AT-01-03-08, AT-01-03-10, AT-01-01-11 y AT-02-04-06), con lo
-que la corrida **viola la regla `skip = 0`** de una corrida H8 válida (ver
-"Cómo leer `resultados-at.csv`").
+Sin `SUITE_CMD_REINICIO_SUT` quedan `skip` los **21 ATs de persistencia**
+(INV-8) que dependen del reinicio — AT-01-01-11, AT-01-03-08, AT-01-03-10,
+AT-02-04-06, AT-03-07-01/02/03/05/06/07/08, AT-04-01-11, AT-04-04-12,
+AT-04-05-13, AT-06-01-07, AT-06-01-08, AT-06-02-06, AT-06-03-06, AT-07-04-07,
+AT-07-04-11 y AT-08-03-08 —, con lo que la corrida **viola la regla `skip = 0`**
+de una corrida H8 válida (ver "Cómo leer `resultados-at.csv`"). El comando es
+por eso obligatorio en toda corrida oficial, no opcional.
 
 ### 4. Guardar los resultados
 

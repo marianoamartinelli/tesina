@@ -57,7 +57,7 @@ directorio (qué es la suite, cómo se corre) y tener a mano la spec
 | `SUITE_POLL_TIMEOUT_SEGUNDOS`  | `30`    | timeout default de `esperar_hasta`           |
 | `SUITE_POLL_INTERVALO_SEGUNDOS`| `0.5`   | intervalo default de `esperar_hasta`         |
 | `SUITE_RESULTADOS_AT`          | `./resultados-at.csv` | destino del reporte por AT     |
-| `SUITE_CMD_REINICIO_SUT`       | —       | comando de shell que **termina abruptamente** el proceso del SUT (equivalente `kill -9`, HU-03-07 RN-1), preserva su persistencia y lo vuelve a levantar; la suite espera la readiness por polling de `/market/ticker` (timeouts 90–120 s ya codificados en los helpers). Sin ella, los tests de reinicio saltan (`skip`) y la corrida H8 no es válida |
+| `SUITE_CMD_REINICIO_SUT`       | —       | comando de shell que **termina abruptamente** el proceso del SUT (equivalente `kill -9`, HU-03-07 RN-1), preserva su persistencia y lo vuelve a levantar; la suite espera la readiness por polling de `/market/ticker` (timeouts 90–120 s ya codificados en los helpers). Sin ella, los 21 ATs de persistencia saltan (`skip`) y la corrida H8 no es válida (ver §"Reinicio del SUT") |
 
 ## Fixtures (conftest.py)
 
@@ -274,9 +274,47 @@ REST/WS/on-chain), se agrega a `no-automatizables.yaml`:
 ```
 
 Reglas: motivo concreto (qué lo hace inobservable **y** por qué vía se evalúa),
-nunca "es difícil"; un AT declarado no puede tener tests (el plugin lo rechaza);
-la carga de la prueba es alta — si el efecto se puede observar indirectamente
-(p. ej. reinicio del SUT orquestado por el evaluador para INV-8), automatizarlo.
+nunca "es difícil"; un AT declarado no puede tener tests (el plugin lo rechaza).
+
+**Criterio de la partición (ADR-011).** Un AT se declara no automatizable si y
+sólo si (a) su **"Cuando"** no tiene disparador black-box, o (b) alguna
+afirmación de su **"Entonces"** carece de superficie REST/WS/on-chain. Como un
+AT se reporta entero, alcanza con que una de sus afirmaciones sea inobservable
+para que todo el AT quede white-box: no se automatiza "la mitad verificable".
+
+**No** cuenta como motivo que el harness no controle el ciclo de vida del SUT:
+el reinicio abrupto lo provee el evaluador (`SUITE_CMD_REINICIO_SUT`), así que
+los ATs de persistencia (INV-8) son automatizables de forma **condicional**.
+
+## Reinicio del SUT (`tests/comunes_reinicio.py`)
+
+```python
+def comando_reinicio() -> str    # el comando, o pytest.skip con motivo explícito
+def reiniciar_sut(api) -> None   # lo ejecuta y espera readiness (GET /market/ticker)
+def relogin(usuario) -> None     # renueva el token tras el reinicio
+def sut_responde(api) -> bool
+```
+
+Patrón de un test de persistencia:
+
+```python
+@pytest.mark.at("AT-04-04-12")
+def test_algo_sobrevive_al_reinicio(api, usuario, rpc):
+    comando_reinicio()      # precondición ANTES del "Dado" caro (depósitos, retiros)
+    ...                     # construir el "Dado" y fotografiar el estado
+    reiniciar_sut(api)
+    relogin(usuario)
+    ...                     # verificar el "Entonces" contra la foto
+```
+
+- Llamar `comando_reinicio()` como **primera** línea evita gastar depósitos
+  on-chain y minutos de polling para terminar en `skip`.
+- La spec no exige que los tokens sobrevivan al reinicio: todo usuario que siga
+  operando autenticado necesita `relogin`. Los balances, las órdenes y sus
+  prioridades **sí** deben sobrevivir (INV-8, INV-7).
+- Las épicas 01 y 03 tienen copias propias del helper (`comunes_ep01`,
+  `comunes_ep03`), previas a este módulo; los tests nuevos usan
+  `comunes_reinicio`.
 
 ## Ejemplo real completo (AT-09-01-11 — creación de retiro, 202)
 
