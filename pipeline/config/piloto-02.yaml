@@ -1,5 +1,6 @@
 celda: piloto-02      # corrida descartable (no cuenta para el 2x2)
-harness: b            # smoke de B: valida seatbelt/TMPDIR, max_turns, costo estimado
-modelo: gpt-5.5
-rag: true             # con RAG para ejercitar también ese camino
+harness: b            # smoke de B: developer_instructions, sandbox, costo estimado
+modelo: gpt-5.6-sol
+effort: xhigh
+rag: true             # con RAG para ejercitar también el servidor MCP stdio
 etapas: ../comun/etapas.yaml

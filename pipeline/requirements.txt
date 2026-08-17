@@ -1,7 +1,15 @@
-# Dependencias del pipeline (hito H4) — versiones exactas pinneadas (ADR-005).
-# Instalar en el venv del repo: .venv/bin/pip install -r pipeline/requirements.txt
-# Las versiones de SDK se registran en el manifest de cada corrida.
-claude-agent-sdk==0.2.110
-openai-agents==0.17.7
-PyYAML==6.0.3
-pytest==9.1.1
+# Dependencias del pipeline — versiones exactas pinneadas (ADR-009 reemplaza a
+# ADR-005). Instalar en el venv del repo:
+#   .venv/bin/pip install -r pipeline/requirements.txt
+# Las versiones se registran en el manifest de cada corrida, junto con la versión
+# de cada CLI (`claude --version` / `codex --version`), que NO son dependencias
+# Python: se instalan aparte y corren bajo la suscripción del tesista.
+#
+# Los SDK de ADR-005 (`claude-agent-sdk`, `openai-agents`) salieron: los harnesses
+# ya no los usan. Siguen instalados en el venv mientras `harness_*/correr.py` no se
+# borren (ADR-009 §Consecuencias: nada del pipeline SDK se borra hasta que la
+# piloto valide el reemplazo), pero dejan de estar pinneados acá.
+
+mcp==1.28.1        # servidor MCP stdio del RAG (comun/rag/servidor_mcp.py); trae anyio
+PyYAML==6.0.3      # configs de celda y comun/etapas.yaml
+pytest==9.1.1      # tests del índice RAG (comun/rag/test_indice.py)

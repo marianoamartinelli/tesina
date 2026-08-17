@@ -1,4 +1,4 @@
-# Definición única de las etapas del pipeline (compartida por ambos harnesses).
+# Definición única de las etapas del pipeline (compartida por ambos orquestadores).
 # Orden fijado por el protocolo pre-registrado (evaluacion/protocolo.md §4).
 # Los prompts se cargan verbatim desde los archivos referenciados; ningún harness
 # define texto de prompt propio.
@@ -21,6 +21,38 @@ etapas:
     prompt: comun/prompts/etapa-3-mobile.md
     smoke_check: "app mobile compila y corre en Expo"
     presupuesto_proporcional: 0.15
+
+# Roles del orquestador (ADR-009, Decisión 4). Un rol es un archivo de prompt que
+# cada CLI inyecta con su mecanismo equivalente (A: --append-system-prompt;
+# B: -c developer_instructions=...), compuesto con `prompt_sistema`. No son
+# primitivas de sub-agentes de ningún proveedor.
+roles:
+  implementador:
+    prompt: comun/prompts/roles/implementador.md
+  revisor:
+    prompt: comun/prompts/roles/revisor.md
+
+# Secuencia de invocaciones dentro de una etapa, idéntica para las tres etapas y
+# para las 4 celdas (ADR-009, Decisión 4). Cada paso es una sesión fresca del CLI:
+# el estado compartido es el repo satélite y el handoff son archivos bajo
+# `.pipeline/` (rutas relativas a la raíz del repo satélite) pasados por puntero en
+# el mensaje, nunca pegando su contenido ni usando archivos de carga automática
+# (AGENTS.md / CLAUDE.md), que se cargarían de forma asimétrica entre familias.
+# `instruccion` se appendea al prompt de etapa en ese paso y sólo transporta la
+# ruta: el comportamiento del rol vive en su prompt. Marcas admitidas: {etapa},
+# {salida}, {entrada}.
+secuencia:
+  - rol: implementador
+  - rol: revisor
+    salida: .pipeline/revision-{etapa}.md
+    instruccion: >-
+      Escribí el resultado de tu revisión en `{salida}` (ruta relativa a la raíz
+      del repositorio).
+  - rol: implementador
+    entrada: .pipeline/revision-{etapa}.md
+    instruccion: >-
+      La implementación de esta etapa ya existe y fue revisada: la revisión está
+      en `{entrada}` (ruta relativa a la raíz del repositorio).
 
 rag:
   herramienta: consultar_corpus

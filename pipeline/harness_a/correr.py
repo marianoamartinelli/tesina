@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Harness A — Claude Agent SDK (Anthropic), celdas a-sin-rag / a-con-rag.
 
+SUPERSEDIDO por `orquestar.py` (ADR-009): el harness A pasó del SDK al CLI
+`claude -p`. Este archivo queda como camino de vuelta hasta que la piloto valide
+el reemplazo (ADR-009 §Consecuencias) y **no corre tal como está**: `comun/nucleo.py`
+ya no exporta `MAX_TURNS` ni `funcion_consultar_corpus`, y `claude-agent-sdk` salió
+de `requirements.txt`.
+
 Adaptador fino sobre `comun/nucleo.py`: este archivo sólo traduce la corrida
 cargada por el núcleo a la API del Claude Agent SDK (paquete `claude-agent-sdk`).
 El agente usa el toolset nativo de coding del SDK (Read/Write/Edit/Bash/Glob/

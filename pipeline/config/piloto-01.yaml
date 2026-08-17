@@ -1,5 +1,6 @@
 celda: piloto-01      # corrida descartable (no cuenta para el 2x2)
-harness: a            # configuración libre: la piloto debuggea protocolo y harness
-modelo: claude-opus-4-8
-rag: true             # con RAG para ejercitar también ese camino
+harness: a            # smoke de A: stream-json, prompts de rol, eventos de subagente
+modelo: claude-opus-5
+effort: xhigh
+rag: true             # con RAG para ejercitar también el servidor MCP stdio
 etapas: ../comun/etapas.yaml

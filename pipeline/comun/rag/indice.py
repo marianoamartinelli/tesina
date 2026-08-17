@@ -1,7 +1,8 @@
 """Índice léxico determinista (BM25) sobre el corpus congelado de H3.
 
-Sin dependencias externas (ADR-005, Decisión 2): misma consulta => mismos pasajes,
-en cualquier máquina, reconstruible bit a bit desde `corpus/documentos/`.
+Sin dependencias externas (ADR-005 Decisión 2, cuyo algoritmo conserva ADR-009
+Decisión 2): misma consulta => mismos pasajes, en cualquier máquina, reconstruible
+bit a bit desde `corpus/documentos/`.
 
 Uso:
     from indice import IndiceCorpus
@@ -18,7 +19,8 @@ import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 
-# Parámetros BM25 fijados por ADR-005; no se ajustan por celda ni por corrida.
+# Parámetros BM25 fijados por ADR-005 y conservados por ADR-009 Decisión 2;
+# no se ajustan por celda ni por corrida.
 K1 = 1.5
 B = 0.75
 K_DEFAULT = 6

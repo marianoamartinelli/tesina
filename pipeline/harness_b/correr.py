@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 """Harness B — OpenAI Agents SDK (Sandbox Agents), celdas b-sin-rag / b-con-rag.
 
+SUPERSEDIDO por `orquestar.py` (ADR-009): el harness B pasó del SDK al CLI
+`codex exec`. Este archivo queda como camino de vuelta hasta que la piloto valide
+el reemplazo (ADR-009 §Consecuencias) y **no corre tal como está**: `comun/nucleo.py`
+ya no exporta `MAX_TURNS` ni `funcion_consultar_corpus`, y `openai-agents` salió de
+`requirements.txt`.
+
 Adaptador fino sobre `comun/nucleo.py`: este archivo sólo traduce la corrida
 cargada por el núcleo a la API del OpenAI Agents SDK (paquete `openai-agents`).
 El agente es un `SandboxAgent` (harness de coding nativo del SDK, 2026:

@@ -1,5 +1,6 @@
 celda: b-sin-rag
-harness: b            # OpenAI Agents SDK
-modelo: gpt-5.5           # pinneado por ADR-005
+harness: b                # CLI `codex exec` (ADR-009 Decisión 1)
+modelo: gpt-5.6-sol       # pinneado por ADR-009 Decisión 3
+effort: xhigh             # idéntico en las 4 celdas (ADR-009 Decisión 3)
 rag: false
 etapas: ../comun/etapas.yaml

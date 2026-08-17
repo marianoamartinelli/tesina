@@ -1,5 +1,6 @@
 celda: a-con-rag
-harness: a            # Claude Agent SDK
-modelo: claude-opus-4-8   # pinneado por ADR-005
+harness: a                # CLI `claude -p` (ADR-009 Decisión 1)
+modelo: claude-opus-5     # pinneado por ADR-009 Decisión 3
+effort: xhigh             # idéntico en las 4 celdas (ADR-009 Decisión 3)
 rag: true
 etapas: ../comun/etapas.yaml
