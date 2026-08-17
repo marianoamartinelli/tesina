@@ -37,7 +37,10 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   los CLI de cada proveedor, el RAG se entrega como un único servidor MCP stdio y los
   model IDs se re-pinnean a `claude-opus-5` / `gpt-5.6-sol` con effort `xhigh`. El
   algoritmo BM25 y la paridad de etapas/prompts no cambian; la reescritura del código
-  es el ítem 17 de la checklist H6.)*
+  —ítem 17 de la checklist H6— se hizo el 2026-08-16: `harness_a/orquestar.py` y
+  `harness_b/orquestar.py` sobre `comun/`, RAG como servidor MCP stdio único y
+  `verificar_paridad.py` reescrito a 77 chequeos. Falta ejecutarlo contra los CLI
+  reales, que es la piloto misma.)*
 - [x] **H5 — Harness de evaluación.** Suite de tests de aceptación **black-box**
   contra el contrato HTTP/WS de la épica 09, escrita una sola vez y reutilizable
   contra las 4 implementaciones; rúbricas para clientes web/mobile; procedimiento de
@@ -48,7 +51,12 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   entorno on-chain local determinista; los hallazgos de spec detectados al construir
   la suite se corrigieron vía ADR-006 (re-freeze `spec-v1.1`, ver H1); quedan 2
   TODO-REVISAR (status HTTP del reenvío idempotente de retiros,
-  `test_ep08_solicitud.py`) a resolver en la piloto.)*
+  `test_ep08_solicitud.py`) a resolver en la piloto. **Revisado el 2026-08-16 dentro de
+  la ventana H6:** la partición pasa a **465 automatizados + 56 white-box** (ADR-011,
+  Propuesto) al migrar a tests condicionales los 10 ATs de persistencia que alegaban
+  falta de control del ciclo de vida del SUT; la suite pasa a 456 funciones de test; los
+  2 TODO-REVISAR quedan resueltos con el criterio `{200, 202}`, pendiente de
+  ratificación del tesista.)*
 
 ## Fase de ejecución comparativa
 
@@ -60,7 +68,10 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   comprende `piloto-01` (corrida completa con el harness A) y `piloto-02` (smoke
   end-to-end del harness B). Desde ADR-009 incluye además la reescritura del pipeline
   para orquestar los CLI (ítem 17) y la validación del set de roles
-  implementador/revisor.
+  implementador/revisor. *(En curso — 11 de los 24 ítems de la checklist cerrados:
+  pipeline reescrito, protocolo v1.1, partición 465/56, rúbrica del rol revisor y
+  manifest de `piloto-01`, con ADR-011/012/013 esperando ratificación. Casi todo lo
+  abierto necesita la corrida misma, y ningún CLI de agente se ejecutó todavía.)*
 - [ ] **H7 — Corridas oficiales.** Las 4 celdas del factorial, en ventana temporal
   corta (los modelos comerciales cambian): A-sin-RAG, A-con-RAG, B-sin-RAG, B-con-RAG.
   Cada corrida: repo propio + manifest + log de intervenciones + métricas.

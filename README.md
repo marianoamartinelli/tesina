@@ -22,10 +22,15 @@ Próximo hito: **H6 — corrida piloto**, que valida el pipeline end-to-end ante
 
 **En curso (2026-08-16):** ADR-009 cambió la base de los harness —dejan de construirse
 sobre los SDK de agentes y pasan a ser los CLI de cada proveedor (`claude -p` y
-`codex exec`), con los model IDs re-pinneados a `claude-opus-5` / `gpt-5.6-sol`—. La
-decisión está aceptada; la reescritura del código de `pipeline/` es el ítem 17 de
-[`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) y todavía no se hizo,
-así que lo que hay bajo `pipeline/` sigue siendo la implementación sobre SDK.
+`codex exec`), con los model IDs re-pinneados a `claude-opus-5` / `gpt-5.6-sol`—. El
+código de `pipeline/` ya está reescrito sobre esa base (orquestadores de roles, RAG como
+servidor MCP stdio único, 77 chequeos de paridad); los `correr.py` sobre SDK quedan en el
+árbol como camino de vuelta hasta que la piloto valide el reemplazo. De la deuda de
+proceso de [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) hay 11 de
+24 ítems cerrados —protocolo v1.1, partición 465/56 de los ATs backend, rúbrica del rol
+revisor, manifest de `piloto-01`—, con ADR-011, ADR-012 y ADR-013 **aceptados el
+2026-08-17**. Casi todo lo que queda abierto necesita la corrida piloto, y
+ningún CLI de agente se ejecutó todavía.
 
 ## Mapa del repositorio
 
@@ -36,7 +41,7 @@ así que lo que hay bajo `pipeline/` sigue siendo la implementación sobre SDK.
 | `decisiones/` | ADRs: decisiones estructurales del proyecto, numeradas e inmutables.          |
 | `journal/`    | Bitácora fechada de sesiones de trabajo (materia prima del meta-análisis).    |
 | `corpus/`     | Corpus curado de BIPs/EIPs para las condiciones con RAG.                      |
-| `pipeline/`   | Configuración y código del harness de agentes. Por ADR-009 pasa a orquestar los CLI de cada proveedor (Claude Code / Codex CLI); el código actual todavía es el basado en SDK (ítem 17 de la checklist H6). |
+| `pipeline/`   | Configuración y código del harness de agentes: orquesta los CLI de cada proveedor (Claude Code / Codex CLI) con roles implementador/revisor, según ADR-009. El pipeline anterior sobre SDK sigue versionado como camino de vuelta. |
 | `evaluacion/` | Harness de evaluación: suite black-box, agente evaluador white-box (ADR-007) y rúbricas. |
 | `runs/`       | Un directorio por corrida: manifest, log de intervenciones, métricas. Las implementaciones generadas viven en **repos separados** referenciados desde cada manifest. |
 | `analisis/`   | Dataset comparativo y análisis de resultados.                                 |
