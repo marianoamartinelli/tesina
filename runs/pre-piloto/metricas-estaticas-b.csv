@@ -1,0 +1,2 @@
+run_id,componente,fecha,lenguaje_principal,archivos,loc_efectivas,funciones,ccn_promedio,ccn_p90,duplicacion_pct,deps_directas_prod,deps_directas_dev,cobertura_tests_propios_pct,cloc_version,lizard_version,jscpd_version,notas
+pre-piloto-b,backend,2026-08-24,TypeScript,56,5301,402,2.09,4,6.38,14,20,NA,2.10,1.23.0,5.0.11,""

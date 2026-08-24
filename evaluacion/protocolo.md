@@ -1,4 +1,4 @@
-# Protocolo experimental pre-registrado — v1.4
+# Protocolo experimental pre-registrado — v1.5
 
 - **Estado:** esta versión reemplaza a la **v1.1**, congelada por
   [ADR-012](../decisiones/ADR-012-protocolo-experimental-v1-1.md) (2026-08-17), que a su

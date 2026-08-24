@@ -25,7 +25,19 @@ JSCPD_PIN="5.0.11"
 # ---------- exclusiones pre-registradas (README §1.1) ----------
 # `.pipeline` = artefactos de handoff entre roles del orquestador (ADR-009 Decisión 4):
 # mecánica del pipeline, no producto generado. No cuenta en ninguna métrica.
-EXCL_DIRS="node_modules,.git,dist,build,out,coverage,vendor,Pods,__pycache__,.next,.expo,target,generated,.pipeline"
+# `spec` está en la lista porque el repo satélite la lleva adentro: es el **input**
+# del experimento, inmutable e idéntico en las 4 celdas, no producto del agente.
+# Medido en la pre-piloto (hallazgo H-20): sin excluirla, el backend de B daba 32 648
+# loc con "lenguaje principal JSON"; excluyendo spec/ y los lockfiles da **4 684 loc de
+# TypeScript**, que es el código realmente escrito. Los 27 964 de diferencia eran 11 740
+# de Markdown de la spec y 16 070 de lockfiles.
+EXCL_DIRS="node_modules,.git,dist,build,out,coverage,vendor,Pods,__pycache__,.next,.expo,target,generated,.pipeline,spec"
+
+# Lockfiles: los genera el gestor de paquetes, no el agente, y su tamaño depende de
+# cuántas dependencias eligió cada celda — o sea, ruido correlacionado con el stack y no
+# con lo que se quiere medir. Las dependencias directas ya se cuentan aparte
+# (`deps_directas_prod` / `_dev`), que es la métrica que sí dice algo.
+EXCL_ARCHIVOS="package-lock.json|yarn.lock|pnpm-lock.yaml|poetry.lock|Cargo.lock|go.sum|composer.lock|Gemfile.lock"
 
 # ---------- argumentos ----------
 if [ $# -lt 3 ]; then
@@ -70,7 +82,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 # ---------- 1) cloc: LOC efectivas, archivos, lenguaje principal ----------
-cloc --json --quiet --exclude-dir="$EXCL_DIRS" "$RUTA" > "$TMP/cloc.json" || true
+cloc --json --quiet --exclude-dir="$EXCL_DIRS" --not-match-f="^($EXCL_ARCHIVOS)$" "$RUTA" > "$TMP/cloc.json" || true
 if jq -e '.SUM' "$TMP/cloc.json" >/dev/null 2>&1; then
   LOC="$(jq -r '.SUM.code' "$TMP/cloc.json")"
   ARCHIVOS="$(jq -r '.SUM.nFiles' "$TMP/cloc.json")"
