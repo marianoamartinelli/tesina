@@ -14,11 +14,11 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
 | 1.1 | Carga de config, etapas y prompts | dry-run de 2 configs × 3 etapas | exit 0 en las 6; hashes de prompt en el JSONL | [x] verificado 2026-08-23 (en seco) |
-| 1.2 | Secuencia de 3 roles por etapa | corrida real de la etapa backend | eventos `paso_inicio`/`paso_fin` con orden 1..3 | [ ] |
-| 1.3 | Sesión fresca por paso | ídem | 3 procesos distintos, sin `--resume` | [ ] |
-| 1.4 | Handoff por `.pipeline/` | paso 2 escribe la revisión, paso 3 la lee | `revision-backend.md` existe; sin `handoff_faltante` | [ ] |
+| 1.2 | Secuencia de 3 roles por etapa | etapa backend de B, completa | `paso_inicio`/`paso_fin` 1..3 + `fin`, todos exit 0 | [x] 2026-08-24 |
+| 1.3 | Sesión fresca por paso | ídem | 3 invocaciones independientes, sin `--resume` | [x] 2026-08-24 |
+| 1.4 | Handoff por `.pipeline/` | ídem | `salida_escrita: true` en el paso 2, paso 3 la leyó, sin `handoff_faltante`; la revisión trae 3 puntos con archivo:línea y HU/RN/AT | [x] 2026-08-24 |
 | 1.5 | Corte por código de salida ≠ 0 | sólo si ocurre | evento `corte` y no continúa | [ ] |
-| 1.6 | Snapshot por invocación de rol | corrida real | `…-snapshots/pasoN-rol/` con conteo de archivos | [ ] |
+| 1.6 | Snapshot por invocación de rol | ídem | 3 snapshots (94, 95, 96 archivos), `ok: true` | [x] 2026-08-24 |
 | 1.7 | Repo satélite y layout de logs | `crear-repo-satelite.sh` | 74 archivos, todos bajo `spec/`; `<repo>/../logs/` | [x] verificado 2026-08-23 |
 
 ## 2. Contenedores (ADR-015 / ADR-017)
@@ -39,7 +39,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | 3.1 | `claude-opus-5` con effort `xhigh` | smoke de 1 invocación | `result` con `total_cost_usd`, 7 turnos, exit 0 | [x] 2026-08-23 |
 | 3.2 | `gpt-5.6-sol` con effort `xhigh` | ídem | `turn.completed` con usage, exit 0 | [x] 2026-08-23 |
 | 3.3 | Confinamiento de B | smoke de 1 invocación | bwrap no crea namespaces ⇒ B sin shell (H-04); resuelto por ADR-019: sin sandbox nativo, shell exit 0 | [x] 2026-08-23 |
-| 3.4 | Delegación en subagentes (ADR-010 D1) | corrida real, ambas familias | eventos con `subagente: true` en A; mapeo por decidir en B (ítem 24) | [ ] |
+| 3.4 | Delegación en subagentes (ADR-010 D1) | etapa backend | A: 3 llamadas a `Agent`, 113 mensajes con `subagente: true`. B: mapeo aún sin decidir (ítem 24) | [~] falta B |
 | 3.5 | Restricción de recuperación web (ADR-008) | smoke de 1 invocación | A: `WebSearch`/`WebFetch` inexistentes y `web_search_requests: 0`. B: sin verificar aún | [~] falta B |
 
 ## 4. RAG por MCP (ADR-009 D2)
@@ -47,7 +47,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
 | 4.1 | Servidor MCP stdio adentro del contenedor | smoke en ambas familias | A: `mcp__corpus__consultar_corpus`. B: `mcp_tool_call server=corpus` | [x] 2026-08-23 |
-| 4.2 | Consultas reales al corpus | consulta BIP-44 en el smoke | devolvió `bip-0044.mediawiki § Path levels` en las dos familias | [x] 2026-08-23 |
+| 4.2 | Consultas reales al corpus | etapa backend completa | **cero consultas en las dos familias** pese a la épica 06 en el alcance (H-12); el mecanismo funciona: en el smoke, pedido explícitamente, respondió en ambas | [~] hallazgo abierto |
 | 4.3 | Resolución del corpus adentro | ídem | sin `FileNotFoundError` | [x] 2026-08-23 |
 | 4.4 | Índice BM25 determinista | dry-run | 175 chunks indexados | [x] verificado 2026-08-23 |
 
@@ -58,9 +58,9 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | 5.1 | Esquema del stream de A | smoke de 1 invocación | `system`/`assistant`/`user`/`rate_limit_event`/`result` (H-06); falta ver subagentes | [~] parcial |
 | 5.2 | Esquema del JSONL de B | corrida real de B | nombres exactos de los campos de tokens de `turn.completed` (ítem 19) | [ ] |
 | 5.3 | `serializar` no pierde información | inspección del JSONL contra el stream crudo | ningún payload degradado a `str()` (ítem 16) | [ ] |
-| 5.4 | stderr por paso a archivo | corrida real | `…-stderr-pasoN.txt` por invocación | [ ] |
-| 5.5 | Costo: `total_cost_usd` de A | smoke de 1 invocación | presente en `result`: USD 0,209 (H-06) | [x] 2026-08-23 |
-| 5.6 | Costo: estimador local de B | post-proceso del JSONL de B | `costo_estimado_usd` contra el dashboard de OpenAI (ítem 20) | [ ] |
+| 5.4 | stderr por paso a archivo | etapa backend | un archivo por paso, vacíos en el camino feliz | [x] 2026-08-24 |
+| 5.5 | Costo: `total_cost_usd` de A | paso 1 de la etapa backend | USD 30,06 en `result`; **hay 3 `result` por invocación con el mismo total** — no se suman (H-11) | [~] falta el fix del cómputo |
+| 5.6 | Costo: estimador local de B | post-proceso del JSONL de B | corre: 3 `turn.completed`, 17,3 M tokens de entrada → USD 176 estimados. **Sospechoso**: aplica el umbral de tramo largo sobre el total del turno, no por request, y no descuenta la entrada cacheada (H-14) | [~] a revisar |
 
 ## 6. Evaluación black-box (H5 / ADR-011)
 
@@ -94,6 +94,6 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 9.1 | Smoke check de avance de etapa | las 3 etapas de cada celda | health-check documentado y respondiendo | [ ] |
-| 9.2 | Registro de intervenciones y clasificación | cada intervención, en el momento | `intervenciones.md` con causa raíz | [ ] |
+| 9.1 | Smoke check de avance de etapa | backend de B | `.env` según el contrato de arranque, `npm run build` exit 0, `GET /health` → `{"status":"ok"}` | [x] backend de B |
+| 9.2 | Registro de intervenciones y clasificación | smoke de B | INT-01 registrada en el momento con su clasificación | [x] 2026-08-24 |
 | 9.3 | Cierre y congelamiento de la corrida | al terminar cada celda | manifest §5 completo | [ ] |
