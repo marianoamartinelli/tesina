@@ -1,0 +1,62 @@
+# Imagen base común de los agentes — ADR-015 Decisión 2.
+#
+# Toolchain IDÉNTICO para las dos familias: es lo que hace que la paridad del
+# entorno de build sea por construcción y no algo que haya que auditar a mano en
+# cada cambio. Las capas por CLI (`Dockerfile.a`, `Dockerfile.b`) parten de acá y
+# sólo agregan el binario de su proveedor.
+#
+# Regla: todo lo que un agente necesita para buildear las tres etapas (backend,
+# web, mobile/Expo) va acá. Nada específico de un proveedor.
+#
+# Build:
+#   docker build -f Dockerfile.base -t tesina/agente-base:<tag> .
+#
+# El digest resultante se registra en el manifest de cada corrida (§3), con el
+# mismo criterio que el pin del anvil: un tag es flotante, el digest no.
+
+# Node 23 sobre Debian bookworm: misma familia y minor que el host donde se
+# verificó el pipeline (v23.11.0, medido el 2026-08-23). Pinneada por digest en
+# el build de la piloto — ver PENDIENTE-ARRANQUE del manifest.
+FROM node:23-bookworm-slim
+
+# Python del sistema, git y utilidades de red.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 \
+      python3-pip \
+      python3-venv \
+      git \
+      ca-certificates \
+      curl \
+      unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Dependencias del **servidor MCP del RAG**, que corre acá adentro: el CLI lo
+# lanza como subproceso stdio (`comun/rag/servidor_mcp.py`), no el orquestador.
+# Mismas versiones que `pipeline/requirements.txt`.
+#
+# Se instalan en la base —o sea, también en las celdas SIN RAG, donde no se
+# usan— a propósito: dos bases distintas según el factor RAG meterían una
+# diferencia de entorno donde el diseño sólo quiere la disponibilidad de la
+# herramienta.
+RUN pip3 install --no-cache-dir --break-system-packages \
+      mcp==1.28.1 \
+      PyYAML==6.0.3
+
+# Usuario sin privilegios. El repo satélite se monta con este uid como dueño.
+ARG UID=1001
+ARG GID=1001
+RUN groupadd -g "${GID}" agente && useradd -m -u "${UID}" -g "${GID}" agente
+
+# Workspace del agente: acá se monta el repo satélite (ADR-015 Decisión 5 — es lo
+# único del árbol de la tesina que se monta; `evaluacion/` nunca).
+WORKDIR /repo
+RUN chown agente:agente /repo
+
+USER agente
+
+# npm sin prompts interactivos ni telemetría de primer uso, que en headless
+# ensucian el JSONL.
+ENV npm_config_fund=false \
+    npm_config_audit=false \
+    npm_config_update_notifier=false \
+    CI=1

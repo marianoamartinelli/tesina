@@ -1,0 +1,29 @@
+# Capa del harness A — Claude Code CLI. ADR-015 Decisión 2.
+#
+# Fina a propósito: parte de la base común y sólo instala el CLI de Anthropic.
+# Todo el toolchain de build vive en `Dockerfile.base` y es idéntico al de B.
+#
+# Build (la base tiene que existir con el mismo tag):
+#   docker build -f Dockerfile.base -t tesina/agente-base:<tag> .
+#   docker build -f Dockerfile.a --build-arg BASE_TAG=<tag> \
+#                --build-arg VERSION_CLI=2.1.241 -t tesina/agente-a:<tag> .
+#
+# `auth.json`/`.credentials.json` NO van en la imagen: se montan read-only en
+# runtime (ADR-015 Decisión 3).
+
+ARG BASE_TAG=dev
+FROM tesina/agente-base:${BASE_TAG}
+
+# Versión exacta del CLI, pinneada y registrada en el manifest junto al model ID
+# (ADR-009 Decisión 5). No se usa `latest`: la versión del harness es parte de la
+# configuración congelada de la corrida.
+ARG VERSION_CLI
+RUN test -n "${VERSION_CLI}" || (echo "VERSION_CLI es obligatorio" >&2; exit 1)
+
+USER root
+RUN npm install -g "@anthropic-ai/claude-code@${VERSION_CLI}"
+USER agente
+
+# El orquestador (que corre en el host) arma la línea de `claude -p` completa y
+# la pasa como comando del contenedor; el prompt del paso va por stdin.
+ENTRYPOINT ["claude"]

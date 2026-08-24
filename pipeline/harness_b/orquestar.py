@@ -33,6 +33,7 @@ from pathlib import Path
 # La raíz de pipeline/ al sys.path para importar comun/ desde cualquier cwd.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from comun import contenedor  # noqa: E402
 from comun.nucleo import (  # noqa: E402
     SERVIDOR_MCP,
     Corrida,
@@ -61,10 +62,38 @@ VENTANA_CONTEXTO = 1_000_000
 # de B respecto de A (B sandboxea el shell, A en headless no).
 SANDBOX = "workspace-write"
 
+# Traslado de ADR-008 al mecanismo del CLI. El supuesto original de ADR-009
+# Decisión 5 —"Codex trae la búsqueda web desactivada por default y no se activa,
+# lo que satisface ADR-008 del lado B"— es **falso** en 0.146.0. Verificado el
+# 2026-08-17 corriendo el CLI:
+#
+# - `web_search` es una clave de config de tipo string con valores válidos
+#   `disabled|cached|indexed|live`. Sin pasar `--search` y con
+#   `--ignore-user-config`, una corrida registró dos items `web_search`
+#   completados contra GitHub: el default no es `disabled`. `--search` sólo sube
+#   el nivel a `live`.
+# - `codex features list` con un `CODEX_HOME` limpio —o sea, default del
+#   producto y no config del host— da `apps`, `browser_use` y `computer_use` en
+#   `true`. `apps` expone el servidor MCP `codex_apps` con conectores atados a la
+#   cuenta; en esa misma corrida el agente llamó `github.search`,
+#   `github.get_profile` y `github.search_repositories`. `--ignore-user-config`
+#   no desactiva ninguna de las tres.
+#
+# Las dos cosas hacen falta: con los `--disable` solos las búsquedas web siguen
+# ocurriendo. Con ambas, la corrida de control no registró ningún `web_search`
+# ni `mcp_tool_call`.
+#
+# Límite conocido: esto restringe herramientas, no la red. Un agente con shell y
+# red —necesaria para instalar dependencias— puede recuperar de internet igual.
+# Vale también para el harness A, que corre sin sandbox del SO.
+FEATURES_DESACTIVADAS = ("apps", "browser_use", "computer_use")
+MODO_WEB_SEARCH = "disabled"
+
 DETALLE_HERRAMIENTAS = (
-    f"toolset nativo de Codex con sandbox {SANDBOX}; búsqueda web desactivada por "
-    f"default y no activada (ADR-008 del lado B); config del host ignorada "
-    f"(--ignore-user-config); servidor MCP '{SERVIDOR_MCP}' sólo en celdas con RAG"
+    f"toolset nativo de Codex con sandbox {SANDBOX}; web_search={MODO_WEB_SEARCH} y "
+    f"features {'/'.join(FEATURES_DESACTIVADAS)} desactivadas (ADR-008 del lado B); "
+    f"config del host ignorada (--ignore-user-config); servidor MCP "
+    f"'{SERVIDOR_MCP}' sólo en celdas con RAG"
 )
 
 
@@ -114,7 +143,10 @@ def construir_comando(corrida: Corrida, paso: Paso) -> list[str]:
     - `-c model_context_window`: ADR-010 Decisión 2.
     - `--ignore-user-config`: aislamiento de la config del host preservando
       `auth.json` (ADR-009 Decisión 5).
-    - `-C <repo>`: el workspace del agente es el repo satélite.
+    - `-c web_search` y `--disable`: traslado de ADR-008; ver la nota de
+      `FEATURES_DESACTIVADAS`.
+    - `-C <repo>`: el workspace del agente es el repo satélite, montado en
+      `contenedor.DIR_REPO` (ADR-015): adentro la ruta del host no existe.
     - `-s`: ver la nota de `SANDBOX`.
     - `-c mcp_servers.corpus.*`: sólo en celdas con RAG.
 
@@ -124,17 +156,22 @@ def construir_comando(corrida: Corrida, paso: Paso) -> list[str]:
     comando = [
         CLI, "exec", "--json",
         "--ignore-user-config",
-        "-C", str(corrida.ruta_repo),
+        "-C", contenedor.DIR_REPO,
         "-m", corrida.modelo,
         "-s", SANDBOX,
         "-c", f"model_reasoning_effort={_toml(corrida.effort)}",
         "-c", f"model_context_window={_toml(VENTANA_CONTEXTO)}",
         "-c", f"developer_instructions={_toml(sistema_compuesto(corrida, paso))}",
+        "-c", f"web_search={_toml(MODO_WEB_SEARCH)}",
     ]
+    for feature in FEATURES_DESACTIVADAS:
+        comando += ["--disable", feature]
     if corrida.rag_config is not None:
         comando += overrides_mcp(corrida, paso)
     comando.append("-")
-    return comando
+    # Ver la nota equivalente en `harness_a/orquestar.py`: la envoltura en
+    # contenedor es la misma función para las dos familias (ADR-015).
+    return contenedor.envolver(comando, corrida, FAMILIA)
 
 
 def main() -> int:

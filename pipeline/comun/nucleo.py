@@ -20,7 +20,6 @@ import hashlib
 import json
 import shutil
 import subprocess
-import sys
 import time
 from dataclasses import dataclass, is_dataclass, asdict
 from pathlib import Path
@@ -28,6 +27,7 @@ from typing import Any
 
 import yaml
 
+from comun import contenedor
 from comun.rag.indice import IndiceCorpus
 
 # Niveles de effort disponibles en las dos familias: `claude --effort`
@@ -305,10 +305,13 @@ def comando_servidor_rag(corrida: Corrida, paso: Paso) -> list[str]:
     """
     if corrida.rag_config is None:
         raise ValueError("la celda no tiene RAG habilitado; no hay servidor que lanzar")
+    # El CLI corre adentro del contenedor (ADR-015) y lanza este servidor como
+    # subproceso stdio, así que las rutas y el intérprete son los de adentro, no
+    # los del host: `sys.executable` del host no existe en la imagen.
     return [
-        sys.executable, str(RUTA_SERVIDOR_MCP),
-        "--etapas", str(corrida.ruta_etapas),
-        "--log", str(corrida.ruta_log_rag),
+        "python3", contenedor.traducir(RUTA_SERVIDOR_MCP, corrida),
+        "--etapas", contenedor.traducir(corrida.ruta_etapas, corrida),
+        "--log", contenedor.traducir(corrida.ruta_log_rag, corrida),
         "--celda", corrida.celda,
         "--etapa", corrida.etapa,
         "--rol", paso.rol,

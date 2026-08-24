@@ -29,6 +29,14 @@ Falla (exit code != 0) si se rompe cualquiera de estas garantías:
     (`comun/rag/indice.py`), que no se ajustan por celda.
  8. Los SHA-256 de `corpus/documentos/*` coinciden byte a byte con el manifest
     congelado de H3 (`corpus/manifest.md`), sin archivos de más ni de menos.
+ 9. La restricción de recuperación web de ADR-008 está en la línea de comandos
+    efectiva de **las dos** familias: `--disallowed-tools WebSearch,WebFetch` en
+    A, y `web_search=disabled` más `--disable apps/browser_use/computer_use` en B
+    (ADR-014 Decisión 2). Hasta ADR-014, el verificador no inspeccionaba ninguna
+    línea de comandos: el traslado se daba por hecho sin chequeo que lo sostuviera.
+10. Toda invocación va envuelta en `docker run` (ADR-015), con montajes idénticos
+    entre familias salvo el archivo de credenciales, sin montar el holdout
+    (`evaluacion/`) ni `pipeline/` entero, y con la misma imagen base y tag.
 
 Correr antes de cada corrida (protocolo §2 / ADR-004):
     .venv/bin/python pipeline/verificar_paridad.py
@@ -57,6 +65,10 @@ from comun.nucleo import (  # noqa: E402
     sistema_compuesto,
 )
 from comun.rag import indice as modulo_indice  # noqa: E402
+from comun import contenedor  # noqa: E402
+
+sys.path.insert(0, str(RAIZ_PIPELINE / "harness_a"))
+sys.path.insert(0, str(RAIZ_PIPELINE / "harness_b"))
 
 CELDAS_OFICIALES = ["a-sin-rag", "a-con-rag", "b-sin-rag", "b-con-rag"]
 ETAPAS = ["backend", "web", "mobile"]
@@ -315,6 +327,105 @@ def verificar_corpus() -> None:
                  f"SHA-256 de {nombre} coincide con el manifest")
 
 
+def _comandos_por_celda(corridas: dict[tuple[str, str], Corrida]) -> dict[str, list[str]]:
+    """Línea de comandos efectiva del primer paso de cada celda.
+
+    Importa los orquestadores y les pide el comando real, en vez de leer su
+    fuente con grep: un chequeo textual pasaría igual si el flag estuviera
+    escrito pero nunca llegara al comando, que es justo la clase de falso verde
+    que ADR-014 encontró.
+    """
+    import importlib.util
+
+    comandos: dict[str, list[str]] = {}
+    for familia in ("a", "b"):
+        spec = importlib.util.spec_from_file_location(
+            f"orq_{familia}", ORQUESTADORES[familia])
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        for celda in (f"{familia}-sin-rag", f"{familia}-con-rag"):
+            corrida = corridas[(celda, "backend")]
+            paso = corrida.pasos[0]
+            if familia == "a":
+                ruta_mcp = (modulo.ruta_config_mcp(corrida, paso)
+                            if corrida.rag_config else None)
+                comandos[celda] = modulo.construir_comando(corrida, paso, ruta_mcp)
+            else:
+                comandos[celda] = modulo.construir_comando(corrida, paso)
+    return comandos
+
+
+def verificar_recuperacion_web(comandos: dict[str, list[str]]) -> None:
+    """ADR-008 trasladado, verificado en el comando real de cada familia (ADR-014 D2)."""
+    for celda in ("a-sin-rag", "a-con-rag"):
+        cmd = comandos[celda]
+        chequear("--disallowed-tools" in cmd
+                 and cmd[cmd.index("--disallowed-tools") + 1] == "WebSearch,WebFetch",
+                 f"{celda}: --disallowed-tools WebSearch,WebFetch (ADR-008)")
+    for celda in ("b-sin-rag", "b-con-rag"):
+        cmd = comandos[celda]
+        chequear('web_search="disabled"' in cmd,
+                 f"{celda}: -c web_search=disabled (ADR-014; el default NO es disabled)")
+        for feature in ("apps", "browser_use", "computer_use"):
+            pares = [(cmd[i], cmd[i + 1]) for i in range(len(cmd) - 1)]
+            chequear(("--disable", feature) in pares,
+                     f"{celda}: --disable {feature} (ADR-014)")
+        # `--search` sube web_search a `live`: si aparece, la desactivación se
+        # revierte y la celda sin RAG dejaría de ser sin recuperación.
+        chequear("--search" not in cmd, f"{celda}: no se pasa --search")
+
+
+def verificar_contenedor(comandos: dict[str, list[str]],
+                         corridas: dict[tuple[str, str], Corrida]) -> None:
+    """Envoltura en contenedor idéntica entre familias (ADR-015)."""
+    for celda, cmd in comandos.items():
+        chequear(cmd[:2] == [contenedor.RUNTIME, "run"],
+                 f"{celda}: la invocación va envuelta en `docker run` (ADR-015)")
+        chequear("--rm" in cmd and "-i" in cmd,
+                 f"{celda}: contenedor descartable (--rm) y con stdin (-i)")
+
+    # Los montajes sólo pueden diferir en el archivo de credenciales: cualquier
+    # otra diferencia es una asimetría de entorno entre familias.
+    def destinos(celda: str) -> set[str]:
+        familia = celda[0]
+        return {m.destino for m in contenedor.montajes(corridas[(celda, "backend")], familia)}
+
+    for sufijo in ("sin-rag", "con-rag"):
+        solo_a = destinos(f"a-{sufijo}") - destinos(f"b-{sufijo}")
+        solo_b = destinos(f"b-{sufijo}") - destinos(f"a-{sufijo}")
+        chequear(solo_a == {contenedor.CREDENCIALES["a"][1]}
+                 and solo_b == {contenedor.CREDENCIALES["b"][1]},
+                 f"{sufijo}: los montajes de A y B sólo difieren en las credenciales")
+
+    # El holdout no se monta, en ninguna celda: es lo que hace que la
+    # no-exposición del protocolo §9 la sostenga el mecanismo (ADR-015 D5).
+    for celda, cmd in comandos.items():
+        montados = [cmd[i + 1] for i, a in enumerate(cmd[:-1]) if a == "-v"]
+        chequear(not any("/evaluacion" in m for m in montados),
+                 f"{celda}: no se monta el holdout (evaluacion/)")
+        chequear(not any(m.split(":")[0].rstrip("/").endswith("/pipeline")
+                         for m in montados),
+                 f"{celda}: no se monta pipeline/ entero (config/ y el verificador "
+                 f"son instrumentos, no insumos del agente)")
+
+    # Un solo tag para las 4 celdas: dos toolchains distintos las volverían
+    # incomparables (ver la nota de contenedor.TAG).
+    tags = {contenedor.imagen(celda[0]).rsplit(":", 1)[1] for celda in comandos}
+    chequear(len(tags) == 1, f"las 4 celdas usan el mismo tag de imagen: {sorted(tags)}")
+
+    # Las dos capas parten de la misma base (ADR-015 D2).
+    dir_c = RAIZ_PIPELINE / "contenedores"
+    base = (dir_c / "Dockerfile.base").read_text(encoding="utf-8") if (
+        dir_c / "Dockerfile.base").is_file() else ""
+    chequear(bool(base), "existe contenedores/Dockerfile.base")
+    for familia in ("a", "b"):
+        ruta = dir_c / f"Dockerfile.{familia}"
+        chequear(ruta.is_file(), f"existe contenedores/Dockerfile.{familia}")
+        if ruta.is_file():
+            chequear("FROM tesina/agente-base:" in ruta.read_text(encoding="utf-8"),
+                     f"Dockerfile.{familia} parte de la base común (ADR-015 D2)")
+
+
 def main() -> int:
     print("Verificación de paridad del pipeline (ADR-009 / ADR-010)\n")
     configs = cargar_configs()
@@ -329,6 +440,9 @@ def main() -> int:
             corridas = cargar_corridas(Path(repo))
             verificar_prompts_identicos(corridas)
             verificar_servidor_mcp(corridas)
+            comandos = _comandos_por_celda(corridas)
+            verificar_recuperacion_web(comandos)
+            verificar_contenedor(comandos, corridas)
     verificar_corpus()
 
     print()

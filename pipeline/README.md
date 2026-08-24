@@ -63,7 +63,7 @@ handoff son archivos bajo `.pipeline/` pasados por puntero en el prompt.
 | Prompt propio | `--append-system-prompt` (appendea) | `-c developer_instructions=…` (prependea) |
 | Prompt del paso | por stdin | por stdin (`-` como prompt) |
 | Aislamiento del host | `--setting-sources ""` + `--strict-mcp-config` | `--ignore-user-config` |
-| ADR-008 (recuperación web) | `--disallowed-tools WebSearch,WebFetch` | búsqueda web desactivada por default; no se activa |
+| ADR-008 (recuperación web) | `--disallowed-tools WebSearch,WebFetch` | `-c web_search="disabled"` + `--disable apps browser_use computer_use` |
 | RAG (sólo celdas con RAG) | `--mcp-config <archivo>` | `-c mcp_servers.corpus.command/.args` |
 | Subagentes en el log | `--forward-subagent-text` | eventos de thread (mapeo sin verificar) |
 | Contexto | ventana efectiva 1 000 000 | `-c model_context_window=1000000` (ADR-010 D2) |
@@ -71,6 +71,18 @@ handoff son archivos bajo `.pipeline/` pasados por puntero en el prompt.
 | cwd / workspace | `cwd` del proceso = repo satélite | ídem, más `-C <repo>` |
 
 Detalles que no son obvios y están verificados en las versiones instaladas:
+
+- **La recuperación web de B no estaba desactivada.** ADR-009 D5 asumía que Codex la
+  trae apagada por default; medido el 2026-08-17 sobre 0.146.0 es falso. `web_search`
+  es una clave de config de tipo string (`disabled|cached|indexed|live`) cuyo default
+  no es `disabled`: sin pasar `--search`, una corrida registró dos items `web_search`
+  contra GitHub. Y `codex features list` con `CODEX_HOME` limpio da `apps`,
+  `browser_use` y `computer_use` en `true`; `apps` expone el servidor MCP `codex_apps`
+  con conectores de la cuenta, que en esa corrida devolvieron el perfil de GitHub del
+  tesista y su lista de repos. `--ignore-user-config` no apaga nada de eso. Hacen falta
+  las dos cosas: con los `--disable` solos, las búsquedas web siguen. Restringe
+  herramientas, no red: un agente con shell y red puede recuperar igual, y eso vale
+  también para A.
 
 - `--verbose` **no es opcional** en A: el CLI rechaza `--print` con
   `--output-format=stream-json` sin él.
@@ -106,8 +118,19 @@ Detalles que no son obvios y están verificados en las versiones instaladas:
 - **Tres invocaciones por etapa** (implementador → revisor → implementador), definidas
   en `comun/etapas.yaml`. El avance a la etapa siguiente lo decide el evaluador humano
   según el smoke-check del protocolo, no el orquestador.
-- Credenciales: las del `claude` y el `codex` instalados en la máquina (suscripción).
-  Ninguno de los dos usa API keys.
+- **Todo corre en contenedores** (ADR-015): el orquestador corre en el host, pero la
+  invocación al CLI va envuelta en `docker run`. La envoltura la arma
+  `comun/contenedor.py` **una sola vez para las dos familias**, así que montajes, red,
+  usuario y workdir son idénticos por construcción y sólo difieren la imagen y el comando
+  del CLI. Requiere las tres imágenes construidas desde `contenedores/` con el tag de
+  `contenedor.TAG`.
+  Se montan: el repo satélite en `/repo`, el directorio de logs (el servidor MCP del RAG
+  corre **adentro** y escribe su JSONL ahí), y —sólo en celdas con RAG— `comun/` y el
+  corpus, read-only. **`evaluacion/` nunca se monta**: la no-exposición del holdout la
+  sostiene el mecanismo, no el procedimiento.
+- Credenciales: las del `claude` y el `codex` instalados en la máquina (suscripción),
+  montadas read-only en el contenedor de su familia (ADR-015 D3). Ninguno de los dos usa
+  API keys.
 - **Registro**: cada etapa escribe
   `<repo-satelite>/../logs/<celda>-<etapa>-<timestamp>.jsonl`, un evento por línea con
   flush inmediato: `inicio` (modelo, effort, versión del CLI, SHA-256 de los prompts,
@@ -230,7 +253,7 @@ Cada consulta queda registrada con su celda, etapa, rol y número de paso en el 
 
 ## Qué garantiza `verificar_paridad.py`
 
-Corre **77 chequeos** y sale con código ≠ 0 si falla cualquiera:
+Corre **113 chequeos** y sale con código ≠ 0 si falla cualquiera:
 
 1. Las 4 configs oficiales tienen exactamente los campos
    `{celda, harness, modelo, effort, rag, etapas}` y **sólo difieren** en los factores
@@ -254,12 +277,27 @@ Corre **77 chequeos** y sale con código ≠ 0 si falla cualquiera:
    `comun/rag/indice.py`.
 8. Los SHA-256 de `corpus/documentos/*` coinciden con el manifest congelado de H3
    (`corpus/manifest.md`), sin archivos de más ni de menos.
+9. La restricción de recuperación web está en la **línea de comandos efectiva** de las
+   dos familias: `--disallowed-tools WebSearch,WebFetch` en A; `web_search=disabled`,
+   `--disable apps/browser_use/computer_use` y ausencia de `--search` en B (ADR-014
+   Decisión 2). Se chequea el comando que arma cada orquestador, no su fuente: un grep
+   pasaría igual con un flag escrito que nunca llega al comando.
+10. Toda invocación va envuelta en `docker run --rm -i` (ADR-015); los montajes de A y B
+    difieren **sólo** en el archivo de credenciales; no se monta el holdout
+    (`evaluacion/`) ni `pipeline/` entero; las 4 celdas usan el mismo tag de imagen; y
+    ambas capas (`Dockerfile.a`, `Dockerfile.b`) parten de la misma base.
 
-Estado al 2026-08-16: los 77 chequeos pasan, y el camino negativo se probó sobre copias
-del repo con seis adulteraciones distintas (model ID viejo, `effort` distinto en una
-celda, prompt de rol sin la instrucción de delegación, prompt de rol nombrando un
-proveedor y la herramienta RAG, un documento del corpus modificado, y un orquestador con
-su propio bucle `Popen`): las seis dan exit 1 nombrando el chequeo exacto que se rompió.
+Estado al 2026-08-23: los 113 chequeos pasan. El camino negativo se probó sobre copias
+del repo con seis adulteraciones (model ID viejo, `effort` distinto en una celda, prompt
+de rol sin la instrucción de delegación, prompt de rol nombrando un proveedor y la
+herramienta RAG, un documento del corpus modificado, y un orquestador con su propio bucle
+`Popen`), y los chequeos 9 y 10 con dos más: `web_search` en `live` y un montaje del
+holdout agregado a mano. Las ocho dan exit 1 nombrando el chequeo exacto que se rompió.
+
+Los chequeos 9 y 10 son de ADR-014/015 (2026-08-23). Antes de eso el verificador **no
+inspeccionaba ninguna línea de comandos**: el traslado de ADR-008 se daba por hecho en las
+dos familias sin nada que lo sostuviera, que es cómo un default falso del lado B pasó
+inadvertido.
 
 ## Pendiente para la piloto (H6)
 
@@ -271,10 +309,9 @@ de [`runs/piloto-01/checklist-h6.md`](../runs/piloto-01/checklist-h6.md):
 - **Ítem 19 — verificaciones de los CLI:** que `-c developer_instructions=…` llega
   efectivamente al modelo en un `codex exec` real (hoy sólo verificado con el oráculo
   `codex debug prompt-input`), y qué hace cada CLI ante un rate limit a mitad de etapa.
-- **Ítem 20 — precio por token de `gpt-5.6-sol`:** verificado contra la documentación
-  de OpenAI y cargado en `nucleo.PRECIOS_USD_POR_MTOK`, a la espera de ratificación. Lo
-  que la piloto valida es la estimación contra el dashboard de billing (ítem 2), no el
-  precio de lista.
+- **Ítem 20 — precio por token de `gpt-5.6-sol`: ratificado el 2026-08-23**, cargado en
+  `nucleo.PRECIOS_USD_POR_MTOK` con decisión de tramo por request. Lo que la piloto
+  valida es la estimación contra el dashboard de billing (ítem 2), no el precio de lista.
 - **Ítem 22 — compactación de B con historia larga:** el efecto de
   `model_context_window=1000000` no está verificado; hay que correr una etapa cuya
   historia supere los ≈258 400 tokens y registrar si compacta.
@@ -285,15 +322,15 @@ de [`runs/piloto-01/checklist-h6.md`](../runs/piloto-01/checklist-h6.md):
   verificar que el JSONL los capture. En A la atribución sale de `parent_tool_use_id`
   con `--forward-subagent-text`; en B el mapeo de los eventos de thread a subagentes
   **no está verificado** y `nucleo.es_de_subagente` devuelve `None`.
-- **Confinamiento y red en B (NO VERIFICADO):** `codex exec --help` (0.146.0) no
-  documenta su modo de sandbox por default, así que el orquestador fija
-  `-s workspace-write`, el mínimo que permite al implementador escribir en su
-  workspace. En ese modo el propio CLI le anuncia al modelo que *"Network access is
-  restricted"* (verificado con `codex debug prompt-input -c sandbox_mode=…`), lo que
-  puede impedir instalar dependencias (`npm install`, `pip install`). Si la piloto lo
-  confirma, la corrección es habilitar la red del sandbox
-  (`-c sandbox_workspace_write.network_access=true`) y declarar la asimetría de
-  confinamiento con A, que corre sin sandbox del SO.
+- **Red del sandbox de B (NO VERIFICADO):** el orquestador fija `-s workspace-write`, el
+  mínimo que permite al implementador escribir en su workspace. En ese modo el propio CLI
+  le anuncia al modelo que *"Network access is restricted"* (verificado con
+  `codex debug prompt-input -c sandbox_mode=…`), lo que puede impedir instalar
+  dependencias (`npm install`, `pip install`). Si la piloto lo confirma, la corrección es
+  `-c sandbox_workspace_write.network_access=true` en las dos celdas B.
+  La **asimetría de confinamiento ya no aplica**: desde ADR-015 las dos familias corren
+  en contenedores. Lo que queda es este anuncio de red dentro del sandbox propio de B,
+  que es del CLI y no del contenedor.
 - **El repo satélite tiene que ser un repositorio git para B:** `codex exec --help`
   (0.146.0) documenta `--skip-git-repo-check` como *"Allow running Codex outside a Git
   repository"*, o sea que por default hay un chequeo. El orquestador **no** pasa ese
@@ -305,11 +342,16 @@ de [`runs/piloto-01/checklist-h6.md`](../runs/piloto-01/checklist-h6.md):
   hay manera de comprobar que el CLI conecta el servidor sin lanzar `claude -p`: los
   subcomandos `claude mcp *` no aceptan `--mcp-config`. El servidor sí está probado por
   stdio de forma independiente.
-- **Confinamiento del harness A:** se corre con `--dangerously-skip-permissions`; el
-  confinamiento al repo satélite lo da el protocolo (repo dedicado + supervisión), no
-  el SO. Es además una **condición de no-exposición del holdout** (protocolo §9): sin
-  sandbox, Bash y Read pueden leer fuera del cwd, incluida `evaluacion/`. Si la
-  asimetría de confinamiento A/B no se iguala, se declara como limitación en la tesis.
+- **Builds de etapa dentro del contenedor (NO VERIFICADO):** que `npm install`,
+  `npx tsc` y `expo export` funcionen adentro de la imagen es parte de lo que la piloto
+  valida; ninguna imagen se construyó todavía. También hay que registrar **qué hosts
+  toca** cada celda: la red del contenedor queda abierta en la piloto y ese dato decide
+  si va una allowlist antes de H7 (ADR-015 D4).
+- **Confinamiento del harness A: resuelto por ADR-015.** Sigue corriendo con
+  `--dangerously-skip-permissions` —el CLI rechaza `--permission-mode bypassPermissions`
+  si la sesión no se lanzó con ese flag— pero ya no importa para la no-exposición del
+  holdout: el contenedor no monta `evaluacion/`, así que `Bash` y `Read` no tienen qué
+  leer. Antes eso lo sostenía sólo el procedimiento.
 - **Ítem 16 — serialización de eventos exóticos:** `nucleo.serializar` degrada a
   `str()` lo que no reconoce; revisar en los logs de la piloto que no se pierda
   información relevante.

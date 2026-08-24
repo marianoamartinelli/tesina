@@ -30,6 +30,7 @@ from pathlib import Path
 # La raíz de pipeline/ al sys.path para importar comun/ desde cualquier cwd.
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from comun import contenedor  # noqa: E402
 from comun.nucleo import (  # noqa: E402
     SERVIDOR_MCP,
     Corrida,
@@ -76,7 +77,11 @@ def config_mcp(corrida: Corrida, paso: Paso) -> dict:
 
 
 def ruta_config_mcp(corrida: Corrida, paso: Paso) -> Path:
-    """Archivo temporal de config MCP, junto al log (nunca dentro de pipeline/)."""
+    """Archivo temporal de config MCP, junto al log (nunca dentro de pipeline/).
+
+    Cae bajo el directorio de logs, que el contenedor monta (ADR-015), así que el
+    CLI lo puede leer desde adentro vía `contenedor.traducir`.
+    """
     return corrida.ruta_log.with_name(f"{corrida.ruta_log.stem}-mcp-paso{paso.orden}.json")
 
 
@@ -103,7 +108,8 @@ def construir_comando(corrida: Corrida, paso: Paso, ruta_mcp: Path | None) -> li
       equivalente del `permission_mode="bypassPermissions"` del harness SDK. El
       CLI rechaza `--permission-mode bypassPermissions` si la sesión no se lanzó
       con este flag (verificado en el binario 2.1.233).
-    - `--mcp-config`: sólo en celdas con RAG.
+    - `--mcp-config`: sólo en celdas con RAG. La ruta se traduce al punto de
+      montaje del contenedor: el CLI la lee desde adentro (ADR-015).
 
     El prompt del paso NO va como argumento: se escribe por stdin, para no
     depender del límite de longitud de la línea de comandos.
@@ -122,8 +128,11 @@ def construir_comando(corrida: Corrida, paso: Paso, ruta_mcp: Path | None) -> li
         "--dangerously-skip-permissions",
     ]
     if ruta_mcp is not None:
-        comando += ["--mcp-config", str(ruta_mcp)]
-    return comando
+        comando += ["--mcp-config", contenedor.traducir(ruta_mcp, corrida)]
+    # El CLI corre adentro del contenedor (ADR-015): la envoltura es la misma
+    # función para las dos familias, así que montajes, red, usuario y workdir son
+    # idénticos por construcción y sólo difieren la imagen y el comando del CLI.
+    return contenedor.envolver(comando, corrida, FAMILIA)
 
 
 def preparar_paso(corrida: Corrida, paso: Paso) -> tuple[list[str], dict]:
