@@ -126,3 +126,41 @@ Vale como advertencia para la piloto: un override que no se imprime no está med
   de la sesión y `result.usage.server_tool_use.web_search_requests` es 0—; el usuario es
   `agente` (uid 1001); el RAG respondió `bip-0044.mediawiki § Path levels`.
 - **Estado:** registrado; alimenta el ítem 19 de la checklist H6.
+
+## H-07 — El agente no puede alcanzar el entorno on-chain desde el contenedor
+
+- **Componente:** 2.5 (red del contenedor) / 9.1 (smoke de avance)
+- **Observado:** el nodo anvil corre en el host (`127.0.0.1:8545`), pero el agente corre
+  dentro del contenedor, cuya red es propia (ADR-015 D4 la deja abierta pero **no** es la
+  del host): desde adentro, `127.0.0.1:8545` no responde. Medido: **sí** responde
+  `http://host.docker.internal:8545` —devuelve `{"result":"0xaa36a7"}`, o sea
+  chainId 11155111—, porque Docker Desktop provee ese nombre. Nada en el prompt de etapa
+  ni en el entorno le dice al agente que ese nodo existe ni en qué URL.
+- **Por qué importa:** el rol implementador exige «no des por terminado nada que no hayas
+  visto funcionar» y la spec obliga a verificar `eth_chainId() == 11155111` al iniciar el
+  indexador (épica 07). Sin nodo alcanzable, el agente no puede ejercitar ningún camino
+  on-chain durante la generación: la implementación llega a H8 con esa parte sin probar,
+  y las fallas resultantes serían del ambiente, no del modelo.
+  **En la pre-piloto no bloquea** —su universo (01, 06, 09) es derivación HD y HTTP, sin
+  RPC—, y por eso el defecto habría aparecido recién en la piloto.
+- **Corrección:** `pipeline` + `protocolo` — `comun/contenedor.py` agrega
+  `--add-host=host.docker.internal:host-gateway` (simétrico en las dos familias, no es
+  un permiso del contenedor: no cae bajo la prohibición de `--security-opt` / `--cap-add`
+  del chequeo de confinamiento), y el prompt de etapa de backend le informa la URL del
+  nodo disponible. Va por ADR: cambia un instrumento pre-registrado de las 4 celdas.
+- **Estado:** abierto — la corrección se aplica al terminar las etapas backend en curso,
+  para no cambiar la envoltura entre pasos de una misma etapa.
+
+## H-08 — Toolchain del contenedor: alcanza para el camino probable, sin compilador
+
+- **Componente:** 2.5
+- **Observado:** la imagen base no trae `gcc`/`g++`/`make`/`python3-dev` (ni `jq`,
+  `sqlite3`, `pnpm`, `watchman`). Verificado que **no hace falta** para el stack más
+  probable: `better-sqlite3`, `bcrypt` y `argon2` instalan por prebuild y cargan en
+  Node 23 arm64 (`require` de los tres, más un `CREATE TABLE` en memoria, OK).
+- **Riesgo remanente:** cualquier dependencia sin prebuild ni wheel para esta plataforma
+  fallaría al compilar, y el agente lo vería como un error de instalación sin salida.
+- **Decisión:** no se toca la imagen mientras hay corridas en vuelo. Si alguna etapa
+  falla por esto, se agrega `build-essential` + `python3-dev` a `Dockerfile.base` (es la
+  base común: el cambio es simétrico por construcción) y se re-registra el digest.
+- **Estado:** registrado, sin acción por ahora.
