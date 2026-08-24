@@ -1,19 +1,21 @@
-# Protocolo experimental pre-registrado — v1.1
+# Protocolo experimental pre-registrado — v1.2
 
-- **Estado:** esta versión reemplaza a la **v1.0**, congelada por
+- **Estado:** esta versión reemplaza a la **v1.1**, congelada por
+  [ADR-012](../decisiones/ADR-012-protocolo-experimental-v1-1.md) (2026-08-17), que a su
+  vez había reemplazado a la v1.0 de
   [ADR-004](../decisiones/ADR-004-protocolo-experimental-preregistrado.md) (2026-07-05).
-  La congela [ADR-012](../decisiones/ADR-012-protocolo-experimental-v1-1.md), **Aceptado**
-  el 2026-08-17: rige desde esa fecha y antes de la primera corrida oficial. ADR-004
-  no se edita; ADR-012 enumera qué de su Decisión se conserva y qué se reemplaza, y lleva
-  el detalle cambio por cambio de v1.0 → v1.1.
+  La congela [ADR-016](../decisiones/ADR-016-sin-topes-de-presupuesto.md), **Aceptado**
+  el 2026-08-23: rige desde esa fecha y antes de la primera corrida oficial. Ni ADR-004
+  ni ADR-012 se editan. **Único cambio de v1.1 → v1.2:** §6 pierde los topes de
+  presupuesto y §5.7 pierde la rama de abandono por agotamiento; todo lo demás se
+  conserva verbatim.
 - **Ventana de ajuste:** la única prevista por ADR-004 punto 2 — los defectos que revele
-  la **corrida piloto** (H6). Esta versión consolida esa ventana. Si la piloto revela
-  defectos adicionales, se produce una v1.2 más un ADR que reemplace a ADR-012,
-  **antes** de la primera corrida oficial. Durante las corridas oficiales (H7) el
-  protocolo es **inmutable**.
+  la **corrida piloto** (H6). Si la piloto revela defectos adicionales, se produce una
+  v1.3 más un ADR que reemplace a ADR-016, **antes** de la primera corrida oficial.
+  Durante las corridas oficiales (H7) el protocolo es **inmutable**.
 - **Propósito:** fijar, antes de cualquier corrida, las reglas que hacen comparables a
   las 4 celdas del factorial 2×2: cuándo interviene el humano y cómo se clasifica cada
-  intervención, en qué orden se construye, con qué presupuestos, qué se registra y cómo.
+  intervención, en qué orden se construye, qué se mide y qué se registra.
   Todo criterio definido "sobre la marcha" invalidaría la comparación entre celdas.
 
 ---
@@ -62,7 +64,7 @@ Idénticos en las 4 corridas oficiales, pinneados en el manifest de cada corrida
    de cada CLI** (ADR-009 Decisión 5) y, en las celdas B, `model_context_window`
    (ADR-010 Decisión 2).
 5. **El evaluador humano:** el tesista, en todas las corridas.
-6. **Este protocolo:** criterios de intervención, presupuestos y registro.
+6. **Este protocolo:** criterios de intervención, medición y registro.
 7. **La ventana temporal:** las 4 corridas oficiales se ejecutan en una ventana corta
    (objetivo: ≤ 2 semanas entre la primera y la última) para minimizar la deriva de los
    modelos comerciales.
@@ -157,7 +159,7 @@ proceso levanta.
   suite corre una sola vez por corrida, al cierre (H8). Motivo: usar el holdout como
   feedback durante la generación lo convierte en set de entrenamiento y sesga la métrica
   principal.
-- Una etapa cerrada como **incompleta** (por presupuesto o estancamiento, sección 5.7) no
+- Una etapa cerrada como **incompleta** (por estancamiento, sección 5.7) no
   bloquea las siguientes: se continúa con lo que exista, registrando el estado en el
   manifest (`notas`) y en el journal. Los ATs de lo faltante simplemente fallarán en H8.
 
@@ -256,9 +258,10 @@ cálculo de fee con floats es 7 aunque compile).
   mismo defecto sin progreso observable ⇒ se abandona ese defecto (se deja como está) y
   se registra en el log. No se insiste: el costo de insistir distorsiona la métrica de
   intervenciones.
-- **Abandono de etapa:** si la etapa no alcanza el criterio de avance tras agotar el
-  presupuesto proporcional (sección 6) o acumula 3 estancamientos, se cierra como
-  incompleta y se continúa (sección 4).
+- **Abandono de etapa:** si la etapa no alcanza el criterio de avance tras acumular
+  3 estancamientos, se cierra como incompleta y se continúa (sección 4). La rama por
+  agotamiento de presupuesto que traía la v1.1 **se elimina**: no hay topes (ADR-016,
+  sección 6). El abandono mide falta de progreso, no consumo.
 
 ### 5.8 Continuación de una etapa interrumpida
 
@@ -284,40 +287,42 @@ disparador **D2** e intervención de tipo **(d)**, y se registra como cualquier 
 - Estas continuaciones cuentan para el estancamiento y el abandono de etapa (§5.7) como
   cualquier otra intervención.
 
-## 6. Presupuestos por corrida
+## 6. Consumo: se mide, no se topea
 
-Valores **provisionales** (ver el pendiente al pie): la corrida piloto los valida y los
-definitivos quedan pinneados en el ADR de reemplazo (si cambian) y en el manifest de
-cada corrida oficial.
+**No hay topes de presupuesto.** Una corrida se cierra cuando las tres etapas completan
+su secuencia, o por los criterios de progreso de §5.7 — que miden falta de progreso, no
+consumo. Lo fija [ADR-016](../decisiones/ADR-016-sin-topes-de-presupuesto.md), que
+elimina la tabla de topes de la v1.1 (`costo_max_usd` 200 USD, `tiempo_max_horas` 24 h) y
+la regla de cierre por agotamiento.
 
-| Concepto            | Tope por corrida | Nota                                                        |
-|---------------------|------------------|-------------------------------------------------------------|
-| `costo_max_usd`     | 200 USD          | Tope operativo bajo API key; bajo suscripción **no** es vinculante (ver salvedad). |
-| `tiempo_max_horas`  | 24 h activas     | ~3 jornadas de sesión del evaluador, excluye esperas largas. |
-| `tokens_max`        | — (sin tope)     | Se registra como métrica.                                    |
+Motivo: de los tres topes de la v1.1, uno ya no aplicaba —bajo suscripción
+`costo_max_usd` no es vinculante y el tope real son los rate limits, asimétricos y fuera
+del control del experimento (ADR-009 §Consecuencias)—, otro nunca tuvo valor
+(`tokens_max`) y el tercero era un número sin fundamento empírico. Y un tope de costo
+habría **censurado la variable que el experimento compara**: si una celda gasta el doble
+que otra, ese es el resultado.
 
-- **No hay tope de turnos.** Ningún CLI expone uno y el orquestador no lo repone; el
-  tesista decidió el 2026-08-16 correr sin presupuesto de turnos (ADR-009
-  §Consecuencias). Se cae el tope, **no la métrica**: turnos y tokens se siguen
-  registrando por invocación en el JSONL de la corrida (ADR-003).
-- **Salvedad bajo suscripción.** ADR-009 hace correr los harnesses sobre las
-  suscripciones del tesista. En ese modo `costo_max_usd` deja de ser el tope operativo
-  vinculante y pasan a serlo los **rate limits** de cada proveedor, que son asimétricos,
-  no están bajo control del experimento y presionan la ventana de ≤ 2 semanas de §7. El
-  costo se sigue registrando como métrica —nativo en A (`total_cost_usd`), estimado
-  localmente desde tokens en B (ADR-009 Decisión 1)—, no como tope.
-- Presupuesto proporcional orientativo por etapa: backend 60 % / web 25 % / mobile 15 %
-  (los mismos valores que `presupuesto_proporcional` de `pipeline/comun/etapas.yaml`).
-- Al agotarse un tope, la corrida se cierra en el estado en que esté (sección 4) y se
-  registra el motivo del cierre en el manifest.
+Lo que se registra por invocación y por etapa, en el JSONL de la corrida (ADR-003):
 
-**PENDIENTE-PILOTO — presupuestos definitivos.** Esta versión **no** pinnea los valores
-definitivos: dependen del consumo real que mida la piloto y de la decisión
-**suscripción contra API key** para las 4 corridas oficiales, que se toma con ese dato
-(ADR-004 punto 4; checklist H6, ítem 7; ADR-009 §Consecuencias). Se fijan antes de la
-primera corrida oficial, en el manifest de cada corrida y —si difieren de la tabla— en
-una versión posterior de este documento con su ADR de reemplazo. Escribir hoy un número
-sería inventarlo.
+| Métrica | Fuente |
+|---------|--------|
+| Costo en USD | Nativo en A (`total_cost_usd`, `modelUsage`); estimado localmente desde tokens en B (ADR-009 Decisión 1) |
+| Tokens | `input` / `cached` / `cache_write` / `output` / `reasoning` |
+| Turnos | Por invocación de rol |
+| Tiempo de reloj | Por invocación y por etapa |
+
+- **No hay tope de turnos.** Ningún CLI expone uno y el orquestador no lo repone (ADR-009
+  §Consecuencias). Se cae el tope, **no la métrica**.
+- **`presupuesto_proporcional` no es presupuesto.** El reparto backend 60 % / web 25 % /
+  mobile 15 % de `pipeline/comun/etapas.yaml` queda como **referencia descriptiva** para
+  el análisis —qué fracción del esfuerzo total se fue en cada etapa, comparable entre
+  celdas—, no como umbral operativo: ya no gatea el abandono de etapa.
+- **Suscripción contra API key** para las 4 corridas oficiales sigue abierta y ya no
+  bloquea: se decide con el consumo que mida la piloto y se registra en el journal
+  (checklist H6, ítem 7).
+- **Riesgo asumido:** una celda puede consumir un múltiplo de lo previsto sin que nada la
+  detenga. Se acepta explícitamente; cortar destruiría la comparabilidad de la celda
+  cortada, que para el experimento es peor que el costo.
 
 ## 7. Orden y ventana de las corridas oficiales
 
@@ -351,8 +356,14 @@ imposible de implementar como está escrita, una contradicción real):
 
 - Los agentes de las corridas **sólo ven el repo satélite** (la spec). Nunca ven
   `journal/`, `runs/`, `analisis/`, `evaluacion/`, ni los repos de otras celdas
-  (ADR-001). Del lado de la máquina del tesista, cada CLI se invoca aislado de la config
-  del host (ADR-009 Decisión 5).
+  (ADR-001). Desde [ADR-015](../decisiones/ADR-015-agentes-en-contenedores.md) esto lo
+  sostiene el **mecanismo** y no el procedimiento: toda invocación de rol ocurre dentro
+  de un contenedor que monta el repo satélite y nada más del árbol de la tesina, en las
+  dos familias. Además, cada CLI se invoca aislado de la config del host (ADR-009
+  Decisión 5), y la recuperación web queda desactivada por mecanismo explícito en ambas
+  familias ([ADR-014](../decisiones/ADR-014-recuperacion-web-en-el-harness-b.md)) —
+  con la salvedad, declarada en los dos ADRs, de que eso restringe herramientas y no red:
+  el contenedor sale a internet sin restricción, por igual en A y B.
 - El evaluador no reutiliza prompts correctivos entre celdas salvo que el disparador sea
   idéntico; cuando lo sea, usa la misma redacción (paridad también en las
   intervenciones). El log de intervenciones de cada celda documenta el texto exacto.
@@ -373,7 +384,7 @@ imposible de implementar como está escrita, una contradicción real):
 
 | Qué                                    | Dónde                              | Cuándo                    |
 |----------------------------------------|-------------------------------------|---------------------------|
-| Configuración de la celda, insumos pinneados (spec, corpus, model IDs, `effort`, versión de cada CLI, `model_context_window` en B), presupuestos | `runs/<id>/manifest.yaml` §1–4 | Antes de iniciar          |
+| Configuración de la celda, insumos pinneados (spec, corpus, model IDs, `effort`, versión de cada CLI, `model_context_window` en B), imágenes de contenedor por digest | `runs/<id>/manifest.yaml` §1–4 | Antes de iniciar          |
 | Eventos de cada invocación del CLI: turnos, tokens, costo, consultas al RAG, actividad de subagentes | JSONL del orquestador (`<repo-satélite>/../logs/<celda>-<etapa>-<timestamp>.jsonl` y su `-rag.jsonl`), copiado a `runs/<id>/` al cerrar — las trazas del agente son insumo del conteo de alucinaciones (`alucinaciones.md` §1) | Durante la corrida        |
 | Intervenciones (INT-NN)                | `runs/<id>/intervenciones.md`       | En el momento             |
 | Cierre (timestamps, costo, tokens)     | `runs/<id>/manifest.yaml` §5        | Al cerrar la corrida      |
