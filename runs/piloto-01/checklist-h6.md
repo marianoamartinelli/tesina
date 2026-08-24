@@ -7,12 +7,19 @@ el harness A) y **piloto-02** (smoke end-to-end del harness B). Ningún ítem se
 resuelve editando `spec/` (congelada, tag `spec-v1.1`) ni ADRs aceptados: los
 cambios van por nueva versión de documento + ADR nuevo donde corresponda.
 
-**Estado al 2026-08-23:** **15 de los 24 ítems de salida cerrados.** La sesión del
-2026-08-23 cerró cuatro más —7, 11, 15 y 20— y volvió a cerrar el 10, que se había
+**Estado al 2026-08-23:** **16 de los 24 ítems de salida cerrados.** La sesión del
+2026-08-23 cerró cinco —7, 11, 15, 20 y 13— y volvió a cerrar el 10, que se había
 reabierto ese mismo día; los tres ADRs que lo sostienen (**ADR-014, ADR-015 y ADR-016**)
-quedaron Aceptados en la sesión. Los **9 abiertos son 1, 2, 6, 13, 16, 19, 22, 23 y 24**,
-y **todos necesitan ejecutar la piloto o el entorno docker**: no queda deuda de
-escritorio. Ningún CLI de agente se ejecutó todavía.
+quedaron Aceptados en la sesión. Los **8 abiertos son 1, 2, 6, 16, 19, 22, 23 y 24**, y
+**todos necesitan la corrida misma**.
+
+De las puertas de entrada quedan dos abiertas: la **autenticación**, que es hoy el
+**bloqueante duro** —el `claude` del contenedor responde `Not logged in` porque en macOS
+la credencial vigente vive en el Keychain y no en el archivo que ADR-015 D3 manda montar—
+y el **repo satélite**, que todavía no se creó. Todo lo demás del arranque está
+verificado: las tres imágenes construidas, el entorno on-chain arriba con su digest
+comprobado, la paridad en verde sobre el commit y el smoke de la suite en 40 passed.
+Ningún CLI de agente ejecutó una etapa todavía.
 
 Nota sobre el ítem 10: se reabrió el 2026-08-23 al descubrir que su premisa del lado B
 era falsa, y se cerró el mismo día con ADR-014 más los chequeos de paridad que faltaban.
@@ -26,7 +33,9 @@ resultado observado.
 - [ ] **Paridad:** `pipeline/verificar_paridad.py` termina con exit 0
       (`.venv/bin/python pipeline/verificar_paridad.py`).
       *Verificado el 2026-08-23: exit 0, **113 chequeos** (77 antes de ADR-014/015), sobre
-      el working tree. Re-correr sobre el commit de `pipeline/`. Los chequeos nuevos
+      el commit `1ba07e0` con `pipeline/` sin cambios sin commitear — o sea que el reparo
+      «re-correr sobre el commit» quedó saldado. Re-correr igual el día de la corrida:
+      esta puerta se verifica al arrancar, no de una vez. Los chequeos nuevos
       cubren la restricción de recuperación web en las dos familias y la envoltura en
       contenedor; su camino negativo se probó rompiéndolos a propósito.*
 - [ ] **Manifest:** secciones §1–4 de `runs/piloto-01/manifest.yaml` completas y
@@ -36,22 +45,44 @@ resultado observado.
       auth, digest efectivo de anvil, dirección del USDC-mock, repo satélite, hash de
       paridad sobre el commit) están marcados `PENDIENTE-ARRANQUE:` con el comando que
       los cierra. Falta completarlos y commitearlo.*
-- [ ] **Autenticación:** con ADR-009 la piloto corre sobre las **suscripciones** del
-      tesista (`claude` y `codex` logueados), no sobre API keys. Verificar la sesión de
-      cada CLI y registrar en el manifest el modo de auth usado; el dato de consumo de
-      la piloto decide suscripción contra API key para las 4 oficiales.
+- [ ] **Autenticación — BLOQUEANTE, mecanismo por decidir.** Con ADR-009 la piloto corre
+      sobre las **suscripciones** del tesista, no sobre API keys.
+      *Verificado el 2026-08-23: el `claude` del contenedor responde **`Not logged in`**.
+      Causa: en macOS las credenciales vigentes viven en el **Keychain**
+      (`security find-generic-password -s "Claude Code-credentials"`, vigente), mientras
+      que `~/.claude/.credentials.json` —el archivo que **ADR-015 Decisión 3** manda
+      montar— quedó con un token **vencido el 2026-06-23**. La D3 se escribió asumiendo
+      que ese archivo era la credencial viva; en esta plataforma no lo es.*
+      *`~/.codex/auth.json` sí es un archivo real y vigente (`auth_mode` + tokens OAuth),
+      así que el problema es **sólo del lado A** — una asimetría de plataforma, no de
+      diseño.*
+      Decisión esperada: mecanismo de inyección de la credencial de A elegido y
+      registrado (exportar del Keychain a un archivo temporal por corrida, `claude login`
+      dentro de un volumen por celda, u otro), más el modo de auth efectivo en el
+      manifest. Si el mecanismo cambia lo que D3 fija, va por ADR.
 - [ ] **Versiones de CLI pinneadas** en el manifest: `claude --version` y
       `codex --version` (hoy 2.1.233 y 0.146.0), junto a los model IDs y al commit del
       corpus. *Ya registrados en el manifest, medidos en esta máquina el 2026-08-16.*
-- [ ] **Imágenes de los agentes construidas** (ADR-015), las tres con el mismo tag:
+- [x] **Imágenes de los agentes construidas** (ADR-015), las tres con el mismo tag:
       `docker build -f Dockerfile.base -t tesina/agente-base:piloto-01 .` y las dos capas
       `Dockerfile.a` / `Dockerfile.b` con `--build-arg VERSION_CLI=` de la versión que el
       manifest pinnea. Registrar el **digest efectivo** de cada una en el manifest, con el
-      mismo criterio que el pin del anvil (ítem 13). *Los tres Dockerfile existen desde el
-      2026-08-23; ninguna imagen se construyó todavía — el daemon de Docker estaba abajo.*
+      mismo criterio que el pin del anvil (ítem 13).
+      *Construidas el 2026-08-23 con tag `piloto-01` y registradas en el manifest:
+      base `72a1a49f…`, agente-a `af7f27b1…` (CLI 2.1.241), agente-b `ab065e2f…`
+      (CLI 0.146.0). Verificado adentro: los dos CLI responden `--version`, el toolchain
+      (node v23.11.1 / npm 10.9.2 / python 3.11.2 / git 2.39.5) es **idéntico en A y B**,
+      las tres comparten las mismas 10 capas de base, el usuario es `agente` (uid 1001)
+      y hay salida a internet (200 contra el registry de npm).*
 
-- [ ] **Entorno on-chain arriba** (`evaluacion/suite-at/entorno/`):
-      `docker compose up -d --wait`, luego `desplegar-usdc.py` y `fondear.py`.
+- [x] **Entorno on-chain arriba** (`evaluacion/suite-at/entorno/`):
+      `docker compose up -d --wait`, luego `desplegar-usdc.py`.
+      *Levantado el 2026-08-23: `suite-at-anvil` healthy, anvil 1.5.1-stable, USDC-mock
+      desplegado en `0x5FbDB2315678afecb367f032d93F642f64180aa3` (bloque 1). Registrado
+      en el manifest.*
+      **Corrección:** `fondear.py` **no** es un paso de arranque — toma la dirección de
+      la hot wallet del SUT como argumento obligatorio, y esa wallet la genera el agente
+      durante la corrida. Se ejecuta al preparar los ATs de retiro, no antes de iniciar.
 - [ ] **Harness de evaluación sano:** `evaluacion/suite-at/test_smoke.py` todo
       verde (no requiere SUT ni docker):
       `cd evaluacion/suite-at && ../../.venv/bin/python -m pytest test_smoke.py -q`.
@@ -245,14 +276,14 @@ resultado observado.
           granularidad del JSONL de cada familia).
           Fuente: `evaluacion/README.md`; ADR-009 Decisión 4.
 
-13. - [ ] **Pin por digest de la imagen de anvil:** el compose pinnea por digest
-          (el tag `ghcr.io/foundry-rs/foundry:stable` a secas es flotante);
-          verificar en la piloto que la imagen efectiva corresponde a ese digest
-          y registrarla en el manifest (`entorno_onchain.version_anvil`, vía
-          `docker inspect --format '{{index .RepoDigests 0}}' ...`).
+13. - [x] **Pin por digest de la imagen de anvil: verificado el 2026-08-23.** El digest
+          efectivo de la imagen que `suite-at-anvil` está corriendo —obtenido inspeccionando
+          el contenedor, no el ref por el que se hizo pull— es
+          `ghcr.io/foundry-rs/foundry@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46`
+          y **coincide** con el que pinnea el compose. Registrado en el manifest
+          (`entorno_onchain.version_anvil`), junto a `anvil 1.5.1-stable`.
           Fuente: `evaluacion/suite-at/entorno/docker-compose.yml`;
           `runs/plantillas/manifest.template.yaml` §3.
-          Decisión esperada: digest verificado y versión efectiva registrada.
 
 14. - [x] **Turnos por etapa:** **resuelto** — el tesista decidió el 2026-08-16
           eliminar el presupuesto de turnos. Ningún CLI expone un tope de turnos y no

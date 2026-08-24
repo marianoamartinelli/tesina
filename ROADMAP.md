@@ -68,12 +68,14 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   comprende `piloto-01` (corrida completa con el harness A) y `piloto-02` (smoke
   end-to-end del harness B). Desde ADR-009 incluye además la reescritura del pipeline
   para orquestar los CLI (ítem 17) y la validación del set de roles
-  implementador/revisor. *(En curso — **15 de los 24 ítems** de la checklist cerrados al
+  implementador/revisor. *(En curso — **16 de los 24 ítems** de la checklist cerrados al
   2026-08-23: pipeline reescrito, protocolo **v1.2**, partición 465/56, rúbrica del rol
   revisor, manifest de `piloto-01`, agentes contenedorizados y orden de las 4 celdas
-  sorteado. ADR-011/012/013 Aceptados el 2026-08-17; ADR-014/015/016 el 2026-08-23. **Los
-  9 ítems abiertos necesitan todos la corrida o el entorno docker**: no queda deuda de
-  escritorio. Ningún CLI de agente se ejecutó todavía.)*
+  sorteado, imágenes de contenedor construidas y entorno on-chain verificado.
+  ADR-011/012/013 Aceptados el 2026-08-17; ADR-014/015/016 el 2026-08-23. **Los 8 ítems
+  abiertos necesitan todos la corrida misma**; el bloqueante de arranque es la
+  autenticación del CLI de A dentro del contenedor. Ningún CLI de agente ejecutó una
+  etapa todavía.)*
 - [ ] **H7 — Corridas oficiales.** Las 4 celdas del factorial, en ventana temporal
   corta (los modelos comerciales cambian), en el orden sorteado el 2026-08-23:
   **B-sin-RAG → A-sin-RAG → B-con-RAG → A-con-RAG**.

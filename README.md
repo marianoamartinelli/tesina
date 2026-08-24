@@ -26,15 +26,18 @@ sobre los SDK de agentes y pasan a ser los CLI de cada proveedor (`claude -p` y
 código de `pipeline/` ya está reescrito sobre esa base (orquestadores de roles, RAG como
 servidor MCP stdio único, **113 chequeos de paridad**); los `correr.py` sobre SDK quedan
 en el árbol como camino de vuelta hasta que la piloto valide el reemplazo. De la deuda de
-proceso de [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) hay **15 de
+proceso de [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) hay **16 de
 24 ítems cerrados** —protocolo **v1.2**, partición 465/56 de los ATs backend, rúbrica del
 rol revisor, manifest de `piloto-01`, agentes en contenedores y orden de las 4 celdas
 sorteado—, con ADR-011/012/013 aceptados el 2026-08-17 y **ADR-014/015/016 el
 2026-08-23**: la recuperación web del lado B, que un default de producto no desactivaba
 como ADR-009 suponía; la contenerización de las dos familias, que elimina la asimetría de
 confinamiento; y la baja de los topes de presupuesto, que pasan a ser variables medidas.
-**Los 9 ítems abiertos necesitan todos la corrida piloto o el entorno docker**, y ningún
-CLI de agente se ejecutó todavía.
+**Los 8 ítems abiertos necesitan todos la corrida misma.** El arranque está casi
+listo —imágenes construidas, entorno on-chain arriba con su digest verificado, paridad en
+verde sobre el commit— y el bloqueante que queda es la **autenticación del CLI de A
+dentro del contenedor**: en macOS la credencial vigente vive en el Keychain y no en el
+archivo que ADR-015 D3 manda montar. Ningún CLI de agente ejecutó una etapa todavía.
 
 ## Mapa del repositorio
 
