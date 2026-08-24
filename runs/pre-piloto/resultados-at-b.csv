@@ -1,0 +1,522 @@
+at_id,resultado,test,duracion_segundos,detalle
+AT-01-01-01,falla,tests/test_ep01_registro.py::test_registro_exitoso_con_credenciales_validas,0.097,
+AT-01-01-02,pasa,tests/test_ep01_registro.py::test_normalizacion_del_email_en_el_registro,0.046,
+AT-01-01-03,pasa,tests/test_ep01_registro.py::test_email_ya_registrado_se_rechaza_con_409,0.102,
+AT-01-01-04a,pasa,tests/test_ep01_registro.py::test_email_sin_arroba_es_validation_error,0.044,
+AT-01-01-04b,pasa,tests/test_ep01_registro.py::test_email_con_dominio_sin_punto_es_validation_error,0.044,
+AT-01-01-04c,pasa,tests/test_ep01_registro.py::test_email_con_parte_local_vacia_es_validation_error,0.045,
+AT-01-01-04d,pasa,tests/test_ep01_registro.py::test_email_con_espacio_interno_es_validation_error,0.044,
+AT-01-01-04e,pasa,tests/test_ep01_registro.py::test_email_con_puntos_invalidos_en_dominio_es_validation_error,0.089,
+AT-01-01-05,pasa,tests/test_ep01_registro.py::test_password_demasiado_corta_es_validation_error,0.047,
+AT-01-01-06,pasa,tests/test_ep01_registro.py::test_password_demasiado_larga_es_validation_error,0.052,
+AT-01-01-07,pasa,tests/test_ep01_registro.py::test_campo_requerido_faltante_es_validation_error,0.004,
+AT-01-01-08,pasa,tests/test_ep01_registro.py::test_tipo_de_dato_incorrecto_es_validation_error,0.047,
+AT-01-01-09,pasa,tests/test_ep01_registro.py::test_precedencia_email_invalido_antes_que_password_invalida,0.001,
+AT-01-01-10,pasa,tests/test_ep01_registro.py::test_dos_registros_concurrentes_con_el_mismo_email,0.120,
+AT-01-01-11,pasa,tests/test_ep01_registro.py::test_cuenta_registrada_sobrevive_un_reinicio,2.916,
+AT-01-01-12,pasa,tests/test_ep01_registro.py::test_password_en_el_limite_inferior_valido,0.096,
+AT-01-01-13,pasa,tests/test_ep01_registro.py::test_password_en_el_limite_superior_valido,0.090,
+AT-01-01-14,pasa,tests/test_ep01_registro.py::test_email_en_el_limite_superior_valido,0.045,
+AT-01-01-15,pasa,tests/test_ep01_registro.py::test_email_que_excede_el_maximo_es_validation_error,0.047,
+AT-01-01-16,pasa,tests/test_ep01_registro.py::test_precedencia_campo_faltante_antes_que_politica_de_password,0.003,
+AT-01-01-17,pasa,tests/test_ep01_registro.py::test_precedencia_tipo_incorrecto_antes_que_unicidad,0.045,
+AT-01-01-18,pasa,tests/test_ep01_registro.py::test_campo_desconocido_en_el_payload_es_validation_error,0.052,
+AT-01-01-19,pasa,tests/test_ep01_registro.py::test_account_id_opaco_y_no_secuencial,0.192,
+AT-01-01-20,skip,tests/test_ep01_registro.py::test_anti_flood_de_registro_responde_rate_limited,2.861,
+AT-01-02-01,pasa,tests/test_ep01_login.py::test_login_exitoso_devuelve_token_con_expiracion,0.096,
+AT-01-02-02,pasa,tests/test_ep01_login.py::test_login_normaliza_capitalizacion_y_espacios_del_email,0.099,
+AT-01-02-03,pasa,tests/test_ep01_login.py::test_el_token_autentica_una_llamada_protegida,0.151,
+AT-01-02-04,pasa,tests/test_ep01_login.py::test_password_incorrecta_es_invalid_credentials,0.135,
+AT-01-02-05,pasa,tests/test_ep01_login.py::test_email_inexistente_es_indistinguible_de_password_incorrecta,0.227,
+AT-01-02-06,pasa,tests/test_ep01_login.py::test_payload_de_login_mal_formado_es_validation_error,0.002,
+AT-01-02-07,pasa,tests/test_ep01_login.py::test_precedencia_esquema_antes_que_credenciales,0.001,
+AT-01-02-08,pasa,tests/test_ep01_login.py::test_sesiones_multiples_concurrentes_no_se_invalidan,0.147,
+AT-01-02-09,skip,tests/test_ep01_login.py::test_rate_limiting_de_login_tras_multiples_fallos,2.929,
+AT-01-02-10,pasa,tests/test_ep01_login.py::test_heuristica_de_impredecibilidad_del_token,4.918,
+AT-01-02-11,pasa,tests/test_ep01_login.py::test_indistinguibilidad_temporal_anti_timing_attack,104.134,
+AT-01-02-12,pasa,tests/test_ep01_login.py::test_email_con_formato_invalido_en_login_no_es_validation_error,0.102,
+AT-01-02-13,no_automatizado,,,"El log de auditoría de autenticación (RNE-9) es interno por definición: la propia HU declara que ""no es accesible desde la API del usuario final"" y que el AT es ""verificable por inspección interna; no observable por caja negra en la respuesta de la API"". No existe superficie HTTP/WS/on-chain que lo exponga (exponerlo violaría RNE-3). Se evalúa por inspección de código/operativa en H8."
+AT-01-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-04,no_automatizado,,,"El Dado exige un token expirado por TTL. El entorno de evaluación fija el TTL en 3600 s (evaluacion/suite-at/entorno/README.md: ""TTL de token 3600 s... se dejan en esos valores"") y la spec no da ninguna vía black-box para acortarlo ni para adelantar el reloj del SUT: provocar la expiración costaría 1 h de espera por corrida. La indistinguibilidad de la respuesta 401 sí está cubierta para la causa ""invalidado por logout"" (AT-01-03-02, AT-01-04-04). Se evalúa en H8 por inspección de código (chequeo t >= expiresAt y validación del TTL al arranque, HU-01-02 RN-3)."
+AT-01-03-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-09,no_automatizado,,,"Mismo impedimento que AT-01-03-04: el Dado requiere un token ya expirado por TTL (3600 s fijos en el entorno de evaluación) y no hay superficie black-box para provocar la expiración en tiempo de test. La cláusula ""solo un nuevo login permite obtener un token válido"" está cubierta en su parte observable por AT-01-02-01/AT-01-02-03 (el login emite token utilizable); la no-reactivación del token expirado se evalúa por inspección de código en H8 (HU-01-03 RN-7)."
+AT-01-03-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-03-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-01-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-01-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-01-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-01-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-01-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-01-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-02-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-03-01,no_automatizado,,,"La estructura del asiento DEPOSIT (type, reference {txHash, logIndex}, postings CREDIT available / DEBIT EXTERNAL, balanceo por activo) no es observable: GET /movements (HU-09-01 RN-22) expone el movimiento cara al usuario, no la partida doble interna, y EXTERNAL es una cuenta técnica interna. El efecto observable (movimiento DEPOSIT visible con su reference, acreditación exacta y única) se verifica en AT-02-04-08, en los ATs de la épica 07 y en los tests de HU-02-05. La estructura del asiento (postings y contraparte EXTERNAL) se evalúa white-box en H8."
+AT-02-03-02,no_automatizado,,,"La forma del asiento ORDER_LOCK (type, reference {orderId}, postings DEBIT available / CREDIT locked) no es observable sin superficie de ledger en el contrato de la épica 09. Su efecto sobre los buckets (available −= x, locked += x, total constante) se verifica black-box en AT-02-02-01/02/03. Se evalúa white-box/rúbrica en H8."
+AT-02-03-03,no_automatizado,,,"La forma del asiento ORDER_RELEASE (type, reference {orderId}, postings DEBIT locked / CREDIT available) no es observable sin superficie de ledger en el contrato de la épica 09. Su efecto sobre los buckets se verifica black-box en AT-02-02-05/06. Se evalúa white-box/rúbrica en H8."
+AT-02-03-04,no_automatizado,,,"La composición del asiento TRADE_FILL (un ÚNICO asiento con seis postings, sub-clasificación kind=FEE hacia EX, reference tradeId, balanceo por activo) no es observable sin superficie de ledger. Los seis montos, las fees y la conservación del fill sí se verifican black-box (balances + pata propia de GET /trades) en AT-02-02-08, AT-02-03-10 y AT-02-04-01. La unicidad y forma del asiento se evalúa white-box/rúbrica en H8."
+AT-02-03-05,no_automatizado,,,"Reconstruir balances sumando CREDIT − DEBIT por cuenta/activo/bucket y verificar el determinismo de reprocesar el ledger exige leer los asientos, sin superficie API en la épica 09. La proyección observable (los balances reportados coinciden exactamente con los que produce la secuencia normativa de asientos) se verifica en AT-02-01-07; la persistencia/reconstrucción tras reinicio, en AT-02-04-06. Se evalúa white-box en H8."
+AT-02-03-06,no_automatizado,,,"La corrección vía asiento de compensación (REVERSAL con postings inversos y reference {reversedEntryId}, original intacto) es un mecanismo interno del motor contable: el contrato de la épica 09 no expone ninguna operación que dispare una reversión ni una vía para observar asientos/entryId. Se evalúa white-box/rúbrica en H8."
+AT-02-03-07,no_automatizado,,,"""No se crea un segundo asiento DEPOSIT"" es una propiedad del ledger, sin superficie API para contar asientos; tampoco hay vía black-box para forzar el reproceso del mismo evento on-chain (el reporte DEPOSIT_ALREADY_CREDITED es interno al pipeline de acreditación). El efecto observable (el balance se acredita una sola vez por identidad (txHash, logIndex), INV-5) se verifica en AT-02-04-08. Se evalúa white-box en H8."
+AT-02-03-08,no_automatizado,,,El rechazo de un asiento desbalanceado es una validación interna del motor contable: no existe vía black-box para intentar escribir un asiento arbitrario (Σ CREDIT ≠ Σ DEBIT) a través del contrato de la épica 09. Se evalúa white-box (tests propios del SUT o inspección) en H8.
+AT-02-03-09,no_automatizado,,,"Requiere inyectar una falla después de persistir algunos postings y antes de completar el asiento (el mecanismo de inyección de AT-02-04-02): es infraestructura interna del SUT, sin superficie black-box para provocarla determinísticamente ni para observar asientos parciales. Se evalúa como test de integración white-box en H8."
+AT-02-03-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-03-11,no_automatizado,,,"Requiere inyectar una falla ENTRE la escritura del TRADE_FILL y la del ORDER_RELEASE de surplus dentro de la misma transacción (mecanismo de AT-02-04-02, interno al SUT). Sin esa inyección, la unidad atómica de los dos asientos no es falsable black-box. El efecto observable del camino feliz (consumo + liberación de surplus en la misma operación) se verifica en AT-02-02-07/13. Se evalúa como test de integración white-box en H8."
+AT-02-04-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-04-02,no_automatizado,,,El propio escenario declara el prerrequisito de infraestructura: un repositorio configurable que lanza una excepción tras persistir el N-ésimo posting (o una violación de constraint en el 4.º). Ese punto de inyección es interno a la implementación y el contrato HTTP/WS no ofrece forma de provocarlo ni de sincronizarlo. Se evalúa como test de integración white-box en H8.
+AT-02-04-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-04-07,no_automatizado,,,"La ""caída"" debe ocurrir mientras una transacción de balance está sin committear: desde afuera no se puede interrumpir el proceso en ese instante de forma determinista (matar el SUT al azar no garantiza la ventana). La parte observable de la recuperación (balances reconstruidos idénticos tras reinicio) se verifica en AT-02-04-06. Se evalúa white-box/inspección en H8."
+AT-02-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-04-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-02-05-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-01-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-02-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-02-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-02-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-02-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-02-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-02-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-02-07,no_automatizado,,,"Verifica la garantía INTERNA del motor ante una segunda inserción con el mismo orderId ""que sorteó la idempotencia de la épica 04"" (la propia HU aclara que no se trata de la respuesta HTTP DUPLICATE_CLIENT_ORDER_ID, que sí cubre la suite en la épica 04/09). Black-box no existe forma de inyectar una inserción duplicada al motor salteando la épica 04: todo POST /orders con clientOrderId repetido se corta antes (409) y uno nuevo genera otro orderId. Se evalúa white-box (tests unitarios del motor / inspección) en H8."
+AT-03-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-03-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-04-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-05-08,no_automatizado,,,"El AT verifica la emisión del evento interno order-update con status REJECTED (reason SELF_TRADE_BLOCKED, sin tradeId) hacia los consumidores del motor. La épica 09 excluye deliberadamente ese evento del transporte: HU-09-04 RN-5 fija que no existe evento WS REJECTED (los rechazos responden sólo por REST) y el objeto orden REST no lleva reason. El efecto observable (422 SELF_TRADE_BLOCKED, cero trades, libro/balances intactos, orden terminal REJECTED) sí se verifica en AT-03-06-02/06/07 y AT-03-03-10; la emisión del evento en sí se evalúa white-box en H8."
+AT-03-05-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-06-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-04,no_automatizado,,,"Exige inducir una caída EN MEDIO de un fill (settlement no completado) para verificar la atomicidad de la recuperación; la propia HU indica el mecanismo (""inyección de fallo... usando un hook de test o una simulación de I/O"", AT-03-07-04). No hay superficie black-box para abortar el proceso en ese punto interno de forma determinista (un kill externo no sincroniza con el settlement). Se evalúa white-box (hook de inyección de fallos) en H8; la persistencia ante reinicio abrupto ""en reposo"" sí se cubre en AT-03-07-01/02/03/06."
+AT-03-07-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-03-07-09,no_automatizado,,,"El Dado exige una caída ocurrida DESPUÉS de persistir los fills de una MARKET pero ANTES de grabar su estado terminal, para verificar la inferencia del estado (RN-13). Ese instante intermedio es interno y no puede provocarse black-box de forma determinista (en operación normal el estado terminal queda grabado junto con el 201). La recuperación del estado terminal de una MARKET tras un reinicio normal queda cubierta indirectamente por AT-03-07-06 (estado idéntico tras reinicio); la inferencia desde fills sin estado terminal se evalúa white-box en H8."
+AT-04-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-01-15,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-05a,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-05b,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-12a,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-12b,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-02-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-15,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-16,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-17,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-18,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-03-19,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-04-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-05-14,no_automatizado,,,"Exige interrumpir un alta en curso (crash del proceso entre la reserva de fondos y el registro del estado) y recuperar: requiere inyección de fallas en un punto interno del SUT, sin superficie black-box para provocarla ni para observar el instante exacto. La parte observable (ninguna consulta devuelve NEW) queda cubierta de forma indirecta por los tests de estados (el status de cada respuesta/consulta se asserta contra estados observables). El caso de crash se evalúa en H8 por inspección de código (atomicidad del alta, HU-04-05 RN-11) más el chequeo manual de reinicio."
+AT-04-06-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-06-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-04-07-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-06,no_automatizado,,,"Exige provocar una falla a mitad del settlement (después de debitar la base y antes de acreditar la quote): la propia HU fija como mecanismo de prueba la inyección de falla en la capa de persistencia (mock que lanza excepción tras el primer asiento) o el kill del proceso en vuelo, sin superficie REST/WS/on-chain para dispararla en el instante requerido. El efecto observable en operación normal (nunca hay estado parcial: balances y trades consistentes tras cada fill, INV-4) queda cubierto como propiedad por los tests de AT-05-01-01..05/08/10/11; el rollback ante falla se evalúa white-box/inspección de transaccionalidad en H8."
+AT-05-01-07,no_automatizado,,,"El ""Cuando"" es el reproceso (redelivery/reintento) del evento interno de fill entre matching y settlement: el contrato de la épica 09 no expone ninguna operación para reinyectar un fill ya liquidado, y sin ese trigger el test sería vacuo (pasaría también en una implementación sin idempotencia). Se evalúa white-box en H8 (manejo del tradeId como clave de idempotencia, HU-05-01 RN-10)."
+AT-05-01-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-09,no_automatizado,,,"Requiere un evento de fill que pida consumir más q_wei que el bloqueado del vendedor: un estado interno inconsistente inalcanzable a través del contrato (el bloqueo previo de la épica 04 y las validaciones de fondos lo impiden por construcción; la HU misma lo describe como ""no debería ocurrir""). Se evalúa white-box en H8 (verificación de la precondición RN-9 antes de aplicar asientos)."
+AT-05-01-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-01-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-02-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-02-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-02-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-02-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-02-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-02-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-02-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-03-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-03-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-03-05,no_automatizado,,,"Mismo trigger interno que AT-05-01-07: el reproceso del evento de fill no puede provocarse black-box, y la mera unicidad de tradeId en operación normal (sin redelivery) ya queda verificada por los tests de AT-05-03-01/02/03. La no duplicación del registro ante redelivery se evalúa white-box en H8 junto con la idempotencia del settlement."
+AT-05-03-06,no_automatizado,,,"Depende de la misma inyección de falla interna que AT-05-01-06 (settlement revertido a mitad de la transacción): sin fault injection no existe ningún settlement revertido que inspeccionar desde el contrato. La propiedad ""no hay trade sin settlement"" se evalúa white-box en H8 junto con AT-05-01-06 (trade y asientos en la misma transacción, HU-05-03 RN-1 / INV-4)."
+AT-05-03-07,no_automatizado,,,"El escenario conjuga dos afirmaciones y la segunda no tiene superficie: la reconciliación Σ feeBaseWei == acreditado histórico a la cuenta EX en ETH y Σ feeQuoteMin == acreditado a EX en USDC (RN-8, INV-1). EX es una cuenta técnica del exchange y ningún endpoint de la épica 09 expone su saldo ni sus movimientos: black-box sólo se ven las fees de la pata propia de cada trade (GET /trades), nunca el lado acreditado. Como un AT se reporta entero, no se automatiza la mitad verificable (persistencia de los N trades tras reinicio, que sí sería observable) y se evalúa el escenario completo white-box en H8: los trades persistidos con tradeId/sequence/montos idénticos más la suma de fees contra los asientos hacia EX (RN-9, INV-8)."
+AT-05-03-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-05-04-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-06-01-01,no_automatizado,,,"La generación del seed HD (mnemonic de 24 palabras, checksum BIP-39, seed PBKDF2 de 64 bytes, cifrado en reposo) es interna: la API de la épica 09 no expone el mnemonic ni el seed por ningún endpoint (custodia, HU-06-01 RN-5). Se evalúa por inspección de código/white-box en H8 (rúbrica on-chain)."
+AT-06-01-02,no_automatizado,,,"Known-answer test de la derivación BIP-39 (mnemonic canónico + passphrase ""TREZOR"" ⇒ seed hexadecimal exacta): requiere invocar la función interna de derivación con inputs elegidos; el contrato HTTP/WS no expone esa operación. Se evalúa white-box (tests propios del SUT o inspección) en H8."
+AT-06-01-03,no_automatizado,,,"Determinismo de la derivación de seed: exige derivar dos veces la seed binaria desde un (mnemonic, passphrase) elegido y compararlas byte a byte (RN-7). La seed nunca sale del sistema (RN-5) y la función de derivación no es invocable por REST/WS. Se evalúa white-box (known-answer tests propios del SUT o inspección) en H8."
+AT-06-01-04,no_automatizado,,,"Exige generar dos mnemonics independientes y compararlos, pero el SUT provisiona un único seed por despliegue (RN-4) y no expone mnemonic ni seed (RN-5): no hay superficie black-box para obtener dos generaciones ni sus valores. Se evalúa en H8 ejecutando dos provisioning en entornos limpios e inspeccionando white-box que difieren."
+AT-06-01-05,no_automatizado,,,"Rechazo de mnemonic con checksum BIP-39 inválido: el provisioning es un proceso interno de arranque, no un endpoint (la spec fija abort con exit code != 0 y code VALIDATION_ERROR en stderr). Exige inyectar el mnemonic por la configuración del despliegue (mecanismo que la spec no fija y el entorno de evaluación no provee) y observar exit code/stderr del proceso. Se evalúa en H8 con un procedimiento de arranque orquestado (white-box operativo)."
+AT-06-01-06,falla,tests/test_ep06_wallet_direcciones.py::test_endpoints_autenticados_no_exponen_mnemonic_seed_ni_clave_privada,0.119,
+AT-06-01-07,falla,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,121.585,
+AT-06-01-08,falla,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,121.585,
+AT-06-01-09,no_automatizado,,,"Rechazo de mnemonic de 12 palabras (longitud != 24, RN-2a): igual que AT-06-01-05, requiere inyectar un mnemonic elegido en la configuración del despliegue y observar el abort del proceso de arranque (exit code/stderr), sin superficie REST/WS. Se evalúa en H8 con arranque orquestado white-box."
+AT-06-01-10,no_automatizado,,,"Rechazo de mnemonic con palabra fuera del wordlist BIP-39 (RN-2b): igual que AT-06-01-05/09, exige inyección del mnemonic por configuración del despliegue y observación del abort del proceso de arranque. Se evalúa en H8 con arranque orquestado white-box."
+AT-06-01-11,no_automatizado,,,Fallo de descifrado del seed al arrancar: exige corromper el almacenamiento cifrado o remover/alterar la credencial AES-256-GCM del entorno (estado interno del SUT) y observar el abort con exit code != 0 e INTERNAL_ERROR en stderr. Sin superficie black-box para provocarlo ni observarlo. Se evalúa en H8 manipulando el despliegue (white-box operativo).
+AT-06-01-12,no_automatizado,,,"Atomicidad ante crash durante la escritura del seed: exige inyectar una falla de proceso/filesystem en un punto interno del SUT, sin superficie black-box para provocarla ni observarla determinísticamente. Se evalúa por inspección de código (escritura atómica) en H8."
+AT-06-01-13,no_automatizado,,,"Smoke test de integridad al arrancar: el propio escenario prescribe que ""por inyección del test harness"" el seed cargado no derive la dirección persistida (simular corrupción), lo que requiere manipular estado interno y observar el abort del arranque. Se evalúa white-box en H8 (inyección + verificación del error crítico antes de procesar operaciones)."
+AT-06-02-01,no_automatizado,,,"Known-answer test de derivación con MNEMONIC_HARDHAT e índice 0: exige invocar la derivación con un mnemonic elegido. El seed del SUT lo genera o importa el propio SUT y el entorno de evaluación no se lo fija (entorno/README.md, contrato de arranque), y la función de derivación no es invocable por REST/WS. Se evalúa white-box (tests del SUT o derivación de referencia con el mnemonic de la corrida) en H8."
+AT-06-02-02,no_automatizado,,,"Known-answer test de los índices 1..3 con MNEMONIC_HARDHAT: mismo motivo que AT-06-02-01 (mnemonic elegido + función interna sin superficie REST/WS). La parte ""cada índice distinto produce una dirección distinta"" sí es observable y está cubierta como unicidad entre cuentas (tests de AT-06-03-01/03-05). Se evalúa white-box en H8."
+AT-06-02-03,pasa,tests/test_ep06_wallet_direcciones.py::test_toda_direccion_emitida_cumple_checksum_eip55,0.360,
+AT-06-02-04,no_automatizado,,,"Componentes hardened del path (indices 2147483692/2147483708/2147483648): la construcción de los índices de derivación es interna y el contrato público no expone el path (derivationPath es opcional en HU-06-04 RN-6, no exigible a toda implementación). Se evalúa por inspección de código en H8; la corrección de la cadena completa se cubre con los KAT white-box (AT-06-02-01/02) y con AT-06-03-07."
+AT-06-02-05,no_automatizado,,,"El escenario exige derivar dos veces ""un mismo seed y un mismo address_index"" elegidos: el contrato de la épica 09 no permite ni lo uno ni lo otro (GET /deposit-address devuelve la dirección del índice que el SUT ya asignó a la cuenta autenticada, sin parámetro de índice ni de seed). Y aun observando la misma dirección dos veces, la igualdad no distingue una derivación reproducible de una lectura del mapeo persistido o de una caché: la pureza de la función —lo que el AT afirma— es inobservable desde afuera. La consecuencia observable (la dirección de una cuenta nunca cambia entre consultas, ni siquiera tras un reinicio) está cubierta por AT-06-03-02, AT-06-04-08 y AT-06-02-06. Se evalúa white-box en H8 con el KAT de derivación (misma familia que AT-06-02-01) más la inspección de que el camino no depende de RNG, reloj ni estado mutable."
+AT-06-02-06,falla,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,121.585,
+AT-06-02-07,falla,tests/test_ep06_wallet_direcciones.py::test_respuestas_con_direcciones_no_exponen_clave_privada,0.120,
+AT-06-02-08,no_automatizado,,,Índice con clave BIP-32 inválida (I_L >= n o k_hijo == 0): el escenario prescribe inyectar un mock/stub de HMAC-SHA512 en el SUT porque la condición (~2^-127) no se activa de forma natural. Es instrumentación white-box por definición; sin superficie black-box para provocarla. Se evalúa por inspección/tests del SUT en H8.
+AT-06-02-09,no_automatizado,,,"address_index fuera del rango no-hardened (>= 2^31): ninguna superficie pública acepta un address_index (GET /deposit-address solo recibe asset; la asignación es interna), y llevar al asignador a 2^31 requeriría 2^31 altas de cuenta (inalcanzable). El VALIDATION_ERROR de RN-9 no es provocable black-box. Se evalúa white-box (tests del SUT sobre su función de derivación/asignación) en H8."
+AT-06-03-01,pasa,tests/test_ep06_wallet_direcciones.py::test_cuenta_nueva_recibe_direccion_eip55_exclusiva,0.197,
+AT-06-03-02,pasa,tests/test_ep06_wallet_direcciones.py::test_reobtener_la_direccion_no_asigna_una_nueva,0.125,
+AT-06-03-03,no_automatizado,,,"Exige estado limpio (sin asignaciones previas) y observar address_index = 0 y 1: el índice no se expone por el contrato público (derivationPath opcional, HU-06-04 RN-6) y la suite no puede garantizar estado limpio ni orden de ejecución (cualquier test previo crea cuentas con asignación eager). La proyección observable (direcciones distintas entre cuentas) está cubierta por los tests de AT-06-03-01 y AT-06-03-05; la contigüidad desde 0 se evalúa sobre el estado persistido (INV-EPICA-06-A) en H8."
+AT-06-03-04,pasa,tests/test_ep06_wallet_direcciones.py::test_una_sola_direccion_para_eth_y_usdc,0.109,
+AT-06-03-05,pasa,tests/test_ep06_wallet_direcciones.py::test_asignaciones_concurrentes_no_colisionan,1.295,
+AT-06-03-06,falla,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,121.585,
+AT-06-03-07,no_automatizado,,,"Propiedad de coherencia índice -> dirección contra una derivación BIP-44 de referencia ""sobre ese mismo mnemonic"": requiere conocer el mnemonic de 24 palabras del SUT, que es secreto por diseño (HU-06-01 RN-5) y no lo fija ni provee el entorno de evaluación (entorno/README.md). Se evalúa en H8: el evaluador obtiene white-box el mnemonic de la corrida (custodia controlada) y ejecuta la derivación de referencia externa comparando con las direcciones asignadas."
+AT-06-03-08,no_automatizado,,,"ACCOUNT_NOT_FOUND por cuenta inexistente: la asignación es una operación interna sin endpoint propio (HU-06-03, ""Naturaleza de la operación"") y el endpoint público no acepta selector de cuenta (la identidad se toma exclusivamente del token, HU-06-04 RN-2); un token que no corresponde a una cuenta válida falla antes con UNAUTHENTICATED (precedencia HU-06-04 RN-9) y la baja de cuentas está fuera de alcance. No hay forma black-box de referenciar una cuenta inexistente ante el asignador. Se evalúa white-box (tests del SUT sobre su asignador) en H8."
+AT-06-03-09,no_automatizado,,,"Asignación eager al alta: distinguir eager (al crear la cuenta) de lazy (primera consulta) exige leer el estado persistido o el evento interno antes de toda consulta, pero cualquier observación black-box pasa por GET /deposit-address, que dispararía el fallback idempotente (HU-06-04 RN-5) y vuelve indistinguibles ambos disparos. El registro persistido (accountId, addressIndex, derivationPath, network, chainId) tampoco es observable por el contrato público. Se evalúa sobre el estado persistido / evento de dominio (white-box) en H8."
+AT-06-03-10,no_automatizado,,,"Evento DepositAddressAssigned y consulta interna: el evento es de dominio interno y GET /internal/deposit-addresses es explícitamente no público (RN-11), fuera del contrato de la épica 09 al que la suite está restringida. Su efecto (toda dirección monitoreada desde la asignación) se observa solo indirectamente vía la acreditación de depósitos, cubierta por los ATs de la épica 07. Se evalúa white-box/integración en H8."
+AT-06-04-01,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_eth_devuelve_contrato_completo,0.100,
+AT-06-04-02,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_usdc_devuelve_la_misma_direccion_y_token_address,0.105,
+AT-06-04-03,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_sin_credencial_es_unauthenticated,0.006,
+AT-06-04-04,pasa,tests/test_ep06_wallet_direcciones.py::test_selector_de_cuenta_inyectado_se_ignora,0.246,
+AT-06-04-05,pasa,tests/test_ep06_wallet_direcciones.py::test_activo_no_soportado_es_validation_error,0.097,
+AT-06-04-06,pasa,tests/test_ep06_wallet_direcciones.py::test_chain_id_distinto_de_sepolia_es_chain_id_mismatch,0.099,
+AT-06-04-07,pasa,tests/test_ep06_wallet_direcciones.py::test_primera_consulta_devuelve_200_y_direccion_estable,0.112,
+AT-06-04-08,pasa,tests/test_ep06_wallet_direcciones.py::test_consultas_repetidas_devuelven_siempre_la_misma_direccion,0.103,
+AT-06-04-09,pasa,tests/test_ep06_wallet_direcciones.py::test_primeras_consultas_concurrentes_devuelven_una_sola_direccion,0.114,
+AT-07-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-01-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-02-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-03,no_automatizado,,,"El escenario exige ""forzar/solicitar la acreditación o uso"" de un depósito con confirmaciones < 12 y observar DEPOSIT_NOT_CONFIRMED (409) con details = { txHash, confirmations, required }. Esa solicitud explícita no tiene superficie black-box: la épica 09 (HU-09-01, mapa de endpoints) solo expone lectura de depósitos, y ""usar"" fondos aún no acreditados por otras vías (orden o retiro) produce INSUFFICIENT_FUNDS de la épica 02/04/08, no este código. La faceta observable (antes de 12 confirmaciones no se acredita ni se mueven balances) está automatizada en AT-07-03-02. El código y sus details (enteros JSON) se evalúan white-box/inspección en H8."
+AT-07-03-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-03-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-01,no_automatizado,,,"El ""Cuando"" —que el indexador reobserve el bloque de inclusión DESPUÉS de la acreditación— no tiene disparador black-box. Las dos únicas vías serían (a) una reorg de profundidad >= 13 (acreditar implica >= 12 confirmaciones), excluida por el supuesto explícito de HU-07-04 §Contexto, o (b) una solicitud explícita de acreditación, que la épica 09 no define como endpoint; por eso tampoco es observable la segunda mitad del ""Entonces"" (DEPOSIT_ALREADY_CREDITED 409 con details {txHash, logIndex}). El reinicio del SUT no sirve de disparador: la reanudación arranca en max(BLOQUE_INICIO_CONFIGURADO, checkpoint + 1) (RN-8, AT-07-04-11), o sea justamente sin volver a leer el bloque ya procesado. La idempotencia pre-acreditación (misma identidad observada N veces => una sola acreditación) sí está automatizada en AT-07-01-07, AT-07-02-08, AT-07-04-05 y AT-07-04-08; la persistencia del registro de identidades, en AT-07-04-07. Se evalúa white-box en H8 inspeccionando el mecanismo de exclusión mutua exigido por RN-2 (UNIQUE sobre (asset, txHash, logIndex) con INSERT ... ON CONFLICT DO NOTHING, o check+insert en transacción serializable) y la construcción de la respuesta idempotente."
+AT-07-04-02,no_automatizado,,,"El escenario prescribe un harness de concurrencia determinístico interno: dos workers que comparten el store del SUT, sincronizados con una barrera, invocando la operación de acreditación de la misma identidad. Black-box no existe esa operación (la superficie de depósitos es de solo lectura) ni forma de forzar dos acreditaciones internas simultáneas de la misma identidad, ni de observar cuál worker obtuvo DEPOSIT_ALREADY_CREDITED. Se evalúa white-box en H8: inspección del mecanismo de exclusión mutua en persistencia exigido por RN-2 (UNIQUE sobre (asset, txHash, logIndex) con INSERT ... ON CONFLICT, o transacción serializable) y tests de concurrencia propios del SUT."
+AT-07-04-03,no_automatizado,,,"Variante ETH nativo (identidad (txHash, 0)) del reproceso de un depósito ya acreditado: mismas razones que AT-07-04-01 — reobservar el bloque tras la acreditación exigiría una reorg de profundidad >= 13, excluida por el supuesto de HU-07-04 §Contexto, y no hay endpoint de acreditación explícita; el reinicio no lo dispara, porque el escaneo reanuda después del checkpoint. Que la identidad ETH usa logIndex = 0 y que múltiples observaciones pre-acreditación no duplican está automatizado en AT-07-01-07 y AT-07-04-08 (ambos con identidad (txHash, 0)). Se evalúa white-box en H8 junto con AT-07-04-01: que la clave de idempotencia del camino ETH nativo sea (asset, txHash, 0) y esté bajo la misma exclusión mutua de RN-2."
+AT-07-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-07-04-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-03a,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-03b,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-12b,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-01-15,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-02-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-03-09a,no_automatizado,,,"El ""Cuando"" (""se intenta firmarlo/broadcastearlo de nuevo como si fuera PENDING"") es una operación interna del servicio de firma: el contrato de la épica 09 no expone ningún endpoint que dispare la firma/broadcast de un retiro existente, por lo que el CONFLICT (409) por transición inválida (HU-08-03 RN-1) no tiene superficie black-box que lo provoque. El único reenvío posible por API (POST /withdrawals con la misma clave de idempotencia, HU-08-01 RN-10) NO debe intentar firmar: devuelve el retiro existente, y eso se verifica en AT-08-01-12 (con nonce/txHash estables). Se evalúa white-box (guardas de la máquina de estados) en H8."
+AT-08-03-09b,no_automatizado,,,"Igual que AT-08-03-09a con el retiro en estado terminal CONFIRMED: no existe superficie REST/WS que dispare una re-firma de un retiro existente, por lo que el CONFLICT (409) de transición inválida es inobservable black-box. El efecto adyacente observable (el reenvío idempotente sobre un retiro terminal no genera nueva transacción ni re-bloquea) está cubierto por AT-08-01-12/-12b. Se evalúa white-box en H8."
+AT-08-03-09c,no_automatizado,,,"Igual que AT-08-03-09a con el retiro en estado terminal FAILED: la operación ""volver a firmar"" no es invocable por el contrato de la épica 09 (el reenvío idempotente devuelve el mismo retiro FAILED sin re-firmar, verificado en AT-08-01-12b). Se evalúa white-box en H8."
+AT-08-04-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-08b,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-09b,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-04-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-04b,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-08-05-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-15,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-16,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-17,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-18,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-19,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-20,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-21,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-01-22,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-02-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-13,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-03-14,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-09,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-04-11,no_automatizado,,,"Expiración del token durante una sesión WS activa: exige un token con TTL corto, pero el TTL es configuración fija del SUT al arranque (HU-01-02 RN-3, default 3600 s, mínimo 60 s) y la API no permite emitir tokens con TTL arbitrario por request. Esperar la expiración real excede toda ventana razonable de test y depende de la configuración de la corrida. Se evalúa en H8 de forma manual/semiautomática arrancando el SUT con TTL mínimo (60 s) y observando el cierre 4001 con { error: UNAUTHENTICATED } (HU-09-04 RN-13)."
+AT-09-04-12,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-01,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-02,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-03,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-04,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-05,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-06,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-07,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-08,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-09,no_automatizado,,,"INTERNAL_ERROR (500) sin fuga de información: requiere provocar una ""falla interna no clasificada"" determinista, y el contrato HTTP/WS no expone ninguna operación que la induzca (cualquier entrada inválida cae en códigos 4xx del catálogo). Inyectar la falla exigiría manipular el interior del SUT (romper su base de datos o proceso), lo que viola el black-box. Se evalúa en H8 por inspección de código del manejador global de errores (que el 500 use el envelope y no exponga stack traces/secretos, HU-09-05 RN-9)."
+AT-09-05-10,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-11,sin_test,,,AT backend sin test ni declaración de no automatizable
+AT-09-05-12,sin_test,,,AT backend sin test ni declaración de no automatizable

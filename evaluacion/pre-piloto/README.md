@@ -51,6 +51,18 @@ SUT (esperable) o por defecto del harness —fixture rota, helper mal usado, ase
 dice lo que la spec dice—. Lo segundo se corrige y se registra en
 `runs/pre-piloto/hallazgos.md`; el criterio de un AT no se toca (ADR-018 Decisión 5).
 
+### Falsos positivos conocidos (sólo en la pre-piloto)
+
+Un test puede pertenecer a una HU del alcance y aun así recorrer endpoints de otras
+épicas para verificar propiedades transversales — que ninguna respuesta autenticada
+exponga el seed, que los balances iniciales estén en cero—. Con la spec recortada esos
+endpoints no existen y el test falla con 404 **sin que haya defecto del SUT**.
+
+Medido en `pre-piloto-b`: **7 de los 7 ATs en falla** son de esta clase (`/balances` de
+la épica 02 y `/withdrawals` de la épica 08). Criterio de lectura del CSV de la
+pre-piloto: ante una falla, primero verificar si el endpoint involucrado estaba en el
+alcance. En una corrida oficial el problema no existe, porque la spec va entera.
+
 ## 2. White-box
 
 Sobre los 22 ATs de `ats-white-box.txt`, con el framework de

@@ -363,3 +363,57 @@ supuesto.
   `SUITE_CMD_REINICIO_SUT` sobre el contenedor (`docker restart` / `kill` + `start`), que
   además es más fiel al `kill -9` que el protocolo pide.
 - **Estado:** resuelto.
+
+## H-16 — El readiness probe del reinicio estaba acoplado a la épica 03
+
+- **Componente:** 6.4 (`SUITE_CMD_REINICIO_SUT`) — riesgo directo sobre 21 ATs de INV-8
+- **Observado:** `tests/comunes_reinicio.py::sut_responde` daba por vuelto el SUT sólo si
+  `GET /market/ticker` respondía **200**. El ticker es de la épica 03. En la pre-piloto,
+  con esa épica fuera del alcance, el endpoint devolvía 404 y el helper esperaba los
+  **120 s completos** antes de fallar con «el SUT no volvió a responder tras el
+  reinicio» — cuando el SUT, medido aparte, volvía en **2 segundos**.
+- **Por qué importa en H8, donde la épica 03 sí está implementada:** el mensaje culpa al
+  reinicio de un problema del ticker. Una celda que implemente mal ese endpoint haría
+  fallar por timeout los **21 ATs de persistencia** que dependen del reinicio (ADR-011),
+  con un diagnóstico que apunta al lugar equivocado, y sumaría 2 minutos de espera por
+  cada uno.
+- **Corrección aplicada:** `sut_responde` da por vuelto el SUT si **responde HTTP**,
+  cualquiera sea el status: lo que estos ATs necesitan saber es si el proceso volvió a
+  servir, no si una épica está implementada. Ningún criterio de AT cambia — es
+  instrumentación, admitida por ADR-018 Decisión 5.
+- **Verificado:** el test de persistencia pasa en **3,25 s** (antes: timeout de 121 s).
+- **Estado:** resuelto.
+
+## H-17 — Un test que explota con `TypeError` no dice qué falló
+
+- **Componente:** 6.5 (fallas del harness contra fallas del SUT)
+- **Observado:** `test_registro_exitoso_con_credenciales_validas` (AT-01-01-01) hacía
+  `{b["asset"]: b for b in balances}` sobre la respuesta de `GET /balances` sin verificar
+  antes status ni forma. Con `/balances` devolviendo 404, `balances` era el envelope de
+  error, iterarlo daba las claves como strings y el test moría con
+  `TypeError: string indices must be integers` — que no dice nada de lo que pasó.
+- **Por qué importa en H8:** una celda que devuelva `/balances` con otra forma —un objeto
+  en vez de una lista, por ejemplo— produciría el mismo `TypeError`, y el evaluador
+  tendría que depurar el harness para descubrir que en realidad es un hallazgo sobre el
+  SUT. Distinguir falla del SUT de falla del harness es precisamente lo que la pre-piloto
+  vino a probar.
+- **Corrección aplicada:** el test verifica status 200 y que la respuesta sea una lista
+  **antes** de indexar, con el cuerpo recortado en el mensaje. El criterio del AT no
+  cambia: sigue exigiendo `available`/`locked` en `"0"` para ETH y USDC.
+- **Estado:** resuelto.
+
+## H-18 — La selección por HU no basta: hay tests transversales
+
+- **Componente:** 6.2 (selección por alcance de la pre-piloto)
+- **Observado:** los 7 ATs que fallan en `pre-piloto-b` **no son defectos del SUT**: son
+  404 de `/balances` (épica 02) y `/withdrawals` (épica 08), endpoints que el prompt de
+  la pre-piloto excluyó explícitamente. Los tests que los tocan pertenecen a HU-01-01 y
+  HU-06-01/02/03 —dentro del alcance— pero recorren endpoints de otras épicas para
+  verificar propiedades transversales (que ninguna respuesta autenticada exponga el seed,
+  que los balances iniciales sean cero).
+- **Alcance del problema:** es **exclusivo de la pre-piloto**. En una corrida oficial la
+  spec está entera y esos endpoints existen. No hay nada que corregir en la suite.
+- **Corrección:** documentar en `evaluacion/pre-piloto/README.md` que el criterio de
+  lectura del CSV de la pre-piloto es *falla ⇒ revisar si el endpoint estaba en el
+  alcance*, y que 7 ATs son falsos positivos conocidos por esta causa.
+- **Estado:** documentado; sin cambios en el harness.

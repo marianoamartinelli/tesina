@@ -54,9 +54,25 @@ def comando_reinicio() -> str:
 
 
 def sut_responde(api) -> bool:
-    """True si el SUT atiende el endpoint público de readiness (``GET /market/ticker``)."""
+    """True si el SUT volvió a atender HTTP tras el reinicio.
+
+    Basta con que **responda**: cualquier status sirve como señal de vida, incluido un
+    404. Lo que estos ATs necesitan saber es si el proceso volvió a servir, no si una
+    épica en particular está implementada.
+
+    Antes se exigía ``GET /market/ticker`` con status 200, y eso acoplaba la readiness a
+    la épica 03: una celda que no implemente el ticker —o que lo implemente mal— haría
+    fallar por timeout los **21 ATs de persistencia** (INV-8) que dependen del reinicio,
+    con un mensaje que culpa al reinicio en vez de al ticker. Medido en la pre-piloto,
+    donde la épica 03 estaba fuera del alcance: el SUT volvía en 2 s y el helper esperaba
+    los 120 s completos.
+
+    El criterio de ningún AT cambia: sólo cambia cómo se detecta que el SUT volvió
+    (ADR-018 Decisión 5 — se corrige el harness, no el criterio).
+    """
     try:
-        return api.get("/market/ticker").status_code == 200
+        api.get("/market/ticker")
+        return True
     except Exception:
         return False
 

@@ -101,7 +101,17 @@ def test_registro_exitoso_con_credenciales_validas(api):
     # Y: balances iniciales en cero como estado interno, vía épica 02 (RN-6, INV-1)
     token = login(api, email, password)
     with api.con_token(token) as autenticado:
-        balances = autenticado.get("/balances").json()
+        resp_balances = autenticado.get("/balances")
+    # La forma se verifica antes de indexar: si el SUT responde otra cosa, el AT falla
+    # con el motivo a la vista en vez de un TypeError del harness (corregido en la
+    # pre-piloto, donde /balances devolvía 404 y el error era `string indices must be
+    # integers`, que no dice nada de lo que pasó).
+    assert resp_balances.status_code == 200, (
+        f"GET /balances respondió {resp_balances.status_code}: {resp_balances.text[:200]}")
+    balances = resp_balances.json()
+    assert isinstance(balances, list), (
+        f"GET /balances debe devolver una lista de balances; devolvió "
+        f"{type(balances).__name__}: {str(balances)[:200]}")
     por_activo = {b["asset"]: b for b in balances}
     for activo in ("ETH", "USDC"):
         assert por_activo[activo]["available"] == "0"  # RN-6: disponible inicial "0"
