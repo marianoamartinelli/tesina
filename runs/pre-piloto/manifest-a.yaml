@@ -67,7 +67,7 @@ repo:
 # 5. Cierre de la corrida
 inicio: "2026-08-23T23:45:26-03:00"
 fin: "2026-08-24T12:12:30-03:00"
-repo_commit_final: "PENDIENTE: congelar el repo satélite y registrar el hash"
+repo_commit_final: "f8ab9f1c9b378ff2ff6022682349bdeb4c787b3f"   # repo congelado en sólo lectura al cerrar la corrida
 etapas:
   backend:
     inicio: "2026-08-23T23:45:26-03:00"

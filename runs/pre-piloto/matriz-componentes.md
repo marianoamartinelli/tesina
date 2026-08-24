@@ -4,6 +4,11 @@ Qué componente ejercita cada parte de la pre-piloto, con qué evidencia se lo d
 verificado y en qué estado está. Es el instrumento de la corrida: un componente sin
 evidencia registrada acá **no** está verificado, por más que la corrida haya terminado.
 
+**Estado al cierre de la pre-piloto (2026-08-24): 37 de 44 componentes verificados.**
+De los 7 restantes, 3 son rúbricas manuales que completa el tesista, 1 es su arbitraje,
+1 es una decisión suya abierta (el uso del corpus, H-12), 1 es un camino que no llegó a
+ocurrir (corte por exit ≠ 0) y 1 tiene residuo declarado (la tarifa de caché del ítem 20).
+
 Estados: `[ ]` sin ejercitar · `[~]` ejercitado con defectos abiertos · `[x]` verificado.
 
 Los defectos que aparezcan se anotan en [`hallazgos.md`](hallazgos.md) y, si tocan
@@ -96,4 +101,4 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 |---|---|---|---|---|
 | 9.1 | Smoke check de avance de etapa | backend de A y de B, web de B | backends: `GET /health` OK (el de A informa `chainId: 11155111`, o sea que verificó la red). Web de B: falla en el host y pasa en contenedor (H-15 ⇒ ADR-021) | [x] 3 de 6 etapas |
 | 9.2 | Registro de intervenciones y clasificación | smoke de B | INT-01 registrada en el momento con su clasificación | [x] 2026-08-24 |
-| 9.3 | Cierre y congelamiento de la corrida | al terminar cada celda | manifest §5 completo | [ ] |
+| 9.3 | Cierre y congelamiento de la corrida | las 2 celdas | manifest §5 completo con costo, tokens y turnos por etapa; logs archivados en `logs/`; repos en sólo lectura con su hash final registrado | [x] 2026-08-24 |
