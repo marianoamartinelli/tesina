@@ -213,3 +213,49 @@ Vale como advertencia para la piloto: un override que no se imprime no está med
   manifest (`notas`) en vez de un número que mentiría.
 - **Estado:** corregido en caliente; falta llevarlo al protocolo (va con el ADR de H-07 y
   H-09).
+
+## H-11 — Hay varios `result` por invocación y su `total_cost_usd` no se suma
+
+- **Componente:** 5.1 / 5.5 (esquema del stream de A y costo) — cierra parte del ítem 19
+  de la checklist H6
+- **Observado:** el paso 1 de A emitió **tres** eventos `type: "result"`, los tres en el
+  mismo segundo (09:35:16), con la misma `session_id`, el mismo `duration_api_ms` y el
+  **mismo `total_cost_usd` (30,0551225)**, pero distinto `num_turns`: 65, 8 y 15. Los
+  tres traen `parent_tool_use_id: null`, así que `nucleo.es_de_subagente` los clasifica
+  como agente principal.
+- **Lectura:** el `total_cost_usd` es **acumulado de sesión**, no de segmento. Sumar los
+  `result` de una invocación **triplicaría** el costo registrado. La lectura correcta es
+  tomar uno solo por `session_id` (el de mayor `num_turns`, o cualquiera: el costo es el
+  mismo). Los `num_turns` 8 y 15 corresponden con toda probabilidad a los subagentes que
+  el implementador lanzó —hubo 3 llamadas a `Agent` y 113 mensajes con atribución de
+  subagente—, pero **sus `result` no llevan `parent_tool_use_id`**, así que la atribución
+  por ese campo funciona para los mensajes y no para los `result`.
+- **Corrección:** `pipeline` — el cómputo de costo por etapa (que hoy se hace fuera del
+  bucle, sobre el JSONL) debe agrupar por `session_id` y quedarse con un `result` por
+  sesión. Documentarlo en `nucleo` junto a `costo_estimado_usd`. La atribución de
+  subagentes de `es_de_subagente` queda como está para los mensajes, con la limitación
+  anotada para los `result`.
+- **Estado:** abierto — se implementa al cerrar las etapas en curso.
+
+## H-12 — El agente A no consultó el corpus ni una vez, con la épica 06 en el alcance
+
+- **Componente:** 4.2 (consultas reales al corpus)
+- **Observado:** el `-rag.jsonl` de `pre-piloto-a` tiene **dos líneas, ambas
+  `servidor_rag_inicio`** (una por paso): **cero consultas** en todo el paso 1, que
+  implementó la épica 06 completa —generación de seed BIP-39, derivación BIP-32/BIP-44,
+  asignación de direcciones—, o sea justo el contenido que el corpus congela. El servidor
+  MCP arrancó bien y la herramienta estaba declarada: no es un fallo técnico, el agente
+  no la usó. `pre-piloto-b`, con el mismo corpus y la misma descripción de herramienta,
+  hizo 3 consultas en el mismo tramo.
+- **Por qué importa, y por qué no lo corrijo por mi cuenta:** el factor manipulado del
+  2×2 es *con/sin RAG*. Si el agente de una familia no consulta el corpus aunque lo
+  tenga, ese factor mide **disponibilidad** y no **uso**, y la celda `a-con-rag` sería
+  indistinguible de `a-sin-rag` salvo por el ruido. Pero «que el agente elija no usar la
+  herramienta» **es un resultado legítimo** del experimento, y forzarlo desde el prompt
+  —por ejemplo mandándole consultar el corpus antes de implementar un estándar— cambiaría
+  el factor por otro distinto y afectaría a las 4 celdas. Es una decisión de diseño del
+  tesista, no una corrección de infraestructura.
+- **Qué falta antes de decidir:** ver si A consulta en los pasos 2 y 3 y en las etapas
+  siguientes, y cuánto consulta B al terminar. Con la etapa cerrada, el dato queda
+  medido en las dos familias.
+- **Estado:** abierto — a elevar al tesista con el conteo final de las dos celdas.
