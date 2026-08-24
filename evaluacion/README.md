@@ -37,6 +37,10 @@ evaluador) y del hito H2 (protocolo experimental pre-registrado).
   (`pasada-N.yaml`) antes del arbitraje humano. Doble pasada por celda; resultados
   en `runs/<id>/no-automatizables/`, nunca mezclados con la suite; el veredicto de
   registro lo firma el humano (ADR-004 §2.5).
+- **`pre-piloto/`** — selección de la evaluación reducida de la corrida pre-piloto
+  ([ADR-018](../decisiones/ADR-018-corrida-pre-piloto.md)): `alcance.yaml` (qué HU entran)
+  y `seleccionar.py`, que lo expande a AT-ids y a nodeids de pytest (78 ATs = 56
+  black-box + 22 white-box). No modifica ningún instrumento: los invoca acotados.
 - **`suite-at/`** — suite de tests de aceptación **black-box** contra el contrato
   HTTP/WebSocket de la épica 09. Se escribe una sola vez y corre idéntica contra las
   4 implementaciones; reporta por **AT-id** (`resultados-at.csv`). Cubre backend

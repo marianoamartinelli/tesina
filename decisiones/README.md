@@ -35,6 +35,7 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-015](ADR-015-agentes-en-contenedores.md) | Los agentes corren en contenedores, con toolchain común y capa por CLI | Aceptado (D3 enmendada por ADR-017 del lado A) |
 | [ADR-016](ADR-016-sin-topes-de-presupuesto.md) | No hay topes de presupuesto: la corrida termina cuando termina el pipeline | Aceptado |
 | [ADR-017](ADR-017-credenciales-por-entorno-en-el-harness-a.md) | Las credenciales del harness A se inyectan por entorno, no por bind-mount | Aceptado |
+| [ADR-018](ADR-018-corrida-pre-piloto.md) | Corrida pre-piloto sobre un universo reducido de la spec, antes de la piloto | Aceptado |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan
@@ -94,3 +95,12 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 > `CLAUDE_CODE_OAUTH_TOKEN` (de `claude setup-token`) vía `--env-file`; B conserva el
 > bind-mount de su `auth.json`, que sí es un archivo vigente. Es una asimetría de
 > plataforma, no de diseño, y se declara en `analisis/amenazas-validez.md`.
+
+> **Nota (2026-08-23, tercera sesión del día):** **ADR-018** agrega una corrida
+> **pre-piloto** —dos celdas descartables, una por familia— antes de `piloto-01`. No
+> reemplaza nada: el protocolo v1.2, la spec y la partición 465/56 siguen igual. Su
+> objeto es que cada componente del pipeline y de la evaluación se ejecute al menos una
+> vez sobre un universo reducido de la spec (6 HU de backend, 2 de cliente), para que la
+> piloto no se gaste depurando infraestructura. Su Decisión 5 fija además qué se puede
+> corregir en `evaluacion/` después de ver una implementación —defectos del harness sí,
+> el criterio de un AT no—, regla que vale también para la piloto.

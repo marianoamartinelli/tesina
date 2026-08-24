@@ -1,0 +1,36 @@
+# Universo reducido de la corrida PRE-PILOTO (ADR-018).
+#
+# Es la MISMA lista que acotan los prompts de etapa de
+# `pipeline/comun/prompts/prepiloto/`: si una cambia, la otra también, o la
+# evaluación deja de medir lo que se pidió implementar.
+#
+# Criterio de selección de las HU evaluables: sólo entran las HU **íntegramente**
+# dentro del alcance de implementación. Las HU de la épica 09 que el prompt acota
+# parcialmente (09-01, 09-02, 09-05) NO se evalúan: sus ATs cubren endpoints fuera
+# del alcance y sus fallas no distinguirían un defecto del pipeline de un
+# fuera-de-alcance esperado.
+
+# Evaluación black-box (suite-at) — épicas 01–09.
+hus_backend:
+  - HU-01-01   # registro de usuario
+  - HU-01-02   # inicio de sesión
+  - HU-06-01   # generación y custodia del seed
+  - HU-06-02   # derivación jerárquica BIP-32/BIP-44
+  - HU-06-03   # asignación de dirección de depósito
+  - HU-06-04   # consulta de dirección de depósito
+
+# Implementadas pero NO evaluadas: el prompt de etapa las acota a un subconjunto de
+# sus escenarios, así que sus ATs no son un criterio válido de esta corrida.
+hus_backend_implementadas_sin_evaluar:
+  - HU-09-01   # sólo 3 endpoints del contrato
+  - HU-09-02   # aplicada sólo a esos endpoints
+  - HU-09-05   # catálogo de errores de esos endpoints
+
+# Evaluación por rúbrica — épicas 10–11.
+hus_web:
+  - HU-10-01   # pantalla de login
+hus_mobile:
+  - HU-11-01   # login mobile
+ats_mobile_sueltos:        # de HU-11-06, sólo la pantalla de depósito
+  - AT-11-06-01            # mostrar dirección de depósito con QR
+  - AT-11-06-26            # QR EIP-681 de USDC-mock

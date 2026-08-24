@@ -1,0 +1,81 @@
+# Etapas de la CORRIDA PRE-PILOTO (ADR-018) — descartable, no cuenta para el 2×2.
+#
+# Copia de `etapas.yaml` que difiere en **una sola cosa**: los tres prompts de etapa
+# apuntan a `comun/prompts/prepiloto/`, que acotan el alcance de implementación al
+# universo reducido de la pre-piloto. Roles, secuencia, prompt de sistema, criterios de
+# avance y configuración del RAG son idénticos al archivo oficial, y así deben quedar:
+# lo que la pre-piloto verifica es la mecánica del pipeline, no una variante de él.
+#
+# Verificable: las 12 líneas de este encabezado aparte, el archivo es idéntico a
+# `etapas.yaml` salvo el segmento `prepiloto/` en las tres rutas de prompt de etapa:
+#   diff <(sed '1,12d; s|prompts/prepiloto/|prompts/|' etapas-prepiloto.yaml) etapas.yaml
+#
+# Definición única de las etapas del pipeline (compartida por ambos orquestadores).
+# Orden fijado por el protocolo pre-registrado (evaluacion/protocolo.md §4).
+# Los prompts se cargan verbatim desde los archivos referenciados; ningún harness
+# define texto de prompt propio.
+
+prompt_sistema: comun/prompts/sistema.md
+
+etapas:
+  - id: backend
+    prompt: comun/prompts/prepiloto/etapa-1-backend.md
+    # Criterio de avance (lo verifica el evaluador humano, no el harness):
+    # el backend arranca y responde el health-check que el prompt de etapa le
+    # pide elegir y documentar en su README (la spec no define ninguno).
+    smoke_check: "backend levanta y responde el health-check documentado en su README"
+    presupuesto_proporcional: 0.60
+  - id: web
+    prompt: comun/prompts/prepiloto/etapa-2-web.md
+    smoke_check: "cliente web compila y renderiza login"
+    presupuesto_proporcional: 0.25
+  - id: mobile
+    prompt: comun/prompts/prepiloto/etapa-3-mobile.md
+    smoke_check: "app mobile compila y corre en Expo"
+    presupuesto_proporcional: 0.15
+
+# Roles del orquestador (ADR-009, Decisión 4). Un rol es un archivo de prompt que
+# cada CLI inyecta con su mecanismo equivalente (A: --append-system-prompt;
+# B: -c developer_instructions=...), compuesto con `prompt_sistema`. No son
+# primitivas de sub-agentes de ningún proveedor.
+roles:
+  implementador:
+    prompt: comun/prompts/roles/implementador.md
+  revisor:
+    prompt: comun/prompts/roles/revisor.md
+
+# Secuencia de invocaciones dentro de una etapa, idéntica para las tres etapas y
+# para las 4 celdas (ADR-009, Decisión 4). Cada paso es una sesión fresca del CLI:
+# el estado compartido es el repo satélite y el handoff son archivos bajo
+# `.pipeline/` (rutas relativas a la raíz del repo satélite) pasados por puntero en
+# el mensaje, nunca pegando su contenido ni usando archivos de carga automática
+# (AGENTS.md / CLAUDE.md), que se cargarían de forma asimétrica entre familias.
+# `instruccion` se appendea al prompt de etapa en ese paso y sólo transporta la
+# ruta: el comportamiento del rol vive en su prompt. Marcas admitidas: {etapa},
+# {salida}, {entrada}.
+secuencia:
+  - rol: implementador
+  - rol: revisor
+    salida: .pipeline/revision-{etapa}.md
+    instruccion: >-
+      Escribí el resultado de tu revisión en `{salida}` (ruta relativa a la raíz
+      del repositorio).
+  - rol: implementador
+    entrada: .pipeline/revision-{etapa}.md
+    instruccion: >-
+      La implementación de esta etapa ya existe y fue revisada: la revisión está
+      en `{entrada}` (ruta relativa a la raíz del repositorio).
+
+rag:
+  herramienta: consultar_corpus
+  descripcion: >-
+    Busca en una base de conocimiento con los estándares del dominio on-chain
+    (BIP-32, BIP-39 y su wordlist, BIP-44, EIP-155, ERC-20, ERC-55, ERC-681 y la
+    interfaz JSON-RPC de Ethereum) y devuelve los pasajes más relevantes para la
+    consulta. Usala cuando necesites el detalle normativo exacto de uno de esos
+    estándares (fórmulas, campos, algoritmos, vectores de prueba).
+  corpus: ../corpus/documentos
+  k: 6
+  bm25:
+    k1: 1.5
+    b: 0.75

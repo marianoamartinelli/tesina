@@ -1,0 +1,6 @@
+celda: pre-piloto-b   # corrida descartable (ADR-018); no cuenta para el 2x2 ni para H6
+harness: b            # Codex CLI
+modelo: gpt-5.6-sol   # mismo pin que las celdas oficiales (ADR-009 D3)
+effort: xhigh
+rag: true             # con RAG: la épica 06 del alcance es la que fuerza el uso del corpus
+etapas: ../comun/etapas-prepiloto.yaml

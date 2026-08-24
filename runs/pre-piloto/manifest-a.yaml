@@ -1,0 +1,100 @@
+# Manifest de la corrida PRE-PILOTO a (ADR-018) — descartable.
+#
+# No cuenta para el factorial 2×2 ni para la ventana H6: su objeto es verificar que
+# todos los componentes del pipeline y de la evaluación corren de punta a punta sobre
+# un universo reducido de la spec (ver matriz-componentes.md y
+# evaluacion/pre-piloto/alcance.yaml). Los campos que sólo se pueden medir al arrancar
+# o al cerrar quedan marcados PENDIENTE con el comando que los completa.
+
+# 1. Identidad de la corrida
+run_id: "pre-piloto-a"
+celda:
+  modelo: "A (Claude)"
+  rag: true                # las dos celdas con RAG: el alcance incluye la épica 06,
+                           # que es la que fuerza el uso del corpus (BIP-32/39/44)
+oficial: false
+
+# 2. Insumos pinneados
+spec:
+  tag: "spec-v1.1"
+  commit: "c00da9b8cfa79b663d67a03d8588429c6b7b6554"   # spec-v1.1^{commit}
+  alcance: "SUBCONJUNTO — no es la spec completa. HU-01-01, HU-01-02, épica 06 completa
+    y la parte de la épica 09 que esas HU exponen (backend); HU-10-01 (web); HU-11-01 y
+    la pantalla de depósito de HU-11-06 (mobile). Lo fijan los prompts de
+    pipeline/comun/prompts/prepiloto/ y evaluacion/pre-piloto/alcance.yaml."
+corpus:
+  commit: "0509b9f930a71ac09b796f557092936b96a6b45d"
+protocolo:
+  adr: "ADR-016 (protocolo v1.2) + ADR-018 (esta corrida)"
+
+# 3. Configuración del pipeline
+pipeline_commit: "PENDIENTE-ARRANQUE: hash del commit de pipeline/ vigente al arrancar (los archivos de la pre-piloto entran en el commit de esta sesión)"
+paridad_verificada: "2026-08-23 — verificar_paridad.py exit 0, 117 chequeos, sobre a44a607394c639f53e846cbf5e87ae377316058c + los archivos de la pre-piloto sin commitear"
+modelo:
+  proveedor: "anthropic"
+  model_id: "claude-opus-5"
+  parametros:
+    effort: "xhigh"
+    model_context_window: 1000000
+harness:
+  cli: "claude-code"
+  version: "2.1.241 (Claude Code)"
+  auth: "suscripción (CLAUDE_CODE_OAUTH_TOKEN por --env-file, ADR-017)"
+entorno_host:
+  os: "macOS 26.6.2"
+  node: "v23.11.0"
+  npm: "10.9.2"
+  python: "Python 3.12.10 (.venv del repo)"
+  docker: "Docker version 28.5.2, build ecc6942"
+  foundry: "PENDIENTE-ARRANQUE: docker exec suite-at-anvil anvil --version"
+entorno_onchain:
+  url_rpc: "http://127.0.0.1:8545"
+  direccion_usdc_mock: "PENDIENTE-ARRANQUE: salida de desplegar-usdc.py al arrancar esta corrida"
+  version_anvil: "ghcr.io/foundry-rs/foundry@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46"
+
+contenedores:
+  tag: "piloto-01"         # se reutilizan las imágenes ya construidas; no se reconstruyen
+  base: "sha256:72a1a49f631ba34cce602a8de55134e4d9b39e2047b0074b5eca5e8d06af11d5"
+  agente_a: "sha256:af7f27b10893c31c6d856031d3a4226789f7703fc7abee8b809ffaf99be9e0e0"
+  agente_b: "sha256:ab065e2f3eed624eaf4ec936c8364e6d505ea18a4be9a67605828a516d398b03"
+  red: "abierta (ADR-015 D4). PENDIENTE-CORRIDA: registrar los hosts tocados"
+
+# 4. Repo de la implementación generada
+repo:
+  url: "local — ~/Desktop/projects/tesina-runs/pre-piloto-a/tesina-run-pre-piloto-a (descartable, ADR-018)"
+  commit_inicial: "5ae94f730cb17828e3ca9a0c79f752ef3d5591a4"
+
+# 5. Cierre de la corrida
+inicio: ""
+fin: ""
+repo_commit_final: ""
+etapas:
+  backend:
+    inicio: ""
+    fin: ""
+    tokens: null
+    costo_usd: null
+    intervenciones: null
+    estado: ""
+    motivo_cierre: ""
+  web:
+    inicio: ""
+    fin: ""
+    tokens: null
+    costo_usd: null
+    intervenciones: null
+    estado: ""
+    motivo_cierre: ""
+  mobile:
+    inicio: ""
+    fin: ""
+    tokens: null
+    costo_usd: null
+    intervenciones: null
+    estado: ""
+    motivo_cierre: ""
+logs_jsonl: []
+costo_total_usd: null
+tokens_totales: null
+intervenciones_total: null
+notas: ""

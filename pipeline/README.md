@@ -36,6 +36,7 @@ pipeline/
 ├── harness_b/orquestar.py      # arma la línea de comandos de `codex exec`
 ├── config/<celda>.yaml         # una config declarativa por celda
 ├── verificar_paridad.py        # chequeo mecánico (correr antes de cada corrida)
+├── crear-repo-satelite.sh      # repo satélite limpio con la spec pinneada (protocolo §3)
 ├── requirements.txt            # dependencias Python pinneadas (los CLI van aparte)
 ├── harness_a/correr.py         # pipeline SDK anterior — no se borra (ver abajo)
 └── harness_b/correr.py         # ídem
@@ -304,6 +305,50 @@ Los chequeos 9 y 10 son de ADR-014/015 (2026-08-23). Antes de eso el verificador
 inspeccionaba ninguna línea de comandos**: el traslado de ADR-008 se daba por hecho en las
 dos familias sin nada que lo sostuviera, que es cómo un default falso del lado B pasó
 inadvertido.
+
+## La corrida pre-piloto (ADR-018)
+
+Antes de `piloto-01` corre una **pre-piloto**: dos celdas descartables —`pre-piloto-a` y
+`pre-piloto-b`, una por familia— sobre un **universo reducido** de la spec, para que cada
+componente se ejecute al menos una vez antes de gastar una corrida completa depurando
+infraestructura. Lo fija [ADR-018](../decisiones/ADR-018-corrida-pre-piloto.md); el
+procedimiento y el estado de cada componente están en
+[`runs/pre-piloto/`](../runs/pre-piloto/).
+
+Del lado del pipeline son tres archivos y ningún cambio de código:
+
+- `config/pre-piloto-a.yaml` y `config/pre-piloto-b.yaml` — mismos model IDs y `effort`
+  que las oficiales, las dos con RAG (el alcance incluye la épica 06, la única que fuerza
+  consultas al corpus).
+- `comun/etapas-prepiloto.yaml` — idéntico a `comun/etapas.yaml` salvo las tres rutas de
+  prompt de etapa; el `diff` que lo comprueba está en su encabezado.
+- `comun/prompts/prepiloto/etapa-{1-backend,2-web,3-mobile}.md` — mismo formato que los
+  oficiales, con un bloque de alcance que enumera las HU a implementar.
+
+El prompt de sistema, los prompts de rol, la secuencia implementador → revisor →
+implementador, los criterios de avance y la config del RAG son **los mismos archivos** que
+usan las celdas oficiales. `verificar_paridad.py` sigue mirando sólo las 4 oficiales: la
+pre-piloto no entra a la paridad y no la altera (117 chequeos, exit 0).
+
+### El repo satélite
+
+```bash
+pipeline/crear-repo-satelite.sh <id-corrida> <destino> [tag-de-spec]
+```
+
+Extrae `spec/` del tag (`spec-v1.1` por default) con `git archive` —ni el historial ni el
+resto del árbol de la tesina llegan al agente—, le hace `git init` y commitea el estado
+inicial. Imprime el commit del tag y el del satélite, los dos campos que el manifest
+necesita antes de que el agente ejecute nada (§2 `spec.commit`, §4 `repo.commit_inicial`).
+
+Fija también el layout que el orquestador da por supuesto, porque el JSONL se escribe en
+`<repo>/../logs/`:
+
+```
+<destino>/
+  tesina-run-<id>/   repo satélite
+  logs/              lo crea el orquestador en la primera etapa
+```
 
 ## Pendiente para la piloto (H6)
 

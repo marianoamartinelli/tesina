@@ -9,6 +9,11 @@ vive en un repo propio, referenciado desde el manifest.
   (A = Claude / Claude Code CLI; B = GPT / Codex CLI — ADR-009, que reemplaza el
   pareo por SDK de ADR-005).
 - Piloto: `piloto-NN` (no cuenta para el análisis factorial).
+- Pre-piloto: `pre-piloto-a` / `pre-piloto-b`
+  ([ADR-018](../decisiones/ADR-018-corrida-pre-piloto.md)). Descartable y previa a la
+  piloto; sus dos celdas comparten el directorio [`pre-piloto/`](pre-piloto/), con un
+  manifest y un log de intervenciones por celda, porque son una sola sesión de
+  verificación de componentes y no dos corridas del experimento.
 
 ## Contenido mínimo por corrida
 
