@@ -59,10 +59,15 @@ DIR_COMUN = "/pipeline/comun"
 # corpus vacío.
 #
 # El destino **no es arbitrario**: `nucleo.cargar_rag` resuelve el corpus como
-# `<etapas.yaml>/../../corpus/documentos`, y con `etapas.yaml` en `/pipeline/comun`
-# eso da exactamente esta ruta. Montarlo en otro lado obligaría a parchear la
-# resolución, que es código compartido con el host.
-DIR_CORPUS = "/pipeline/corpus/documentos"
+# `<etapas.yaml>.parent.parent / "../corpus/documentos"`, y con `etapas.yaml` en
+# `/pipeline/comun` eso da `/corpus/documentos` —el corpus es hermano de `pipeline/`
+# en el árbol del repo, de ahí el `../`—. Montarlo en otro lado obligaría a parchear
+# la resolución, que es código compartido con el host.
+#
+# Verificado el 2026-08-23 arrancando el servidor adentro: con el destino mal alineado
+# muere con `FileNotFoundError: /corpus/documentos`. El dry-run no lo detecta porque
+# resuelve rutas del host.
+DIR_CORPUS = "/corpus/documentos"
 
 # Credenciales de suscripción, read-only (ADR-015 Decisión 3). Cada familia monta
 # sólo la suya: el contenedor de A nunca ve las credenciales de B ni al revés.

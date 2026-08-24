@@ -324,6 +324,16 @@ de [`runs/piloto-01/checklist-h6.md`](../runs/piloto-01/checklist-h6.md):
 - **Ítem 23 — techo de 1 048 576 caracteres por input en Codex:** si un revisor produce
   una revisión enorme, el pase correctivo puede chocar con ese límite. Como el handoff
   se pasa por puntero y no pegado, el riesgo es que el propio CLI lo lea entero.
+- **Verificado el 2026-08-23 dentro del contenedor** (no queda pendiente): `claude -p`
+  autentica con `CLAUDE_CODE_OAUTH_TOKEN` y responde contra `claude-opus-5`; el servidor
+  MCP del RAG levanta adentro, indexa el corpus montado y devuelve sus 6 pasajes, con la
+  consulta registrada en el JSONL con celda/etapa/rol/paso. Falta la etapa completa, que
+  son los ítems 1 y 2.
+- **Canal residual de red, demostrado:** con `WebSearch`/`WebFetch` denegadas, se le pidió
+  al agente la última versión de Node.js y la obtuvo con `Bash` + `curl` contra
+  `nodejs.org`, sin que nadie le sugiriera rodear la restricción. ADR-008 acota la
+  recuperación cómoda, no la posible; está en `analisis/amenazas-validez.md` y es el dato
+  que alimenta la decisión de allowlist de ADR-015 D4.
 - **Ítem 24 — fan-out de la delegación:** medir cuántos subagentes abre cada familia y
   verificar que el JSONL los capture. En A la atribución sale de `parent_tool_use_id`
   con `--forward-subagent-text`; en B el mapeo de los eventos de thread a subagentes

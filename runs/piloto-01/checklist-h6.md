@@ -45,20 +45,16 @@ resultado observado.
       auth, digest efectivo de anvil, dirección del USDC-mock, repo satélite, hash de
       paridad sobre el commit) están marcados `PENDIENTE-ARRANQUE:` con el comando que
       los cierra. Falta completarlos y commitearlo.*
-- [ ] **Autenticación: mecanismo resuelto por ADR-017; falta cargar el token.** Con
-      ADR-009 la piloto corre sobre las **suscripciones** del tesista, no sobre API keys.
-      *El bind-mount que ADR-015 D3 fijaba no sirve del lado A en macOS: el `claude` del
-      contenedor respondía `Not logged in` porque la credencial vigente vive en el
-      Keychain y `~/.claude/.credentials.json` tenía un token vencido el 2026-06-23.
-      **ADR-017** (Aceptado el 2026-08-23) pasa A a `CLAUDE_CODE_OAUTH_TOKEN` por
-      `--env-file`; B conserva el bind-mount de su `auth.json`, que sí es vigente.*
-      **Lo que falta, y es del tesista:** generar el token con `claude setup-token`,
-      copiar `pipeline/contenedores/.env.example` a `.env` y completarlo. El `.env` está
-      gitignoreado. Verificado el 2026-08-23 con un valor de prueba: la variable llega
-      adentro del contenedor y las vacías quedan vacías.
-      Registrar en el manifest el **modo de auth** (suscripción | API key) — nunca el
-      token. El dato de consumo de la piloto decide suscripción contra API key para las 4
-      oficiales (ítem 7).
+- [x] **Autenticación: resuelta y verificada end-to-end el 2026-08-23.** La piloto corre
+      sobre la **suscripción** del tesista (ADR-009), inyectada como
+      `CLAUDE_CODE_OAUTH_TOKEN` vía `--env-file` (**ADR-017**, que enmienda ADR-015 D3:
+      el bind-mount no sirve del lado A en macOS, donde la credencial vigente vive en el
+      Keychain y el archivo tenía un token vencido el 2026-06-23). B conserva el
+      bind-mount de su `auth.json`.
+      *Verificado con el token real cargado: `claude -p` dentro del contenedor responde
+      normalmente contra `claude-opus-5`. El `.env` está gitignoreado; sólo se versiona
+      `.env.example`.*
+      Registrar en el manifest el modo de auth (`suscripción`) — nunca el token.
 
 - [ ] **Versiones de CLI pinneadas** en el manifest: `claude --version` y
       `codex --version` (hoy 2.1.233 y 0.146.0), junto a los model IDs y al commit del

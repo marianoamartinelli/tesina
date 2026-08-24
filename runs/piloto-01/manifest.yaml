@@ -43,7 +43,7 @@ harness:
   # su proveedor. Los campos `sdk`/`version` de la plantilla se reemplazan por estos.
   cli: "claude-code"                 # invocado como `claude -p --output-format stream-json`
   version: "2.1.241 (Claude Code)"   # medida el 2026-08-23 y horneada en tesina/agente-a:piloto-01
-  auth: "PENDIENTE-ARRANQUE: suscripción vía `CLAUDE_CODE_OAUTH_TOKEN` en pipeline/contenedores/.env (ADR-017, que enmienda ADR-015 D3: el bind-mount no sirve del lado A en macOS, donde la credencial vigente vive en el Keychain). Falta que el tesista genere el token con `claude setup-token` y complete el .env; registrar acá el modo efectivo (suscripción | API key), nunca el token."
+  auth: "suscripción"   # CLAUDE_CODE_OAUTH_TOKEN (`claude setup-token`) inyectado por --env-file (ADR-017). Verificado end-to-end el 2026-08-23: claude -p responde dentro del contenedor. El token no se registra acá ni en ningún lado versionado.
 versiones_cli:             # ambas se pinnean aunque piloto-01 sólo invoque el CLI de A (checklist H6, precondición «Versiones de CLI»)
   claude: "2.1.241 (Claude Code)"    # 2026-08-23; era 2.1.233 el 2026-08-16 (el CLI se actualiza solo)
   codex: "codex-cli 0.146.0"         # salida exacta de `codex --version`, 2026-08-16
