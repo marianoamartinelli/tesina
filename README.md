@@ -33,19 +33,30 @@ sorteado—, con ADR-011/012/013 aceptados el 2026-08-17 y ADR-014/015/016 el 20
 La autenticación de las dos familias quedó resuelta y verificada (**ADR-017**: A por
 `CLAUDE_CODE_OAUTH_TOKEN`, B por bind-mount de su `auth.json`).
 
-**Corrida pre-piloto (ADR-018), 2026-08-23.** Antes de la piloto corre una verificación
-end-to-end de todos los componentes sobre un **universo reducido** de la spec —6 HU de
-backend (registro, login y la épica 06 completa, que es la que fuerza el RAG) y 2 de
-cliente—, en las dos familias y con `effort high`. Estado, evidencia por componente y
-defectos en [`runs/pre-piloto/`](runs/pre-piloto/). **Es la primera vez que los CLI de
-agente ejecutan etapas del pipeline**, y ya encontró cuatro defectos de ambiente que la
-piloto habría pagado caro: `codex exec` no arrancaba en el contenedor por `CODEX_HOME` no
-escribible; el sandbox nativo de Codex dejaba al agente B **sin shell** dentro del
-contenedor sin cortar la corrida (**ADR-019**: el confinamiento pasa a ser el contenedor
-en las dos familias); el tope efectivo de A no es de presupuesto sino el rate limit de 5
-horas sin overage; y el nodo on-chain del host no es alcanzable desde el contenedor. Se
-escribió además el runner del **agente evaluador white-box**, que cerró el
-`PENDIENTE-ARRANQUE` de su invocación.
+**Corrida pre-piloto (ADR-018), 2026-08-23/24 — completa.** Antes de la piloto se corrió
+una verificación end-to-end de todos los componentes sobre un **universo reducido** de la
+spec (6 HU de backend —registro, login y la épica 06 completa, que es la que fuerza el
+RAG— y 2 de cliente), en las dos familias, con `effort high`. **Las 6 etapas cerraron con
+sus 6 smokes de avance** y sin una sola intervención de las categorías 1–8 del protocolo.
+Es la primera vez en el proyecto que los CLI de agente ejecutan etapas, que la suite de
+ATs corre contra un sistema real, que el agente evaluador white-box se ejecuta y que se
+miden las métricas estáticas.
+
+Resultado: **21 hallazgos** ([`runs/pre-piloto/hallazgos.md`](runs/pre-piloto/hallazgos.md))
+y **cinco ADRs** (018–022), con `protocolo.md` de v1.2 a **v1.5** y la paridad de 117 a
+**143 chequeos**. Los que habrían roto la piloto: el sandbox nativo de Codex dejaba al
+agente B **sin shell** dentro del contenedor sin cortar la corrida (ADR-019); el build de
+los clientes **falla en el host** porque `node_modules` es del contenedor, lo que en H8
+habría hecho fallar los 465 ATs por la plataforma del evaluador (ADR-021); el readiness
+probe del reinicio ataba los **21 ATs de persistencia** a la épica 03; `--no-summary`
+suprimía en silencio la escritura del CSV de resultados; y las métricas estáticas contaban
+la spec y los lockfiles como código del agente — 32 648 loc contra 5 301 reales (ADR-022).
+
+Tres datos que quedan para decidir antes de H7: **ninguna de las dos familias consultó el
+corpus** en ninguna etapa (el factor RAG mediría disponibilidad y no uso); el universo
+reducido consumió **USD 142** en A, lo que obliga a revisar el supuesto de consumo con el
+que ADR-016 quitó los topes; y las dos implementaciones dieron **idéntico black-box**
+(51 pasa / 3 falla / 2 skip) pero A escribió **2,3× más código** que B.
 
 ## Mapa del repositorio
 

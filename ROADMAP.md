@@ -69,10 +69,11 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   end-to-end del harness B). Desde ADR-009 incluye además la reescritura del pipeline
   para orquestar los CLI (ítem 17) y la validación del set de roles
   implementador/revisor. Desde **ADR-018** la precede una **corrida pre-piloto**
-  (`pre-piloto-a` / `pre-piloto-b`, descartables) sobre un universo reducido de la spec:
-  ejercita una vez cada componente —los dos CLI, contenedores, credenciales, servidor MCP
-  del RAG, registro, suite black-box, agente evaluador white-box, rúbricas y métricas—
-  para que la piloto no se gaste depurando infraestructura. Estado y hallazgos en
+  (`pre-piloto-a` / `pre-piloto-b`, descartables) sobre un universo reducido de la spec.
+  **Corrida completa el 2026-08-24:** las 6 etapas con sus 6 smokes, sin intervenciones de
+  las categorías 1–8, más la evaluación (black-box, white-box con dos pasadas por celda y
+  métricas estáticas). Dejó **21 hallazgos** y **cinco ADRs (018–022)**, `protocolo.md` en
+  **v1.5** y la paridad en **143 chequeos**. Estado por componente y defectos en
   [`runs/pre-piloto/`](runs/pre-piloto/). *(En curso — **16 de los 24 ítems** de la checklist cerrados al
   2026-08-23: pipeline reescrito, protocolo **v1.2**, partición 465/56, rúbrica del rol
   revisor, manifest de `piloto-01`, agentes contenedorizados y orden de las 4 celdas
