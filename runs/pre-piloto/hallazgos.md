@@ -186,3 +186,30 @@ Vale como advertencia para la piloto: un override que no se imprime no está med
   producción que el README del SUT documente. Toca el protocolo (§4.1) y `etapas.yaml`,
   así que va por ADR junto con H-07.
 - **Estado:** abierto — la corrección se aplica al cerrar las etapas backend en curso.
+
+## H-10 — La máquina durmió y congeló las dos corridas ~8 horas
+
+- **Componente:** 9.3 (cierre de corrida) / operación
+- **Observado:** las etapas backend arrancaron el 2026-08-23 a las 23:45. El ritmo fue de
+  ~465 eventos en la primera hora y ~195 en la segunda, y **se derrumbó a 1–3 eventos por
+  hora entre la 01:00 y las 08:00**, en las **dos** familias a la vez. `pmset -g log`
+  muestra ciclos de `Entering Sleep` / `DarkWake` durante toda la noche con la máquina a
+  batería (47 %), y un `Wake … UserActivity` a las 09:20:22 — el mismo minuto del último
+  evento de ambos JSONL. Los contenedores y los procesos del orquestador seguían vivos
+  (`Up 10 hours`): no se cayó nada, quedó todo suspendido.
+- **Efecto colateral:** 3 eventos `API Error: Connection lost mid-response` en el log de
+  A, en los momentos de suspensión. El CLI reintentó y siguió; no cortó la etapa.
+- **Por qué importa:** una corrida oficial dura horas y el manifest registra `inicio` y
+  `fin` como **variables dependientes** (ADR-016 eliminó los topes, así que el tiempo es
+  un dato del experimento, no un límite). Ocho horas de sueño de la laptop inflan ese
+  dato y lo vuelven incomparable entre celdas — una celda corrida de día y otra de noche
+  no medirían lo mismo.
+- **Corrección aplicada:** `caffeinate -dimsu -w <pid del orquestador>` mientras dure la
+  etapa, atado al proceso para que se libere solo al terminar. Para las corridas
+  oficiales hay que sumarlo al procedimiento de arranque del protocolo (§3) **y** correr
+  con la máquina enchufada: con batería, macOS puede dormir igual.
+- **Consecuencia sobre el dato de esta corrida:** el tiempo de pared de la etapa backend
+  de la pre-piloto **no es utilizable** como estimación. Se registra el hecho en el
+  manifest (`notas`) en vez de un número que mentiría.
+- **Estado:** corregido en caliente; falta llevarlo al protocolo (va con el ADR de H-07 y
+  H-09).
