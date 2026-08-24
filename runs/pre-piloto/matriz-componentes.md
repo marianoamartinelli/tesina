@@ -25,10 +25,10 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 2.1 | Imagen y montajes de A | corrida real de A | el CLI corre en `/repo`; escribe en el repo del host | [ ] |
-| 2.2 | Imagen y montajes de B | corrida real de B | ídem | [ ] |
-| 2.3 | Credenciales de A por `--env-file` | corrida real de A | ninguna respuesta `Not logged in` en stderr | [ ] |
-| 2.4 | Credenciales de B por bind-mount | corrida real de B | ídem | [ ] |
+| 2.1 | Imagen y montajes de A | smoke de 1 invocación | `/repo/spec/` visible, uid=1001(agente) | [x] 2026-08-23 |
+| 2.2 | Imagen y montajes de B | ídem | ídem, tras el fix de H-03 | [x] 2026-08-23 |
+| 2.3 | Credenciales de A por `--env-file` | smoke de 1 invocación | responde contra `claude-opus-5`, stderr limpio | [x] 2026-08-23 |
+| 2.4 | Credenciales de B por bind-mount | ídem | turno completo contra `gpt-5.6-sol` | [x] 2026-08-23 (requirió H-03) |
 | 2.5 | Red del contenedor | `npm install` / `expo export` de las 3 etapas | builds que resuelven dependencias; hosts tocados, al manifest | [ ] |
 | 2.6 | No-exposición del holdout | inspección de los montajes efectivos | `evaluacion/` no aparece en ningún `-v` | [x] verificado por `verificar_paridad.py` |
 
@@ -36,30 +36,30 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 3.1 | `claude-opus-5` con effort `xhigh` | corrida real de A | evento `inicio` + el CLI no rechaza los flags | [ ] |
-| 3.2 | `gpt-5.6-sol` con effort `xhigh` | corrida real de B | ídem | [ ] |
-| 3.3 | Sandbox de B con red (`workspace-write`) | etapa backend de B | riesgo abierto: ítem 2 de la checklist H6; si `npm install` falla, `-c sandbox_workspace_write.network_access=true` | [ ] |
+| 3.1 | `claude-opus-5` con effort `xhigh` | smoke de 1 invocación | `result` con `total_cost_usd`, 7 turnos, exit 0 | [x] 2026-08-23 |
+| 3.2 | `gpt-5.6-sol` con effort `xhigh` | ídem | `turn.completed` con usage, exit 0 | [x] 2026-08-23 |
+| 3.3 | Sandbox de B | smoke de 1 invocación | **falla**: bwrap no crea namespaces ⇒ B sin shell (H-04) | [~] defecto abierto |
 | 3.4 | Delegación en subagentes (ADR-010 D1) | corrida real, ambas familias | eventos con `subagente: true` en A; mapeo por decidir en B (ítem 24) | [ ] |
-| 3.5 | Restricción de recuperación web (ADR-008) | corrida real, ambas familias | cero eventos `web_search`/`WebFetch` en los JSONL | [ ] |
+| 3.5 | Restricción de recuperación web (ADR-008) | smoke de 1 invocación | A: `WebSearch`/`WebFetch` inexistentes y `web_search_requests: 0`. B: sin verificar aún | [~] falta B |
 
 ## 4. RAG por MCP (ADR-009 D2)
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 4.1 | Servidor MCP stdio adentro del contenedor | ambas celdas (las dos tienen RAG) | el CLI lista `consultar_corpus` sin error de arranque | [ ] |
-| 4.2 | Consultas reales al corpus | la épica 06 del alcance (BIP-32/39/44) | líneas en `…-rag.jsonl` con celda/etapa/rol/paso | [ ] |
-| 4.3 | Resolución del corpus adentro | ídem | sin `FileNotFoundError: /corpus/documentos` | [ ] |
+| 4.1 | Servidor MCP stdio adentro del contenedor | smoke en ambas familias | A: `mcp__corpus__consultar_corpus`. B: `mcp_tool_call server=corpus` | [x] 2026-08-23 |
+| 4.2 | Consultas reales al corpus | consulta BIP-44 en el smoke | devolvió `bip-0044.mediawiki § Path levels` en las dos familias | [x] 2026-08-23 |
+| 4.3 | Resolución del corpus adentro | ídem | sin `FileNotFoundError` | [x] 2026-08-23 |
 | 4.4 | Índice BM25 determinista | dry-run | 175 chunks indexados | [x] verificado 2026-08-23 |
 
 ## 5. Registro (ADR-003)
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 5.1 | Esquema del stream de A | corrida real de A | tipos de evento observados, al journal (ítem 19 H6) | [ ] |
+| 5.1 | Esquema del stream de A | smoke de 1 invocación | `system`/`assistant`/`user`/`rate_limit_event`/`result` (H-06); falta ver subagentes | [~] parcial |
 | 5.2 | Esquema del JSONL de B | corrida real de B | nombres exactos de los campos de tokens de `turn.completed` (ítem 19) | [ ] |
 | 5.3 | `serializar` no pierde información | inspección del JSONL contra el stream crudo | ningún payload degradado a `str()` (ítem 16) | [ ] |
 | 5.4 | stderr por paso a archivo | corrida real | `…-stderr-pasoN.txt` por invocación | [ ] |
-| 5.5 | Costo: `total_cost_usd` de A | corrida real de A | campo presente en los eventos finales | [ ] |
+| 5.5 | Costo: `total_cost_usd` de A | smoke de 1 invocación | presente en `result`: USD 0,209 (H-06) | [x] 2026-08-23 |
 | 5.6 | Costo: estimador local de B | post-proceso del JSONL de B | `costo_estimado_usd` contra el dashboard de OpenAI (ítem 20) | [ ] |
 
 ## 6. Evaluación black-box (H5 / ADR-011)

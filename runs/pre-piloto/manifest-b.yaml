@@ -46,17 +46,17 @@ entorno_host:
   npm: "10.9.2"
   python: "Python 3.12.10 (.venv del repo)"
   docker: "Docker version 28.5.2, build ecc6942"
-  foundry: "PENDIENTE-ARRANQUE: docker exec suite-at-anvil anvil --version"
+  foundry: "anvil 1.5.1-stable (commit b0a9dd9ceda36f63e2326ce530c10e6916f4b8a2)"
 entorno_onchain:
   url_rpc: "http://127.0.0.1:8545"
-  direccion_usdc_mock: "PENDIENTE-ARRANQUE: salida de desplegar-usdc.py al arrancar esta corrida"
+  direccion_usdc_mock: "0x5FbDB2315678afecb367f032d93F642f64180aa3 (bloque de despliegue 1)"
   version_anvil: "ghcr.io/foundry-rs/foundry@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46"
 
 contenedores:
   tag: "piloto-01"         # se reutilizan las imágenes ya construidas; no se reconstruyen
   base: "sha256:72a1a49f631ba34cce602a8de55134e4d9b39e2047b0074b5eca5e8d06af11d5"
   agente_a: "sha256:af7f27b10893c31c6d856031d3a4226789f7703fc7abee8b809ffaf99be9e0e0"
-  agente_b: "sha256:ab065e2f3eed624eaf4ec936c8364e6d505ea18a4be9a67605828a516d398b03"
+  agente_b: "sha256:d15e87122831d273d5869a7bd00cdc2088ba2180e906c42578b6b55335005f07"   # reconstruida por el hallazgo H-03 (CODEX_HOME escribible)
   red: "abierta (ADR-015 D4). PENDIENTE-CORRIDA: registrar los hosts tocados"
 
 # 4. Repo de la implementación generada
