@@ -76,6 +76,18 @@ PRECIOS_USD_POR_MTOK: dict[str, dict[str, float | int | None] | str] = {
     },
 }
 
+# Tarifa de la entrada **cacheada**, en USD por millón de tokens. Separada de
+# PRECIOS_USD_POR_MTOK porque su uso es una decisión del tesista (ítem 20 de la
+# checklist H6) y no un precio más: dejarla en None hace que `costo_estimado_usd`
+# cobre la entrada cacheada como entrada fresca, que es lo que hacía antes.
+#
+# Por qué importa, medido en la pre-piloto (hallazgo H-14): en la etapa backend de
+# `pre-piloto-b`, **el 95 % de los tokens de entrada fueron cacheados** (16,5 M de
+# 17,3 M). Ignorarlo multiplicó la estimación por ~19.
+PRECIO_ENTRADA_CACHEADA_USD_POR_MTOK: dict[str, float | None] = {
+    "gpt-5.6-sol": None,   # PENDIENTE: tarifa a verificar y ratificar (ítem 20)
+}
+
 _CAMPOS_CONFIG = {"celda", "harness", "modelo", "effort", "rag", "etapas"}
 
 
@@ -319,15 +331,45 @@ def comando_servidor_rag(corrida: Corrida, paso: Paso) -> list[str]:
     ]
 
 
-def costo_estimado_usd(modelo: str, tokens_entrada: int,
-                       tokens_salida: int) -> tuple[float | None, str | None]:
+def costo_por_sesion(eventos: list[dict]) -> dict[str, float]:
+    """Costo por `session_id` a partir de los eventos `result` de un JSONL de A.
+
+    **No se suman los `result`.** Medido en la pre-piloto (hallazgo H-11): una sola
+    invocación de rol emitió *tres* eventos `type: "result"` —el del agente principal y
+    los de sus subagentes— con distinto `num_turns` pero el **mismo** `total_cost_usd`,
+    porque ese campo es acumulado de sesión. Sumarlos triplicaba el costo. Los `result`
+    de subagente además **no** traen `parent_tool_use_id`, así que `es_de_subagente` no
+    alcanza para distinguirlos: la clave correcta es `session_id`.
+
+    `eventos` son los payloads de los `evento_cli` ya registrados.
+    """
+    por_sesion: dict[str, float] = {}
+    for payload in eventos:
+        if payload.get("type") != "result":
+            continue
+        costo = payload.get("total_cost_usd")
+        if not isinstance(costo, (int, float)):
+            continue
+        sesion = str(payload.get("session_id"))
+        # Todos los `result` de una sesión traen el mismo acumulado; con `max` el
+        # resultado no depende del orden en que llegaron.
+        por_sesion[sesion] = max(por_sesion.get(sesion, 0.0), float(costo))
+    return por_sesion
+
+
+def costo_estimado_usd(modelo: str, tokens_entrada: int, tokens_salida: int,
+                       tokens_entrada_cacheados: int = 0,
+                       es_agregado: bool = False) -> tuple[float | None, str | None]:
     """Estimación local de costo de UN request → `(costo, motivo)`.
 
     `motivo` es None cuando hay costo. Nunca devuelve un número inventado: si el
     precio del modelo no está verificado, devuelve `(None, motivo)` y el motivo
     queda registrado en el JSONL.
 
-    **Se llama por request (o por turno) y se acumula**, nunca sobre el total de
+    **Se llama por request y se acumula.** Si los tokens vienen agregados —el `usage`
+    de un `turn.completed` suma el turno entero— hay que pasar `es_agregado=True`, que
+    desactiva el tramo largo: el umbral es por request y aplicarlo a una suma cobra el
+    recargo sin evidencia (hallazgo H-14 de la pre-piloto). Nunca sobre el total de
     la etapa: el tramo de precio se decide comparando los tokens de input de
     *ese* request contra `umbral_tramo_largo`, y el recargo se aplica al request
     completo —no sólo a los tokens excedentes—, que es como lo enuncia la
@@ -351,11 +393,31 @@ def costo_estimado_usd(modelo: str, tokens_entrada: int,
         return None, precios
 
     umbral = precios["umbral_tramo_largo"]
-    tramo_largo = umbral is not None and tokens_entrada > umbral
+    # `es_agregado` = los tokens vienen sumados de varios requests (p. ej. el `usage` de
+    # un `turn.completed`, que agrega el turno entero). El umbral de tramo largo se
+    # define **por request**, así que aplicarlo a un agregado cobra el recargo sin
+    # evidencia de que ningún request lo haya cruzado: con 9,96 M de entrada en un turno
+    # de la pre-piloto, el estimador facturaba todo al doble (hallazgo H-14).
+    tramo_largo = (umbral is not None and not es_agregado and tokens_entrada > umbral)
     precio_entrada = precios["entrada_tramo_largo"] if tramo_largo else precios["entrada"]
     precio_salida = precios["salida_tramo_largo"] if tramo_largo else precios["salida"]
-    return (tokens_entrada * precio_entrada / 1_000_000
-            + tokens_salida * precio_salida / 1_000_000), None
+
+    cacheados = min(max(tokens_entrada_cacheados, 0), tokens_entrada)
+    precio_cache = PRECIO_ENTRADA_CACHEADA_USD_POR_MTOK.get(modelo)
+    if cacheados and precio_cache is None:
+        # Sin tarifa ratificada, la entrada cacheada se cobra como fresca (lo que hacía
+        # antes) pero el motivo viaja con el número, para que nadie lo lea como exacto.
+        motivo = (f"{cacheados} tokens de entrada cacheada cobrados como entrada fresca: "
+                  f"tarifa de caché no ratificada para {modelo!r} (ítem 20)")
+        frescos, cacheados = tokens_entrada, 0
+    else:
+        motivo = None
+        frescos = tokens_entrada - cacheados
+
+    costo = (frescos * precio_entrada / 1_000_000
+             + cacheados * (precio_cache or 0.0) / 1_000_000
+             + tokens_salida * precio_salida / 1_000_000)
+    return costo, motivo
 
 
 def tipo_evento_cli(payload: dict) -> str | None:

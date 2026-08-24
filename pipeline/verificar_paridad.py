@@ -416,6 +416,12 @@ def verificar_contenedor(comandos: dict[str, list[str]],
                  f"{celda}: la invocación va envuelta en `docker run` (ADR-015)")
         chequear("--rm" in cmd and "-i" in cmd,
                  f"{celda}: contenedor descartable (--rm) y con stdin (-i)")
+        # El nodo on-chain corre en el host y la red del contenedor es propia: sin esto
+        # el agente no puede ejercitar ningún camino JSON-RPC durante la generación
+        # (ADR-020). Tiene que estar en las dos familias o la asimetría es de capacidad.
+        pares = [(cmd[i], cmd[i + 1]) for i in range(len(cmd) - 1)]
+        chequear(("--add-host", f"{contenedor.HOST_ANFITRION}:host-gateway") in pares,
+                 f"{celda}: --add-host {contenedor.HOST_ANFITRION} (ADR-020)")
 
     # Los montajes sólo pueden diferir en el archivo de credenciales: cualquier
     # otra diferencia es una asimetría de entorno entre familias.

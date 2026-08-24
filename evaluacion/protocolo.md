@@ -1,4 +1,4 @@
-# Protocolo experimental pre-registrado — v1.2
+# Protocolo experimental pre-registrado — v1.3
 
 - **Estado:** esta versión reemplaza a la **v1.1**, congelada por
   [ADR-012](../decisiones/ADR-012-protocolo-experimental-v1-1.md) (2026-08-17), que a su
@@ -120,8 +120,8 @@ artefacto arranca:
 | Etapa | Smoke check |
 |-------|-------------|
 | `backend` | el proceso levanta contra el entorno on-chain y responde el **endpoint de health-check que el propio agente eligió, expuso y documentó** en el README del repo satélite |
-| `web` | el cliente web compila y renderiza el login |
-| `mobile` | la app mobile compila y corre en Expo |
+| `web` | el **build de producción** que el README del SUT documente termina con **exit 0** |
+| `mobile` | **`npx expo export --platform android`** termina con **exit 0** |
 
 **El health-check no viene de la spec.** La spec no define ningún endpoint de
 health-check; es el prompt de etapa del backend el que le pide al agente exponer uno
@@ -131,6 +131,19 @@ simple (p. ej. `GET /health`), elegir su ruta y documentarla
 lo es. Si el agente no documentó ninguna ruta, el smoke check **no se puede ejecutar** y
 la etapa no cumple el criterio de avance: es un **D1** (§5.2) y la intervención mínima es
 señalar que falta lo que el prompt de etapa pide.
+
+Los criterios de `web` y `mobile` los fija
+[ADR-020](../decisiones/ADR-020-nodo-onchain-y-smoke-ejecutable.md), que reemplaza los
+enunciados de v1.2 («compila y renderiza login», «compila y corre en Expo»): no eran
+ejecutables —no hay emulador ni en el contenedor del agente ni en el host— y por lo tanto
+no podían aplicarse igual en las 4 celdas. `expo export` compila el bundle de verdad y
+falla si el código no compila. Lo que se verifica sigue siendo que el artefacto exista y
+compile; si además *funciona* lo dicen las rúbricas en H8.
+
+Durante la generación, el agente alcanza el nodo on-chain del host por
+`http://host.docker.internal:8545` (ADR-020 Decisión 1 y 2): la red del contenedor es
+propia y `127.0.0.1` no llega. El prompt de etapa de backend se lo informa, aclarando que
+la URL sigue siendo configuración.
 
 ### 4.2 Procedimiento del smoke de backend
 

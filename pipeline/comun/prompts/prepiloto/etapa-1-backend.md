@@ -41,6 +41,11 @@ código de esta etapa aunque su épica no esté en el alcance.
   respetalo literalmente en los endpoints del alcance.
 - La interacción con la red (chainId 11155111) se hace vía JSON-RPC contra el endpoint
   configurable definido por la spec; no asumas servicios de terceros no especificados.
+- **Nodo disponible para probar:** durante esta corrida tenés un nodo JSON-RPC de esa red
+  en `http://host.docker.internal:8545`. Usalo para verificar tu implementación. La URL
+  **sigue siendo configuración**, como la spec exige: no la fijes en el código ni la
+  conviertas en default obligatorio, porque el sistema se ejecutará después contra otro
+  endpoint.
 - Exponé un endpoint de health-check simple, p. ej. `GET /health` — elegí la ruta y
   documentala en el README del proyecto.
 - La etapa se considera completa cuando el backend compila/arranca, responde ese

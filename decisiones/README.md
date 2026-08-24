@@ -37,6 +37,7 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-017](ADR-017-credenciales-por-entorno-en-el-harness-a.md) | Las credenciales del harness A se inyectan por entorno, no por bind-mount | Aceptado |
 | [ADR-018](ADR-018-corrida-pre-piloto.md) | Corrida pre-piloto sobre un universo reducido de la spec, antes de la piloto | Aceptado |
 | [ADR-019](ADR-019-confinamiento-por-contenedor-en-ambas-familias.md) | El confinamiento es el contenedor: B corre sin su sandbox nativo | Aceptado |
+| [ADR-020](ADR-020-nodo-onchain-y-smoke-ejecutable.md) | El agente alcanza el nodo on-chain; los criterios de avance de web y mobile son ejecutables | Aceptado |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan

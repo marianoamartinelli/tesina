@@ -27,11 +27,14 @@ etapas:
     presupuesto_proporcional: 0.60
   - id: web
     prompt: comun/prompts/prepiloto/etapa-2-web.md
-    smoke_check: "cliente web compila y renderiza login"
+    # El build de producción que el README del SUT documente; exit 0 (ADR-020).
+    smoke_check: "el build de producción del cliente web termina con exit 0"
     presupuesto_proporcional: 0.25
   - id: mobile
     prompt: comun/prompts/prepiloto/etapa-3-mobile.md
-    smoke_check: "app mobile compila y corre en Expo"
+    # `npx expo export --platform android` con exit 0 (ADR-020): compila el bundle
+    # de verdad y no necesita emulador, que no hay ni en el contenedor ni en el host.
+    smoke_check: "`npx expo export --platform android` termina con exit 0"
     presupuesto_proporcional: 0.15
 
 # Roles del orquestador (ADR-009, Decisión 4). Un rol es un archivo de prompt que

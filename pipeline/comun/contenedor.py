@@ -69,6 +69,17 @@ DIR_COMUN = "/pipeline/comun"
 # resuelve rutas del host.
 DIR_CORPUS = "/corpus/documentos"
 
+# Nombre por el que el agente alcanza al **host** desde adentro del contenedor
+# (ADR-020). El entorno on-chain de evaluación —anvil -> 127.0.0.1:8545— corre en el
+# host, y la red del contenedor es propia: sin esto, `127.0.0.1:8545` no responde
+# adentro y el agente no puede ejercitar ningún camino on-chain durante la generación,
+# aunque la spec le exija verificar `eth_chainId` al iniciar.
+#
+# Docker Desktop ya provee este nombre; el `--add-host … :host-gateway` de `envolver`
+# lo hace explícito y portable, y deja la resolución idéntica en las dos familias en vez
+# de depender de un default de plataforma.
+HOST_ANFITRION = "host.docker.internal"
+
 # Credenciales de suscripción, read-only (ADR-015 Decisión 3). Cada familia monta
 # sólo la suya: el contenedor de A nunca ve las credenciales de B ni al revés.
 #
@@ -149,12 +160,17 @@ def envolver(comando_cli: list[str], corrida, familia: str,
       ADR-015 Decisión 4 deja la red abierta en la piloto —la necesitan
       `npm install` y `expo export`— y la piloto registra qué hosts se tocan.
     - `--env-file`: credenciales por entorno; el mismo archivo para las 4 celdas.
+    - `--add-host`: hace resoluble `HOST_ANFITRION` desde adentro, para que el agente
+      pueda hablar con el nodo JSON-RPC que corre en el host (ADR-020). No es un
+      permiso del contenedor —no afloja seccomp ni agrega capabilities—, y va en las
+      dos familias por igual.
     - `--entrypoint ""`: la imagen trae el CLI como entrypoint para uso manual,
       pero acá el comando completo lo arma el orquestador, que es quien conoce
       los flags de ADR-008/009/010.
     """
     flags: list[str] = [RUNTIME, "run", "--rm", "-i", "-w", DIR_REPO,
-                        "--env-file", str(ARCHIVO_ENV)]
+                        "--env-file", str(ARCHIVO_ENV),
+                        "--add-host", f"{HOST_ANFITRION}:host-gateway"]
     for montaje in montajes(corrida, familia):
         flags += montaje.a_flag()
     for clave, valor in sorted(ENTORNO[familia].items()):
