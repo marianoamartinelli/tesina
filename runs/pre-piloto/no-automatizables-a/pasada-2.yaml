@@ -1,0 +1,1082 @@
+# Resultados del agente evaluador white-box
+# Conforme a evaluacion/agente-evaluador/plantilla-resultados.yaml (v1.2).
+
+metadatos:
+  celda: "celda-en-evaluacion"
+  fecha: 2026-08-24
+  pasada: 2
+  modelo_evaluador: "claude-opus-5"
+  briefing_version: "v1.1"
+  rubrica_version: "v1.2"
+
+resultados:
+  - at_id: AT-01-02-13
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/core/audit.ts:24-53"
+        detalle: "AuditLog.record() inserta en auth_audit_log (timestamp, event, email, result, reason, origin). El comentario de cabecera (lineas 1-8) declara el log interno de RNE-9 y que nunca registra password, hash ni token."
+      - tipo: archivo
+        ref: "src/modules/accounts/service.ts:211-237"
+        detalle: "login(): email = normalizeEmail(payload.email) (validation.ts: trim + toLowerCase). Camino fallido -> audit.record({event:'LOGIN', email, result:'FAILURE', reason:'INVALID_CREDENTIALS'}); camino exitoso -> result:'SUCCESS'. timestamp = nowIso() = new Date().toISOString() (UTC, core/time.ts:2-4)."
+      - tipo: comando
+        ref: "curl -s -X POST http://127.0.0.1:3901/api/v1/auth/login (uno exitoso y uno con password incorrecta)"
+        detalle: "Exitoso: 200 con token. Fallido: HTTP 401 {\"error\":{\"code\":\"INVALID_CREDENTIALS\"}}."
+      - tipo: comando
+        ref: "node leer-db.js <inst>/exchange.db \"SELECT * FROM auth_audit_log WHERE event='LOGIN'\""
+        detalle: "id=4 {timestamp:2026-08-24T15:49:42.807Z, event:LOGIN, email:a-eval@example.com, result:SUCCESS, reason:null}; id=5 {timestamp:2026-08-24T15:49:42.863Z, event:LOGIN, email:a-eval@example.com, result:FAILURE, reason:INVALID_CREDENTIALS}. Los dos intentos quedaron registrados con los cuatro campos."
+      - tipo: archivo
+        ref: "src/http/app.ts:31-37,253-467"
+        detalle: "Mapa de rutas completo (ROUTE_METHODS + los 6 handlers): ninguna ruta publica ni autenticada de usuario lee auth_audit_log; el unico uso de `audit` en la capa HTTP es app.ts:303 (escritura del intento RATE_LIMITED). AuditLog.list() esta marcado como inspeccion interna, sin superficie HTTP."
+    justificacion: >-
+      Los dos intentos de login producidos contra la instancia quedaron persistidos en auth_audit_log con
+      timestamp UTC, email normalizado, result SUCCESS/FAILURE y reason=INVALID_CREDENTIALS en el fallido.
+      El mapa de rutas no expone ese log por ninguna via de usuario, de modo que se cumple el criterio cerrado.
+    duracion_min: 7
+
+  - at_id: AT-01-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-01-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-03-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-02-04-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-03-02-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-03-05-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-03-07-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-03-07-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-04-05-14
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-05-01-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-05-01-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-05-01-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-05-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-05-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-05-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-06-01-01
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:97-101,186-188"
+        detalle: "MNEMONIC_ENTROPY_BITS = 256 y MNEMONIC_WORD_COUNT = 24; generateMnemonic24() delega en bip39GenerateMnemonic(ENGLISH_WORDLIST, 256)."
+      - tipo: archivo
+        ref: "node_modules/@scure/bip39/index.js:72-76"
+        detalle: "generateMnemonic(wordlist, strength) => entropyToMnemonic(randomBytes(strength/8), wordlist): con strength=256 son 32 bytes de entropia. La cadena sigue en @noble/hashes/utils.js:303-311 -> crypto.getRandomValues (CSPRNG del entorno, @noble/hashes/crypto.js: globalThis.crypto), con fallback a node:crypto.randomBytes. No hay Math.random ni PRNG sembrado."
+      - tipo: comando
+        ref: "grep -rn \"Math.random|seedrandom|mulberry|xorshift\" sut/src/"
+        detalle: "Sin hallazgos en el codigo propio."
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-generacion.js"
+        detalle: "palabras(a)=24 | palabras(b)=24; checksum/wordlist validos: true true; a !== b: true."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:117-119,250-259"
+        detalle: "PBKDF2_ITERATIONS=2048, SEED_BYTES=64; mnemonicToSeed(mnemonic, passphrase='') => noblePbkdf2(sha512, utf8(mnemonic NFKD), utf8('mnemonic' + passphrase NFKD), {c:2048, dkLen:64}). Passphrase vacia por defecto (y config.ts:284: WALLET_MNEMONIC_PASSPHRASE ?? '')."
+      - tipo: archivo
+        ref: "src/modules/wallet/seedStore.ts:27-28,45-71"
+        detalle: "NONCE_BYTES=12 (96 bits) y TAG_BYTES=16 (128 bits). encryptPayload: nonce = randomBytes(12) por operacion, createCipheriv('aes-256-gcm', key, nonce), formato nonce||ciphertext||tag. decryptPayload: setAuthTag + final() -> el tag se verifica al descifrar."
+      - tipo: archivo
+        ref: "src/core/config.ts:112-127,282; src/db/index.ts:45-49"
+        detalle: "decodeEncryptionKey exige 32 bytes y la credencial sale de env.WALLET_ENCRYPTION_KEY; no esta hardcodeada. La tabla wallet_seed guarda solo (id, payload, created_at): la clave no se persiste junto al blob."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039.mediawiki §From mnemonic to seed"
+        detalle: "\"we use the PBKDF2 function with a mnemonic sentence (in UTF-8 NFKD) used as the password and the string 'mnemonic' + passphrase ... used as the salt. The iteration count is set to 2048 and HMAC-SHA512 is used ... The length of the derived key is 512 bits (= 64 bytes).\" Coincide con la implementacion."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039.mediawiki §Generating the mnemonic"
+        detalle: "Tabla ENT/CS/MS: ENT=256 => CS=8 => MS=24 palabras, consistente con los 32 bytes de entropia y las 24 palabras observadas."
+    justificacion: >-
+      Los cuatro puntos se verifican: entropia de 256 bits del CSPRNG del entorno con mnemonic de 24 palabras y
+      checksum valido, PBKDF2-HMAC-SHA512 con 2048 iteraciones y dkLen 64 con passphrase vacia por defecto, y
+      seed cifrado en reposo con AES-256-GCM (nonce de 96 bits por operacion, tag de 128 bits verificado) usando
+      una credencial tomada del entorno que no se persiste junto al material cifrado.
+    duracion_min: 11
+
+  - at_id: AT-06-01-02
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:250-259"
+        detalle: "Funcion interna mnemonic->seed del SUT: mnemonicToSeed(mnemonic, passphrase)."
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-seed.js trezor  (driver en $COPIA_TMP que invoca dist/src/wallet/hd.js con MNEMONIC_BIP39_CANONICO y passphrase \"TREZOR\")"
+        detalle: "Salida: c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04"
+      - tipo: archivo
+        ref: "spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md:131,151"
+        detalle: "Valor esperado fijado por la spec: identico caracter a caracter al obtenido."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039.mediawiki §From mnemonic to seed"
+        detalle: "Referencia normativa del algoritmo (PBKDF2-HMAC-SHA512, salt \"mnemonic\"+passphrase, 2048 iteraciones, 64 bytes)."
+    justificacion: >-
+      El driver invoco la funcion interna del SUT con el vector canonico y la passphrase TREZOR y devolvio
+      exactamente la seed hex fijada por HU-06-01, byte a byte. El KAT se ejecuto (no es lectura de codigo),
+      como exige la regla dura de la familia F2.
+    duracion_min: 5
+
+  - at_id: AT-06-01-03
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-seed.js m24 > seed-run1.txt   (invocacion 1 del proceso)"
+        detalle: "408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840"
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-seed.js m24 > seed-run2.txt   (invocacion 2, proceso separado)"
+        detalle: "408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840"
+      - tipo: comando
+        ref: "cmp -s seed-run1.txt seed-run2.txt"
+        detalle: "IDENTICAS (igualdad exacta del hex)."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:241-259"
+        detalle: "mnemonicToSeed es pura: solo normalizacion NFKD y PBKDF2; no interviene RNG, reloj ni estado mutable."
+    justificacion: >-
+      Dos invocaciones separadas del proceso derivaron la seed de MNEMONIC_24_VALIDO con passphrase vacia y
+      produjeron el mismo hex byte a byte. La derivacion no depende de aleatoriedad ni de estado, conforme a RN-7.
+    duracion_min: 3
+
+  - at_id: AT-06-01-04
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I1 3901 WALLET_ENCRYPTION_KEY=<clave1>  (instancia descartable desde $COPIA_TMP, DATABASE_PATH propio y vacio, LOAD_DOTENV=false, provisioning por generacion)"
+        detalle: "READY; registro de cuenta + GET /api/v1/deposit-address?asset=ETH -> address 0xC6EB1B5EA497979Cb82c7f719aF0d1fbFCC55Cdd, derivationPath m/44'/60'/0'/0/0."
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I2 3902 WALLET_ENCRYPTION_KEY=<clave2>  (segunda instancia, almacenamiento limpio propio; la primera fue destruida junto con su almacenamiento al terminar)"
+        detalle: "READY; registro de cuenta + GET /api/v1/deposit-address?asset=ETH -> address 0x3f5eCbAc5bDE7F80c11229F26abF0A5512D3BdFf, derivationPath m/44'/60'/0'/0/0."
+      - tipo: archivo
+        ref: "src/modules/wallet/seedStore.ts:147-162"
+        detalle: "Sin WALLET_MNEMONIC, el provisioning llama generateMnemonic24() (CSPRNG); no hay entropia fija."
+    justificacion: >-
+      Dos provisioning independientes, cada uno con almacenamiento limpio propio, produjeron direcciones
+      distintas para el indice 0 de su seed. La comparacion se hizo sobre las direcciones derivadas y no
+      sobre los ciphertexts, como prescribe la entrada.
+    duracion_min: 5
+
+  - at_id: AT-06-01-05
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/verificar-constante.js  (script en $COPIA_TMP que implementa §\"Generating the mnemonic\" del corpus sobre el wordlist del corpus, con entropia 0x00 x32)"
+        detalle: "wordlist words = 2048; MS = 24; MNEMONIC_24_VALIDO = \"abandon\" x23 + \"art\"; ultima palabra = art. Queda verificado que MNEMONIC_24_CHECKSUM_INVALIDO (= abandon x24) difiere solo en la ultima palabra y por lo tanto tiene checksum invalido."
+      - tipo: archivo
+        ref: "README.md:134; .env.example:38-44; src/core/config.ts:283; src/bootstrap.ts:42-47"
+        detalle: "MECANISMO DE IMPORT HALLADO (busqueda unica de §\"Mecanismo de import del mnemonic\", cuyo resultado sirve tambien a AT-06-01-09/-10 y AT-06-03-07): variable de entorno WALLET_MNEMONIC, documentada en la tabla de variables del README y en .env.example, leida en loadConfig() y pasada por bootstrap() a provisionWallet({importedMnemonic})."
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I3 3903 WALLET_ENCRYPTION_KEY=<clave> WALLET_MNEMONIC=\"abandon ... abandon\" (24 veces)  -- instancia descartable limpia, sin parchear el SUT"
+        detalle: "EXITED code=1; stderr: {\"fatal\":{\"code\":\"VALIDATION_ERROR\",\"message\":\"Mnemonic BIP-39 invalido: mnemonic invalido: el checksum BIP-39 no verifica\"}}. Sin material secreto en el mensaje."
+      - tipo: comando
+        ref: "node leer-db.js <inst I3>/exchange.db \"SELECT COUNT(*) FROM wallet_seed\""
+        detalle: "{\"filas_wallet_seed\":0} -- no se adopto ni persistio ningun seed."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:212-239; src/modules/wallet/seedStore.ts:149-159"
+        detalle: "validateMnemonic24 paso (c): bip39ValidateMnemonic sobre el wordlist ingles; el fallo lanza MnemonicValidationError que el provisioning traduce a ProvisioningError('VALIDATION_ERROR') antes de cifrar o insertar nada."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039.mediawiki §Generating the mnemonic"
+        detalle: "\"A checksum is generated by taking the first ENT / 32 bits of its SHA256 hash\"; con ENT=256, CS=8 y MS=24."
+    justificacion: >-
+      Con el mecanismo de import hallado (WALLET_MNEMONIC), la instancia descartable arrancada con el mnemonic
+      de checksum invalido aborto con exit code 1 y VALIDATION_ERROR en stderr, sin filtrar palabras del mnemonic
+      y sin dejar ninguna fila en wallet_seed. La constante se verifico antes contra el algoritmo del corpus.
+    duracion_min: 12
+
+  - at_id: AT-06-01-09
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I4 3904 WALLET_ENCRYPTION_KEY=<clave> WALLET_MNEMONIC=\"abandon x11 about\"  (mecanismo hallado en AT-06-01-05; instancia descartable limpia)"
+        detalle: "EXITED code=1; stderr: {\"fatal\":{\"code\":\"VALIDATION_ERROR\",\"message\":\"Mnemonic BIP-39 invalido: mnemonic invalido: se esperaban 24 palabras (256 bits de entropia) y se recibieron 12\"}}."
+      - tipo: comando
+        ref: "node leer-db.js <inst I4>/exchange.db \"SELECT COUNT(*) FROM wallet_seed\""
+        detalle: "{\"filas_wallet_seed\":0} -- no se adopto el mnemonic de 128 bits."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:100-101,216-222"
+        detalle: "MNEMONIC_WORD_COUNT = 24 y validacion (a): words.length !== 24 => MnemonicValidationError, primer paso de validateMnemonic24 (antes de wordlist y checksum)."
+    justificacion: >-
+      El mnemonic de 12 palabras con checksum valido fue rechazado por longitud: exit code 1, VALIDATION_ERROR
+      en stderr con el conteo de palabras y ninguna fila en wallet_seed. Cumple RN-2(a) del criterio cerrado.
+    duracion_min: 3
+
+  - at_id: AT-06-01-10
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "grep -cx xyzzy corpus/documentos/bip-0039-wordlist-english.txt"
+        detalle: "0 (la palabra no pertenece al wordlist; el archivo tiene 2048 lineas, verificado con wc -l)."
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I5 3905 WALLET_ENCRYPTION_KEY=<clave> WALLET_MNEMONIC=\"abandon x23 xyzzy\"  (instancia descartable limpia)"
+        detalle: "EXITED code=1; stderr: {\"fatal\":{\"code\":\"VALIDATION_ERROR\",\"message\":\"Mnemonic BIP-39 invalido: mnemonic invalido: la palabra en la posicion 24 no pertenece al wordlist BIP-39 ingles\"}}. Se reporta la posicion, nunca la palabra."
+      - tipo: comando
+        ref: "node leer-db.js <inst I5>/exchange.db \"SELECT COUNT(*) FROM wallet_seed\""
+        detalle: "{\"filas_wallet_seed\":0}."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:30,175-179,224-233"
+        detalle: "englishWordSet() se construye sobre el wordlist ingles de @scure/bip39 (2048 palabras) y la validacion (b) rechaza cualquier palabra ausente del Set."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039-wordlist-english.txt"
+        detalle: "Wordlist normativo de 2048 palabras usado para verificar la constante."
+    justificacion: >-
+      Verificado primero que "xyzzy" no pertenece al wordlist del corpus, la instancia arrancada con el
+      mnemonic de 24 palabras que la incluye aborto con exit 1 y VALIDATION_ERROR, sin persistir seed.
+      La validacion contempla explicitamente la pertenencia al wordlist ingles de 2048 palabras.
+    duracion_min: 3
+
+  - at_id: AT-06-01-11
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I6 3906 WALLET_ENCRYPTION_KEY=<clave6>  y luego kill del proceso"
+        detalle: "READY y provisioning; blob persistido leido antes de las pruebas: wallet_seed id=1, 212 bytes, hex C103D1D5E356...E5234601."
+      - tipo: comando
+        ref: "env -u WALLET_ENCRYPTION_KEY ... node dist/src/main.js  (credencial AUSENTE, mismo almacenamiento)"
+        detalle: "exit=1; stderr: {\"fatal\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"No se pudo descifrar el seed HD persistido: falta la credencial de cifrado (WALLET_ENCRYPTION_KEY).\"}}"
+      - tipo: comando
+        ref: "env WALLET_ENCRYPTION_KEY=<clave distinta> ... node dist/src/main.js  (credencial INCORRECTA)"
+        detalle: "exit=1; stderr: {\"fatal\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"No se pudo descifrar el seed HD persistido (credencial incorrecta o material corrupto).\"}} -- el tag GCM no verifica. Ningun mensaje incluye clave, mnemonic ni seed."
+      - tipo: comando
+        ref: "cmp de la lectura del blob antes y despues de ambos intentos"
+        detalle: "BLOB INTACTO (identico byte a byte): no se regenero ni se sobrescribio el seed. Re-arranque de control con la credencial correcta: READY."
+      - tipo: archivo
+        ref: "src/modules/wallet/seedStore.ts:53-71,102-130"
+        detalle: "decryptPayload traduce el fallo del tag GCM a ProvisioningError('INTERNAL_ERROR'); con seed existente, credencial ausente o malformada tambien es INTERNAL_ERROR. Ninguna rama continua sin seed."
+      - tipo: archivo
+        ref: "src/main.ts:20-23,34-40"
+        detalle: "abort() escribe {\"fatal\":{code,message}} en stderr y hace process.exit(1); ProvisioningError se mapea con su propio code."
+    justificacion: >-
+      Con credencial ausente y con credencial incorrecta el arranque aborto con exit 1 e INTERNAL_ERROR en
+      stderr, sin filtrar material secreto, y el blob cifrado quedo intacto byte a byte: no se regenero seed
+      ni se continuo sin el. Cumple el criterio cerrado de RN-6/RN-11.
+    duracion_min: 8
+
+  - at_id: AT-06-01-12
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/modules/wallet/seedStore.ts:164-182"
+        detalle: "La escritura del seed cifrado ocurre dentro de transaction(db, ...) (unica unidad atomica); tras el commit se relee la fila y se vuelve a descifrar (decryptPayload) como verificacion: el seed se considera provisionado solo si puede leerse y descifrarse."
+      - tipo: archivo
+        ref: "src/db/index.ts:101-116"
+        detalle: "transaction(): BEGIN IMMEDIATE / COMMIT, con ROLLBACK completo ante cualquier excepcion. No hay escrituras persistentes del seed fuera de esa unidad."
+      - tipo: archivo
+        ref: "src/db/index.ts:88-99"
+        detalle: "openDatabase(): PRAGMA journal_mode = WAL y PRAGMA synchronous = FULL, de modo que el commit es durable y una muerte del proceso deja la transaccion completa o inexistente."
+      - tipo: archivo
+        ref: "src/modules/wallet/seedStore.ts:53-71,132-145"
+        detalle: "Carga: decryptPayload rechaza un blob mas corto que nonce+tag y, ante tag GCM que no verifica, lanza INTERNAL_ERROR; ademas se exige JSON parseable con payload.mnemonic string. Un blob truncado o corrupto nunca se adopta como seed valido."
+      - tipo: comando
+        ref: "cd $COPIA_TMP && node --test dist/tests/epic-06-wallet.test.js"
+        detalle: "PASA el test propio \"AT-06-01-12: atomicidad - nunca queda un seed parcialmente escrito\" (27 tests, 27 pass, 0 fail)."
+    justificacion: >-
+      La persistencia del seed esta contenida en una unica transaccion SQLite con rollback y durabilidad
+      (WAL + synchronous FULL), y la carga solo acepta un blob cuyo tag GCM verifica y que parsea a un payload
+      con mnemonic: no hay camino por el que un seed parcial se interprete como valido.
+    duracion_min: 6
+
+  - at_id: AT-06-01-13
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I7 3907 WALLET_ENCRYPTION_KEY=<clave7>; POST /api/v1/auth/register; kill"
+        detalle: "Instancia descartable limpia con mapeo no vacio: deposit_addresses indice 0 -> 0x56d86f5fD7F1D647c56bDe0A123432d43F2fFCc9."
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/corromper.js <inst I7>/exchange.db  (CORRUPCION DECLARADA: UPDATE deposit_addresses SET address=... WHERE address_index=0, cambiando el ultimo caracter hex)"
+        detalle: "indice 0: 0x56d86f5fD7F1D647c56bDe0A123432d43F2fFCc9  ->  0x56d86f5fD7F1D647c56bDe0A123432d43F2fFCca. Editado solo el almacenamiento de la instancia descartable; $COPIA_EVAL no se toco."
+      - tipo: comando
+        ref: "env ... WALLET_ENCRYPTION_KEY=<clave7> node dist/src/main.js  (re-arranque, misma credencial correcta)"
+        detalle: "exit=1; stderr: {\"fatal\":{\"code\":\"INTERNAL_ERROR\",\"message\":\"Verificacion de integridad del seed fallida para el indice 0: la direccion derivada no coincide con la persistida.\"}}. curl a /health sin respuesta: el proceso no llego a escuchar."
+      - tipo: comando
+        ref: "node leer-db.js <inst I7>/exchange.db \"SELECT COUNT(*) FROM wallet_seed\" y SELECT de deposit_addresses"
+        detalle: "{\"seeds\":1} y la fila del indice 0 sigue con la direccion corrupta: no se regenero seed ni se reasignaron direcciones."
+      - tipo: archivo
+        ref: "src/modules/wallet/seedStore.ts:185-206; src/bootstrap.ts:48-51"
+        detalle: "verifySeedIntegrity() toma el indice mas bajo del mapeo (ORDER BY address_index ASC LIMIT k), lo re-deriva y compara con la direccion persistida; el mismatch lanza ProvisioningError. Se invoca en bootstrap() antes de construir los servicios y el servidor HTTP."
+    justificacion: >-
+      Con el mapeo cuenta->indice no vacio y la direccion persistida del indice mas bajo alterada, el arranque
+      aborto con error critico antes de servir ninguna operacion, sin regenerar el seed ni reasignar direcciones.
+      La verificacion RN-10 existe en el arranque y se ejecuta antes de levantar el servidor.
+    duracion_min: 9
+
+  - at_id: AT-06-02-01
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:352-367,378-398,405-429,458-498"
+        detalle: "Cadena completa del SUT: masterKeyFromSeed (HMAC-SHA512 'Bitcoin seed') -> ckdPriv -> externalChainNode (m/44'/60'/0'/0) -> toDerivedAccount (Keccak-256(X||Y), ultimos 20 bytes, EIP-55)."
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-address.js 0  (driver en $COPIA_TMP: mnemonicToSeed(MNEMONIC_HARDHAT, '') y deriveAccount(seed, 0), ambas funciones internas del SUT)"
+        detalle: "0	m/44'/60'/0'/0/0	0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+      - tipo: archivo
+        ref: "spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md:93,121"
+        detalle: "Valor esperado de la tabla de HU-06-02: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266. Coincide caracter a caracter."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0032.mediawiki §The key tree; §Private parent key -> private child key"
+        detalle: "Referencia normativa de la master key y de CKDpriv."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0044.mediawiki §Path levels; corpus/documentos/erc-55.md"
+        detalle: "Niveles del path m/purpose'/coin_type'/account'/change/address_index y checksum de la direccion."
+    justificacion: >-
+      El driver ejecuto la cadena BIP-39 -> BIP-32/BIP-44 -> EIP-55 del propio SUT con MNEMONIC_HARDHAT y
+      passphrase vacia y devolvio exactamente la direccion del indice 0 fijada por HU-06-02, con el checksum
+      EIP-55 identico caracter a caracter.
+    duracion_min: 5
+
+  - at_id: AT-06-02-02
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-address.js  (indices 0, 1, 2 y 3)"
+        detalle: "1 m/44'/60'/0'/0/1 0x70997970C51812dc3A010C7d01b50e0d17dc79C8; 2 m/44'/60'/0'/0/2 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC; 3 m/44'/60'/0'/0/3 0x90F79bf6EB2c4f870365E785982E1f101E93b906. Junto con el indice 0 (0xf39Fd6e5...b92266), las cuatro direcciones son distintas entre si."
+      - tipo: archivo
+        ref: "spec/06-wallet-hd-y-direcciones/HU-06-02-derivacion-jerarquica-bip32-bip44.md:93-96,125-129"
+        detalle: "Tabla de vectores de HU-06-02: las tres direcciones coinciden exactamente."
+    justificacion: >-
+      Los indices 1, 2 y 3 derivados con MNEMONIC_HARDHAT produjeron exactamente las tres direcciones de la
+      tabla de HU-06-02, checksum EIP-55 incluido, y las cuatro direcciones de los indices 0..3 son distintas.
+    duracion_min: 2
+
+  - at_id: AT-06-02-04
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:91-95,108-112,400-413"
+        detalle: "HARDENED_OFFSET = 0x80000000; BIP44_PURPOSE=44, BIP44_COIN_TYPE_ETHEREUM=60, BIP44_ACCOUNT=0, BIP44_CHANGE=0 (comentado como cadena externa, NO hardened); hardened(v) = v + HARDENED_OFFSET; derivationPathFor(i) = `m/44'/60'/0'/0/${i}`."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:419-429"
+        detalle: "externalChainNode aplica ckdPriv exactamente sobre [hardened(44)=2147483692, hardened(60)=2147483708, hardened(0)=2147483648, 0] -- el offset 2^31 se aplica a los tres primeros niveles y NO a change; el address_index se pasa despues sin offset (lineas 489 y 520)."
+      - tipo: comando
+        ref: "cd $COPIA_TMP && node --test dist/tests/wallet-hd.test.js"
+        detalle: "PASA el test propio \"AT-06-02-04: componentes hardened del path (2147483692 / 2147483708 / 2147483648) y no-hardened (change, address_index)\" (19 tests, 19 pass, 0 fail)."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0044.mediawiki §Path levels"
+        detalle: "\"m / purpose' / coin_type' / account' / change / address_index\" y \"Apostrophe in the path indicates that BIP32 hardened derivation is used\": solo los tres primeros niveles llevan apostrofe."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0032.mediawiki §The key tree"
+        detalle: "Notacion m/3_H/2/5 para los niveles hardened y normales de la cascada CKDpriv."
+    justificacion: >-
+      El path se construye con indices numericos: 2147483692, 2147483708 y 2147483648 para purpose, coin_type y
+      account (offset 0x80000000), y change (0) y address_index sin offset. Coincide exactamente con
+      m/44'/60'/0'/0/index segun la semantica de hardening del corpus.
+    duracion_min: 4
+
+  - at_id: AT-06-02-05
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-address.js 0 > addr-run1.txt   (proceso 1)"
+        detalle: "0	m/44'/60'/0'/0/0	0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/kat-address.js 0 > addr-run2.txt   (proceso 2, separado)"
+        detalle: "0	m/44'/60'/0'/0/0	0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; cmp -s -> IDENTICAS."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:335-340,356-367,378-398,458-498"
+        detalle: "Camino de derivacion sin RNG, reloj ni estado mutable: ExtendedKey es readonly, ckdPriv y masterKeyFromSeed son funciones puras de sus argumentos y toDerivedAccount solo aplica Keccak-256 y EIP-55. El unico estado de modulo es wordSetCache (Set inmutable del wordlist), ajeno a la derivacion."
+    justificacion: >-
+      Dos procesos separados derivaron el indice 0 y produjeron la misma direccion y el mismo path, con salidas
+      identicas. La inspeccion del camino confirma que la derivacion es funcion pura de (seed, path), sin
+      aleatoriedad ni estado mutable, conforme a RN-5/INV-8.
+    duracion_min: 3
+
+  - at_id: AT-06-02-08
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:103-106,378-398"
+        detalle: "SECP256K1_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141. ckdPriv detecta las dos ramas: `if (IL >= SECP256K1_N)` y, tras k = (IL + k_par) mod n, `if (k === 0n)`; ambas lanzan InvalidChildKeyError. El chequeo es propio, no delegado."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:500-530"
+        detalle: "deriveAccountFromIndexOrNext: bucle `for (index = startIndex; index <= MAX_ADDRESS_INDEX; index++)` que ante InvalidChildKeyError hace `continue` -- avance determinista al indice siguiente. El indice efectivamente usado se devuelve en addressIndex y queda reflejado en derivationPath."
+      - tipo: archivo
+        ref: "src/modules/wallet/service.ts:93-101,112-126"
+        detalle: "El asignador usa deriveAccountFromIndexOrNext y registra cada indice saltado en la tabla derivation_skips (reason INVALID_BIP32_KEY), ademas de persistir el indice efectivamente usado en deposit_addresses. Tabla declarada en src/db/index.ts:61-66."
+      - tipo: comando
+        ref: "cd $COPIA_TMP && node --test dist/tests/wallet-hd.test.js"
+        detalle: "PASAN los dos tests propios que fuerzan la condicion con un HMAC-SHA512 inyectado (tests/wallet-hd.test.ts:368-404 fuerza I_L = n; :406-428 fuerza k_hijo = 0). Ambos assertan addressIndex == INDICE_ROTO+1 y deepEqual contra la derivacion normal del indice siguiente. 19 tests, 19 pass, 0 fail."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0032.mediawiki §Private parent key -> private child key"
+        detalle: "\"In case parse256(I_L) >= n or k_i = 0, the resulting key is invalid, and one should proceed with the next value for i.\" Es exactamente la condicion detectada y el manejo implementado."
+    justificacion: >-
+      Las dos ramas de la condicion de borde de BIP-32 se detectan con un chequeo propio contra el orden n y el
+      SUT avanza al indice siguiente de forma determinista, registrando el indice efectivamente usado en
+      deposit_addresses y el saltado en derivation_skips. Los tests propios que fuerzan la condicion pasan.
+    duracion_min: 7
+
+  - at_id: AT-06-02-09
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:92-95,431-444"
+        detalle: "MAX_ADDRESS_INDEX = HARDENED_OFFSET - 1 = 2147483647. assertAddressIndexInRange rechaza si no es entero, si es < 0 o si `addressIndex > MAX_ADDRESS_INDEX`: el borde exacto es 2^31-1 aceptado y 2^31 = 2147483648 rechazado."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:50-63"
+        detalle: "AddressIndexRangeError extends AppError y construye issues = [{field:'address_index', message}], llamando super('VALIDATION_ERROR', message, { issues }): el error del catalogo lleva details.issues senalando address_index."
+      - tipo: archivo
+        ref: "src/core/errors.ts:17"
+        detalle: "ERROR_HTTP_STATUS.VALIDATION_ERROR = 422, de modo que si alcanza la superficie HTTP responde 422."
+      - tipo: archivo
+        ref: "src/wallet/hd.ts:480-487,509-517"
+        detalle: "assertAddressIndexInRange es la PRIMERA sentencia de deriveAccount y de deriveAccountFromIndexOrNext, antes de externalChainNode: la validacion precede a cualquier derivacion."
+      - tipo: comando
+        ref: "cd $COPIA_TMP && node --test dist/tests/wallet-hd.test.js"
+        detalle: "PASA \"AT-06-02-09: address_index fuera del rango no-hardened se rechaza ANTES de derivar\" (tests/wallet-hd.test.ts:430-466), que assertea derivaciones == 0 con un HMAC instrumentado, rechazo de 2147483648 y derivacion normal de 2147483647."
+    justificacion: >-
+      La validacion de rango existe con el borde exacto (2^31-1 acepta, 2^31 rechaza), produce un
+      VALIDATION_ERROR del catalogo (422) con details.issues apuntando a address_index, y se ejecuta antes de
+      iniciar la derivacion, como confirma el test propio que cuenta cero invocaciones del HMAC.
+    duracion_min: 5
+
+  - at_id: AT-06-03-03
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I1 3901 WALLET_ENCRYPTION_KEY=<clave1>  (instancia descartable desde $COPIA_TMP con almacenamiento limpio propio; destruida al terminar)"
+        detalle: "READY. POST /api/v1/auth/register secuencial para a-eval@example.com y b-eval@example.com: 201 en ambos."
+      - tipo: comando
+        ref: "node leer-db.js <inst I1>/exchange.db \"SELECT ... FROM deposit_addresses JOIN accounts ... ORDER BY address_index\""
+        detalle: "a-eval@example.com -> address_index 0, address 0xC6EB1B5EA497979Cb82c7f719aF0d1fbFCC55Cdd, derivation_path m/44'/60'/0'/0/0. b-eval@example.com -> address_index 1, address 0x387bA6E999a832A30185cd976D7D321a30A5465A, derivation_path m/44'/60'/0'/0/1. Indices contiguos desde 0, sin huecos, direcciones distintas y en caja mixta EIP-55."
+      - tipo: archivo
+        ref: "src/modules/wallet/service.ts:81-93"
+        detalle: "El indice de arranque es MAX(address_index)+1, o 0 si la tabla esta vacia: numeracion desde 0, monotona y sin reuso (columna address_index UNIQUE, src/db/index.ts:51-59)."
+    justificacion: >-
+      En estado limpio, las dos cuentas creadas secuencialmente recibieron los indices 0 y 1 en el mapeo
+      persistido, con direcciones distintas y formato EIP-55. No hay huecos ni reuso, conforme a RN-1/RN-5.
+    duracion_min: 6
+
+  - at_id: AT-06-03-07
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "/tmp/eval-wb/lanzar.sh I8 3908 WALLET_ENCRYPTION_KEY=<clave8> WALLET_MNEMONIC=\"abandon x23 art\" (mecanismo de import hallado en AT-06-01-05: variable de entorno WALLET_MNEMONIC; instancia descartable limpia, custodia del mnemonic por el evaluador)"
+        detalle: "READY; tres cuentas registradas."
+      - tipo: comando
+        ref: "node leer-db.js <inst I8>/exchange.db \"SELECT address_index, address FROM deposit_addresses ORDER BY address_index\" y GET /api/v1/deposit-address?asset=ETH de cada cuenta"
+        detalle: "0 -> 0xF278cF59F82eDcf871d630F28EcC8056f25C1cdb; 1 -> 0xf785bD075874b8423D3583728a981399f31e95aA; 2 -> 0x60Af1c6A5D03F9f1B1b74931499bC99E72fF8DA9. La API devuelve las mismas direcciones con derivationPath m/44'/60'/0'/0/{0,1,2}."
+      - tipo: comando
+        ref: "docker run --rm -d --entrypoint anvil ghcr.io/foundry-rs/foundry:stable --mnemonic \"abandon x23 art\" --accounts 4; docker logs  (derivacion de referencia EXTERNA al SUT; contenedor destruido despues)"
+        detalle: "(0) 0xF278cF59F82eDcf871d630F28EcC8056f25C1cdb; (1) 0xf785bD075874b8423D3583728a981399f31e95aA; (2) 0x60Af1c6A5D03F9f1B1b74931499bC99E72fF8DA9; (3) 0xDF7F9c4b9B9b9580B265DCD892173e9bD90e067F."
+      - tipo: comando
+        ref: "node /tmp/eval-wb/drivers/verificar-constante.js"
+        detalle: "MNEMONIC_24_VALIDO verificado contra el algoritmo del corpus: \"abandon\" x23 + \"art\"."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0032.mediawiki; corpus/documentos/bip-0044.mediawiki; corpus/documentos/erc-55.md"
+        detalle: "Referencias normativas de CKDpriv/master key, niveles del path BIP-44 y checksum de la direccion."
+    justificacion: >-
+      Sobre el mismo mnemonic importado, las tres direcciones asignadas por el SUT a los indices 0, 1 y 2
+      coinciden exactamente -checksum EIP-55 incluido- con las derivadas por una implementacion BIP-44 externa
+      e independiente (anvil efimero). La coherencia indice->direccion se cumple para todos los indices verificados.
+    duracion_min: 10
+
+  - at_id: AT-06-03-08
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/modules/wallet/service.ts:67-93"
+        detalle: "assignForAccountInTransaction: la guarda `SELECT 1 FROM accounts WHERE account_id = ?` y el `throw new AppError('ACCOUNT_NOT_FOUND', ..., { accountId })` (lineas 74-79) se ejecutan ANTES del `SELECT MAX(address_index)` (linea 81) y de deriveAccountFromIndexOrNext (linea 93): el camino de fallo no reserva indice ni deriva, y como todo corre dentro de la transaccion, no muta el mapeo."
+      - tipo: archivo
+        ref: "src/core/errors.ts:48"
+        detalle: "ERROR_HTTP_STATUS.ACCOUNT_NOT_FOUND = 404; details lleva { accountId } por el tercer argumento de AppError."
+      - tipo: comando
+        ref: "grep -rn \"ACCOUNT_NOT_FOUND\" sut/src/"
+        detalle: "Unico punto de lanzamiento: src/modules/wallet/service.ts:78 (mas la entrada del catalogo en core/errors.ts:48)."
+      - tipo: comando
+        ref: "cd $COPIA_TMP && node --test dist/tests/epic-06-wallet.test.js"
+        detalle: "PASA \"AT-06-03-08: cuenta inexistente => ACCOUNT_NOT_FOUND (404) con details.accountId\" (tests/epic-06-wallet.test.ts:726-745), que assertea code, httpStatus 404, details == {accountId} y que las filas de deposit_addresses quedan identicas."
+    justificacion: >-
+      La guarda de existencia de cuenta esta en el asignador, lanza ACCOUNT_NOT_FOUND (404) con details.accountId
+      y precede tanto a la reserva del indice como a la derivacion. El test propio confirma que el mapeo no se
+      modifica en ese camino.
+    duracion_min: 4
+
+  - at_id: AT-06-03-09
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "POST /api/v1/auth/register c-eval@example.com contra la instancia I1, SIN llamar nunca a GET /api/v1/deposit-address para esa cuenta"
+        detalle: "201 {\"accountId\":\"32aeb762-63bf-4acb-bb61-6418ff6a939a\", ...}"
+      - tipo: comando
+        ref: "node leer-db.js <inst I1>/exchange.db \"SELECT ... FROM deposit_addresses ...\" (inmediatamente despues del alta)"
+        detalle: "{account_id: 32aeb762-63bf-4acb-bb61-6418ff6a939a, address_index: 2, address: 0x506a5b74958c3C42BB7526eBb0aF144B05b5B87C, derivation_path: m/44'/60'/0'/0/2, network: sepolia, chain_id: 11155111, created_at: 2026-08-24T15:49:26.704Z} -- los seis campos presentes."
+      - tipo: archivo
+        ref: "src/modules/accounts/service.ts:166-179"
+        detalle: "Disparo eager: dentro de la misma transaccion del alta (HU-01-01) se llama this.addressAssigner.assignForAccountInTransaction(account.accountId). No depende de ninguna consulta del usuario."
+      - tipo: archivo
+        ref: "src/modules/wallet/service.ts:103-126"
+        detalle: "El registro persistido se arma con accountId, addressIndex, address (EIP-55), derivationPath, network = NETWORK_NAME ('sepolia') y chainId = CHAIN_ID ('11155111')."
+    justificacion: >-
+      Inmediatamente despues del alta y sin ninguna consulta previa del usuario, el registro persistido de la
+      asignacion existe con los seis campos requeridos y los valores prescriptos. El disparo del asignador
+      ocurre en la transaccion del alta, no en la primera consulta.
+    duracion_min: 4
+
+  - at_id: AT-06-03-10
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/modules/wallet/service.ts:26-33,128-151"
+        detalle: "DepositAddressAssignedEvent lleva exactamente { accountId, addressIndex, address, chainId }. El evento se persiste en domain_events dentro de la misma transaccion que la asignacion y se publica in-process (publishPendingEvents) recien despues del commit."
+      - tipo: comando
+        ref: "node leer-db.js <inst I1>/exchange.db \"SELECT id, type, payload FROM domain_events ORDER BY id\""
+        detalle: "Tres filas type=DepositAddressAssigned, una por alta, p. ej. {\"accountId\":\"b0a0a92e-...\",\"addressIndex\":0,\"address\":\"0xC6EB1B5EA497979Cb82c7f719aF0d1fbFCC55Cdd\",\"chainId\":\"11155111\"}. Producidas por el alta, sin ninguna consulta del usuario de por medio."
+      - tipo: archivo
+        ref: "src/http/app.ts:36,442-467; src/modules/wallet/service.ts:52-61,176-181"
+        detalle: "Consulta interna GET /internal/deposit-addresses (no publica: exige X-Internal-Token o loopback) que devuelve wallet.listAll() -- todas las asignaciones con accountId, addressIndex, address, derivationPath, network y chainId. listEvents() expone ademas los eventos persistidos para lectura al arrancar."
+      - tipo: archivo
+        ref: "src/modules/accounts/service.ts:176-179,196"
+        detalle: "Ausencia de ventana: la asignacion (y con ella el evento y la fila consultable internamente) ocurre en la transaccion del alta; ni el evento ni el endpoint interno dependen de la primera consulta del usuario."
+      - tipo: comando
+        ref: "cd $COPIA_TMP && node --test dist/tests/epic-06-wallet.test.js"
+        detalle: "PASA \"AT-06-03-10: se emite el evento DepositAddressAssigned y la direccion es consultable internamente\" (tests/epic-06-wallet.test.ts:771-800)."
+    justificacion: >-
+      Existen los dos mecanismos: el evento DepositAddressAssigned con los cuatro campos, persistido en la misma
+      transaccion de la asignacion y emitido tras el commit, y la consulta interna no publica del conjunto de
+      direcciones asignadas. Ambos quedan poblados desde el alta, sin ventana ligada a la consulta del usuario;
+      el punto de consumo en el monitor no se pudo citar porque la epica 07 no esta implementada en esta celda.
+    duracion_min: 6
+
+  - at_id: AT-07-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-07-04-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-07-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-07-04-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09a
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09b
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09c
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-410"
+        detalle: "Seccion \"Alcance implementado\" / \"Fuera de alcance\" de la entrega operativa: se declara que no se implementa nada (ni stubs) de HU-01-03 ni de las epicas 02, 03, 04, 05, 07 y 08, ni los canales WebSocket (HU-09-03/HU-09-04)."
+      - tipo: comando
+        ref: "grep -rli \"ledger|asiento|orderbook|matching|settlement|retiro|withdrawal|indexador|logout|refresh\" sut/src/"
+        detalle: "0 archivos propios para cada termino de dominio de esas epicas (unicos hits colaterales: PRAGMA journal_mode, la constante CONFIRMACIONES_REQUERIDAS y un comentario)."
+      - tipo: archivo
+        ref: "src/db/index.ts:15-86"
+        detalle: "Esquema persistido completo: accounts, account_balances, sessions, wallet_seed, deposit_addresses, derivation_skips, domain_events, auth_audit_log. No hay tablas de ledger, ordenes, trades, depositos ni retiros."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-09-04-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:396-405"
+        detalle: "Seccion \"Fuera de alcance\": los canales WebSocket (HU-09-03/HU-09-04) no se implementan."
+      - tipo: comando
+        ref: "grep -rn \"app.(get|post|put|delete|patch)(\" sut/src/"
+        detalle: "Las 6 rutas del SUT son /health, /api/v1/auth/register, /api/v1/auth/login, /api/v1/me, /api/v1/deposit-address y /internal/deposit-addresses. No hay endpoint WebSocket."
+    justificacion: >-
+      La epica de este AT no esta implementada en la celda (fuera del subconjunto de esta corrida pre-piloto), por lo que la funcionalidad no es localizable.
+    duracion_min: 0
+
+  - at_id: AT-09-05-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:366-374"
+        detalle: "Seccion \"Alcance implementado\": HU-09-05 (modelo de errores de la API) SI figura entre las historias entregadas, a diferencia del resto de los ATs no evaluados en esta corrida."
+      - tipo: comando
+        ref: "(alcance de la corrida)"
+        detalle: "AT-09-05-09 no integra el subconjunto de ATs asignado a esta corrida pre-piloto, por lo que no se ejecuto el procedimiento F1 de su entrada de la rubrica."
+    justificacion: >-
+      No evaluado por quedar fuera del subconjunto asignado a esta corrida; se deja constancia de que su historia (HU-09-05) si esta dentro del alcance entregado por la celda.
+    duracion_min: 0

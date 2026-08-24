@@ -622,3 +622,25 @@ ambos.
 **Esto no es un resultado del experimento** —la pre-piloto no es comparable: prompt
 acotado, `effort high` en vez de `xhigh`, una sola corrida por celda— pero muestra que
 las métricas estáticas **discriminan**, que es lo que había que verificar de ellas.
+
+## Resultado white-box de las dos celdas: concordancia 43/44
+
+| celda | pasada 1 | pasada 2 | concordancia | discrepancias |
+|---|---|---|---|---|
+| `pre-piloto-a` | 22 `PASA` | 22 `PASA` | **22/22** | — |
+| `pre-piloto-b` | 22 `PASA` | 21 `PASA` + 1 `NO_EVALUABLE` | **21/22** | AT-06-03-10 |
+
+Las cuatro pasadas validaron contra el contrato de la plantilla (56 items exactos) sin una
+sola violación. **Concordancia global: 43 de 44 (97,7 %)**.
+
+**Lo que esto dimensiona para H8:** con 56 ATs por celda y 4 celdas —224 evaluaciones—,
+una tasa de discrepancia del 2,3 % proyecta del orden de **5 arbitrajes humanos** en total.
+El costo humano del agente evaluador es manejable; el cuello de botella de H8 no va a
+estar ahí.
+
+**Advertencia sobre la lectura de estos veredictos:** 44 de 44 `PASA` es un resultado
+sospechosamente limpio y no debe leerse como «las implementaciones son correctas». El
+universo es de 6 HU, las dos celdas son de la misma generación de modelos, y el evaluador
+es del mismo proveedor que una de ellas. Lo que la pre-piloto verifica es que el
+**instrumento funciona** —produce veredictos con evidencia citada, validables y
+reproducibles entre pasadas—, no la calidad de lo evaluado.

@@ -17,7 +17,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | 1.2 | Secuencia de 3 roles por etapa | etapa backend de B, completa | `paso_inicio`/`paso_fin` 1..3 + `fin`, todos exit 0 | [x] 2026-08-24 |
 | 1.3 | Sesión fresca por paso | ídem | 3 invocaciones independientes, sin `--resume` | [x] 2026-08-24 |
 | 1.4 | Handoff por `.pipeline/` | ídem | `salida_escrita: true` en el paso 2, paso 3 la leyó, sin `handoff_faltante`; la revisión trae 3 puntos con archivo:línea y HU/RN/AT | [x] 2026-08-24 |
-| 1.5 | Corte por código de salida ≠ 0 | sólo si ocurre | evento `corte` y no continúa | [ ] |
+| 1.5 | Corte por código de salida ≠ 0 | no ocurrió | los 18 pasos de las 2 celdas salieron con 0; el camino quedó sin ejercitar en real (sí con el CLI simulado) | [~] sin ocurrencia |
 | 1.6 | Snapshot por invocación de rol | ídem | 3 snapshots (94, 95, 96 archivos), `ok: true` | [x] 2026-08-24 |
 | 1.7 | Repo satélite y layout de logs | `crear-repo-satelite.sh` | 74 archivos, todos bajo `spec/`; `<repo>/../logs/` | [x] verificado 2026-08-23 |
 
@@ -55,8 +55,8 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 5.1 | Esquema del stream de A | smoke de 1 invocación | `system`/`assistant`/`user`/`rate_limit_event`/`result` (H-06); falta ver subagentes | [~] parcial |
-| 5.2 | Esquema del JSONL de B | corrida real de B | nombres exactos de los campos de tokens de `turn.completed` (ítem 19) | [ ] |
+| 5.1 | Esquema del stream de A | 3 etapas de A | tipos confirmados; **varios `result` por invocación** con el mismo acumulado (H-11) y sus `parent_tool_use_id` en null; subagentes atribuidos en los mensajes | [x] cierra el ítem 19 del lado A |
+| 5.2 | Esquema del JSONL de B | 3 etapas de B | `turn.completed.usage` = `input_tokens`, `cached_input_tokens`, `cache_write_input_tokens`, `output_tokens`, `reasoning_output_tokens`; items `command_execution`, `mcp_tool_call`, `agent_message` | [x] cierra el ítem 19 del lado B |
 | 5.3 | `serializar` no pierde información | inspección del JSONL contra el stream crudo | ningún payload degradado a `str()` (ítem 16) | [ ] |
 | 5.4 | stderr por paso a archivo | etapa backend | un archivo por paso, vacíos en el camino feliz | [x] 2026-08-24 |
 | 5.5 | Costo: `total_cost_usd` de A | paso 1 de la etapa backend | USD 30,06 en `result`; **hay 3 `result` por invocación con el mismo total** — no se suman (H-11) | [~] falta el fix del cómputo |
@@ -76,10 +76,10 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 7.1 | Briefing y rúbrica white-box | pasada 1 sobre B | 56 items, los 22 del alcance `PASA` con evidencia archivo+comando; el tope de esfuerzo no es verificable (H-19) | [~] falta pasada 2 |
-| 7.2 | Validador mecánico | sobre `pasada-1.yaml` | **OK**, contrato cumplido, exit 0 | [x] 2026-08-24 |
-| 7.3 | Arbitraje humano y veredicto final | discrepancias entre pasadas | `veredicto-final.yaml` validado con `--final` | [ ] |
-| 7.4 | Tasa de discrepancia entre pasadas | conteo | dato para calibrar el costo de H8 | [ ] |
+| 7.1 | Briefing y rúbrica white-box | 2 pasadas × 2 celdas | las 4 con 56 items y evidencia citada; el tope de esfuerzo no es verificable (H-19) | [x] 2026-08-24 |
+| 7.2 | Validador mecánico | sobre las 4 pasadas | **OK** en las 4, sin una violación del contrato | [x] 2026-08-24 |
+| 7.3 | Arbitraje humano y veredicto final | 1 discrepancia (AT-06-03-10 en B) | material preparado en `no-automatizables-b/arbitraje.md`; **el veredicto lo firma el tesista** (ADR-004 §2.5) | [~] pendiente del tesista |
+| 7.4 | Tasa de discrepancia entre pasadas | 4 pasadas | **43/44 (97,7 %)** → del orden de 5 arbitrajes en las 4 celdas oficiales | [x] 2026-08-24 |
 
 ## 8. Rúbricas manuales y métricas estáticas
 
