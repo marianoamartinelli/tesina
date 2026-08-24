@@ -26,11 +26,14 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-006](ADR-006-reapertura-controlada-spec-v1.1.md) | Reapertura controlada de la spec (17 decisiones cerradas) y re-freeze como spec-v1.1 | Aceptado |
 | [ADR-007](ADR-007-agente-evaluador-white-box.md) | Agente evaluador LLM para los 66 ATs no automatizables (rúbrica white-box) | Aceptado (model IDs y runtime enmendados por ADR-010; partición 66 → 56 por ADR-011) |
 | [ADR-008](ADR-008-restriccion-recuperacion-web-harness-a.md) | Restricción de WebSearch/WebFetch en el harness A (paridad del factor RAG) | Aceptado |
-| [ADR-009](ADR-009-harnesses-como-cli-y-orquestador-de-roles.md) | Los harnesses pasan a ser los CLI de cada proveedor; orquestador de roles; re-pinneo de model IDs | Aceptado (D4 enmendada por ADR-010) |
+| [ADR-009](ADR-009-harnesses-como-cli-y-orquestador-de-roles.md) | Los harnesses pasan a ser los CLI de cada proveedor; orquestador de roles; re-pinneo de model IDs | Aceptado (D4 enmendada por ADR-010; D5 corregida por ADR-014; la asimetría de confinamiento de D1, eliminada por ADR-015) |
 | [ADR-010](ADR-010-delegacion-contexto-y-evaluador.md) | Delegación en subagentes, techo de contexto del harness B y re-pinneo del evaluador white-box | Aceptado |
 | [ADR-011](ADR-011-particion-automatizable-white-box.md) | Partición final automatizable / white-box de los ATs backend (465 / 56) | Aceptado |
-| [ADR-012](ADR-012-protocolo-experimental-v1-1.md) | Protocolo experimental v1.1 (reemplaza a ADR-004) | Aceptado |
+| [ADR-012](ADR-012-protocolo-experimental-v1-1.md) | Protocolo experimental v1.1 (reemplaza a ADR-004) | Reemplazado por ADR-016 |
 | [ADR-013](ADR-013-mecanismo-importar-mnemonic.md) | Mecanismo de import del mnemonic en la evaluación white-box | Aceptado |
+| [ADR-014](ADR-014-recuperacion-web-en-el-harness-b.md) | La recuperación web del harness B no venía desactivada: mecanismo explícito | Aceptado |
+| [ADR-015](ADR-015-agentes-en-contenedores.md) | Los agentes corren en contenedores, con toolchain común y capa por CLI | Aceptado |
+| [ADR-016](ADR-016-sin-topes-de-presupuesto.md) | No hay topes de presupuesto: la corrida termina cuando termina el pipeline | Aceptado |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan
@@ -68,3 +71,16 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 > cuatro ATs de import de mnemonic de la épica 06 y fija su convención de descubrimiento.
 > Si alguno se rechaza, el documento vivo que congela vuelve a su versión previa: el
 > propio ADR declara el camino de vuelta.
+
+> **Nota (2026-08-23):** tres ADRs más de la ventana H6, los tres **Aceptados** el mismo
+> día. **ADR-014** corrige una afirmación fáctica de ADR-009 Decisión 5: medido sobre
+> `codex-cli` 0.146.0, la búsqueda web de Codex **no** viene desactivada por default y
+> `apps`/`browser_use`/`computer_use` vienen encendidas, así que el traslado de ADR-008 al
+> lado B necesita mecanismo explícito. Ninguna corrida se había ejecutado, así que no hay
+> dato contaminado. **ADR-015** contenedoriza las dos familias y con eso elimina la
+> asimetría de confinamiento que ADR-009 D1 declaraba como limitación (cierra el ítem 11
+> de la checklist H6). **ADR-016** congela `evaluacion/protocolo.md` **v1.2** reemplazando
+> a ADR-012: se eliminan los topes de presupuesto —la corrida termina cuando termina el
+> pipeline— y costo, tiempo y tokens quedan como variables dependientes en vez de topes
+> (cierra el ítem 7). Como en la ventana anterior, el contenido de los ADRs reemplazados
+> no se edita: sólo cambia su estado.
