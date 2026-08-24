@@ -68,16 +68,16 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 |---|---|---|---|---|
 | 6.1 | Entorno on-chain y contrato de arranque | smoke de backend + evaluación | anvil healthy, USDC-mock desplegado | [x] verificado 2026-08-23 |
 | 6.2 | Selección por alcance | `evaluacion/pre-piloto/seleccionar.py` | 78 ATs = 56 black-box (53 funciones) + 22 white-box, 0 sin cubrir | [x] verificado 2026-08-23 |
-| 6.3 | Suite contra un SUT real | correr los 53 nodeids contra el backend generado | `resultados-at.csv` de la pre-piloto | [ ] |
-| 6.4 | `SUITE_CMD_REINICIO_SUT` | los ATs de persistencia del alcance | ningún skip por falta de la variable | [ ] |
-| 6.5 | Helpers contra una implementación ajena | ídem 6.3 | fallas del harness distinguidas de fallas del SUT | [ ] |
+| 6.3 | Suite contra un SUT real | 53 nodeids contra el backend de B | 47 pasa / 7 falla / 2 skip; las 7 fallas son 404 de épicas fuera del alcance (H-18) | [x] 2026-08-24 |
+| 6.4 | `SUITE_CMD_REINICIO_SUT` | ATs de persistencia del alcance | `docker restart` (ADR-021) funciona; el readiness probe estaba roto y se corrigió (H-16): de timeout 121 s a pasar en 3,25 s | [x] 2026-08-24 |
+| 6.5 | Helpers contra una implementación ajena | ídem 6.3 | se distinguieron: 2 defectos del harness (H-16, H-17) y 7 falsos positivos por alcance (H-18); **cero** defectos reales del SUT | [x] 2026-08-24 |
 
 ## 7. Evaluación white-box (ADR-007 / ADR-010 D3)
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 7.1 | Briefing y rúbrica white-box | 2 pasadas sobre los 22 ATs del alcance | `pasada-1.yaml`, `pasada-2.yaml` | [ ] |
-| 7.2 | Validador mecánico | `validar-resultados.py` sobre cada pasada | exit 0 antes del arbitraje | [ ] |
+| 7.1 | Briefing y rúbrica white-box | pasada 1 sobre B | 56 items, los 22 del alcance `PASA` con evidencia archivo+comando; el tope de esfuerzo no es verificable (H-19) | [~] falta pasada 2 |
+| 7.2 | Validador mecánico | sobre `pasada-1.yaml` | **OK**, contrato cumplido, exit 0 | [x] 2026-08-24 |
 | 7.3 | Arbitraje humano y veredicto final | discrepancias entre pasadas | `veredicto-final.yaml` validado con `--final` | [ ] |
 | 7.4 | Tasa de discrepancia entre pasadas | conteo | dato para calibrar el costo de H8 | [ ] |
 
@@ -88,7 +88,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | 8.1 | Rúbrica web (épica 10) | ítems de `HU-10-01` | CSV de veredictos | [ ] |
 | 8.2 | Rúbrica mobile (épica 11) | `HU-11-01` + `AT-11-06-01`/`-26` | ídem | [ ] |
 | 8.3 | Rúbrica del rol revisor | la revisión de cada etapa + snapshots | CSV de veredictos | [ ] |
-| 8.4 | Métricas estáticas | `medir.sh` sobre los dos repos satélite | `metricas-estaticas.csv` | [ ] |
+| 8.4 | Métricas estáticas | `medir.sh` sobre el backend de B | corre tras instalar el toolchain; contaba la spec y los lockfiles (H-20 ⇒ ADR-022): 32 648 → 5 301 loc | [x] 2026-08-24 |
 
 ## 9. Protocolo
 

@@ -452,3 +452,34 @@ Primera ejecución del agente evaluador de ADR-007 en todo el proyecto:
   del briefing §2; no vio `suite-at/`, `runs/`, `journal/` ni `analisis/`.
 - Falta la pasada 2 y el arbitraje para saber la **tasa de concordancia**, que es el dato
   que dimensiona cuánto trabajo humano cuesta H8.
+
+## H-20 — Las métricas estáticas contaban la spec y los lockfiles como código del agente
+
+- **Componente:** 8.4 (métricas estáticas)
+- **Observado, primera ejecución de `medir.sh` sobre una implementación real** (backend
+  de `pre-piloto-b`):
+
+  | | archivos | loc | lenguaje principal |
+  |---|---|---|---|
+  | como estaba | 133 | **32 648** | **JSON** |
+  | sin `spec/` ni lockfiles | 56 | **5 301** | TypeScript |
+
+  El desglose de lo que sobraba: **11 740 líneas de Markdown de `spec/`** —que el repo
+  satélite lleva adentro porque es la única entrada del agente— y **16 070 de
+  `package-lock.json`**. El 86 % de lo medido no lo escribió el agente, y
+  `lenguaje_principal` salía `JSON`, que no describe ninguna implementación.
+- **Efecto sobre H9, en dos direcciones:** la spec es constante entre celdas —no crea
+  diferencias, pero **diluye** las reales: 500 loc de diferencia pasan de ser el 10 % del
+  código al 1,5 % del total—; los lockfiles **varían** con el stack que eligió cada
+  agente, o sea ruido correlacionado con el factor equivocado, y encima las dependencias
+  ya se cuentan aparte y bien.
+- **Corrección aplicada:** **ADR-022** — `spec/` a `EXCL_DIRS` y los lockfiles por
+  `--not-match-f`. Ninguna medición previa se invalida: la pre-piloto fue la primera.
+- **De paso, el toolchain no estaba instalado:** `medir.sh` abortaba con
+  `falta la herramienta 'cloc'`. Instalados con las versiones que el README pinnea
+  (cloc 2.10, lizard 1.23.0, jscpd 5.0.11, jq); el script verifica versiones y aborta si
+  difieren, así que el pin funciona.
+- **Residuo abierto (no lo decide el ADR):** cómo separar backend/web/mobile cuando el
+  agente los deja en un mismo repo. En `pre-piloto-b` el backend está en la raíz y los
+  clientes en `web/` y `mobile/`, pero nada garantiza ese layout en las 4 celdas.
+- **Estado:** resuelto, con ese residuo anotado.
