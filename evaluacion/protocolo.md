@@ -1,4 +1,4 @@
-# Protocolo experimental pre-registrado — v1.3
+# Protocolo experimental pre-registrado — v1.4
 
 - **Estado:** esta versión reemplaza a la **v1.1**, congelada por
   [ADR-012](../decisiones/ADR-012-protocolo-experimental-v1-1.md) (2026-08-17), que a su
@@ -144,6 +144,15 @@ Durante la generación, el agente alcanza el nodo on-chain del host por
 `http://host.docker.internal:8545` (ADR-020 Decisión 1 y 2): la red del contenedor es
 propia y `127.0.0.1` no llega. El prompt de etapa de backend se lo informa, aclarando que
 la URL sigue siendo configuración.
+
+**Dónde se ejecuta cada smoke:** dentro del **contenedor de la corrida**, con la misma
+imagen que generó el artefacto y el repo satélite montado
+([ADR-021](../decisiones/ADR-021-smoke-y-evaluacion-dentro-del-contenedor.md)). El agente
+construye en linux/arm64 y `node_modules` queda poblado con binarios de esa plataforma:
+en la pre-piloto, el build del cliente web de B **falla en el host**
+(`@rollup/rollup-linux-arm64-gnu` no encontrado) y **pasa en el contenedor** en 508 ms.
+Lo mismo vale para el SUT de H8, que corre en contenedor con su puerto publicado mientras
+la suite y el agente evaluador siguen corriendo en el host.
 
 ### 4.2 Procedimiento del smoke de backend
 
