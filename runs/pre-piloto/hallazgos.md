@@ -417,3 +417,38 @@ supuesto.
   lectura del CSV de la pre-piloto es *falla ⇒ revisar si el endpoint estaba en el
   alcance*, y que 7 ATs son falsos positivos conocidos por esta causa.
 - **Estado:** documentado; sin cambios en el harness.
+
+## H-19 — El tope de esfuerzo por AT del evaluador no es verificable: el agente declara el tiempo
+
+- **Componente:** 7.1 (briefing y rúbrica white-box)
+- **Observado:** la pasada 1 sobre `pre-piloto-b` corrió de **11:15 a 11:32 — 17 minutos
+  de reloj**, y en su YAML declaró `duracion_min` sumando **176 minutos**. El campo lo
+  escribe el modelo: no tiene reloj ni forma de medir su propio tiempo.
+- **Por qué importa:** el briefing §5 fija «máximo 15 minutos por AT o 3 intentos
+  fallidos» y justifica el tope diciendo que «las cuatro celdas reciben exactamente el
+  mismo esfuerzo; la uniformidad vale más que la exhaustividad». Con un tiempo
+  auto-declarado, **ese control no existe**: ni el tope se puede hacer cumplir ni
+  `duracion_min` sirve como métrica de esfuerzo en el dataset.
+- **Qué sí es medible:** el tiempo de pared por pasada (el JSONL del runner lo registra),
+  los turnos y los tokens. El esfuerzo comparable entre celdas se mide con eso, no con lo
+  que el agente declara.
+- **Corrección propuesta (decisión del tesista, no la tomo):** o se reinterpreta el tope
+  como una instrucción de comportamiento —«no te empantanes»— y `duracion_min` se declara
+  no-métrica en el dataset, o se instrumenta de verdad (marcas de tiempo por AT desde el
+  JSONL). La primera no toca el briefing congelado; la segunda sí, y necesita ADR.
+- **Estado:** abierto — a elevar al tesista.
+
+## Resultado de la pasada 1 del evaluador white-box (instrumento verificado)
+
+Primera ejecución del agente evaluador de ADR-007 en todo el proyecto:
+
+- **Formato:** 56 items exactos, en orden, con el bloque de metadatos completo.
+  `validar-resultados.py` da **OK** sin una sola violación del contrato.
+- **Veredictos:** los **22 ATs del alcance, todos `PASA`**, con evidencia real (hasta 7
+  entradas por AT, de tipo `archivo` y `comando`, con rutas y líneas). Los 34 fuera del
+  alcance, `NO_EVALUABLE` con causa `FUNCION_NO_LOCALIZABLE`, como pedía la instrucción
+  de acotamiento.
+- **Aislamiento:** corrió sobre el directorio de trabajo de `/tmp` con sólo los insumos
+  del briefing §2; no vio `suite-at/`, `runs/`, `journal/` ni `analisis/`.
+- Falta la pasada 2 y el arbitraje para saber la **tasa de concordancia**, que es el dato
+  que dimensiona cuánto trabajo humano cuesta H8.
