@@ -338,3 +338,28 @@ para lo que importa: una corrida oficial es la spec **entera** (57 HU contra 6),
 `effort xhigh`, 3 etapas de 3 pasos, ×4 celdas. ADR-016 quitó los topes de presupuesto
 asumiendo que el consumo sería manejable; este es el primer dato real para revisar ese
 supuesto.
+
+## H-15 — El artefacto no corre en el host: `node_modules` es del contenedor
+
+- **Componente:** 9.1 (smoke de avance) y, sobre todo, 6.3 (suite contra un SUT real)
+- **Observado:** al ejecutar el smoke de la etapa web de B **en el host**,
+  `npm run build` muere con
+  `Cannot find module @rollup/rollup-linux-arm64-gnu … MODULE_NOT_FOUND`: el agente
+  instaló las dependencias dentro del contenedor (linux/arm64) y rollup distribuye un
+  binario por plataforma. El **mismo** build, en el contenedor de la misma imagen con el
+  repo montado, pasa en **508 ms**.
+- **Por qué es peor de lo que parece:** los backends de A y B **sí** arrancaron en el
+  host, pero por suerte —usan `node:sqlite`, builtin, y no arrastraron binarios nativos
+  incompatibles—. Basta una dependencia así para que el criterio de avance falle por la
+  plataforma del evaluador, y falle **distinto en cada celda** según qué eligió cada
+  agente. En H8 el efecto sería catastrófico: un SUT que no arranca hace fallar los 465
+  ATs automatizados por una causa ajena a lo que se mide.
+- **Verificado como corrección:** el backend de B levantado con
+  `docker run -p 3103:3000 --add-host host.docker.internal:host-gateway --env-file … -v <repo>:/repo -w /repo … npm start`
+  responde `{"status":"ok"}` a `curl http://127.0.0.1:3103/health` **desde el host**. O
+  sea: SUT en contenedor con puerto publicado, suite y evaluador white-box en el host,
+  sin tocar una línea de los tests.
+- **Corrección:** `protocolo` — **ADR-021**, `protocolo.md` v1.4. Incluye redefinir
+  `SUITE_CMD_REINICIO_SUT` sobre el contenedor (`docker restart` / `kill` + `start`), que
+  además es más fiel al `kill -9` que el protocolo pide.
+- **Estado:** resuelto.

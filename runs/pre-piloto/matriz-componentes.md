@@ -29,7 +29,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | 2.2 | Imagen y montajes de B | ídem | ídem, tras el fix de H-03 | [x] 2026-08-23 |
 | 2.3 | Credenciales de A por `--env-file` | smoke de 1 invocación | responde contra `claude-opus-5`, stderr limpio | [x] 2026-08-23 |
 | 2.4 | Credenciales de B por bind-mount | ídem | turno completo contra `gpt-5.6-sol` | [x] 2026-08-23 (requirió H-03) |
-| 2.5 | Red del contenedor | `npm install` / `expo export` de las 3 etapas | builds que resuelven dependencias; hosts tocados, al manifest | [ ] |
+| 2.5 | Red del contenedor | 2 etapas backend + 1 web, completas | `npm install` resolvió en las dos familias; el nodo del host quedó alcanzable por `--add-host` (H-07 ⇒ ADR-020) | [x] 2026-08-24 |
 | 2.6 | No-exposición del holdout | inspección de los montajes efectivos | `evaluacion/` no aparece en ningún `-v` | [x] verificado por `verificar_paridad.py` |
 
 ## 3. Modelos y CLI
@@ -94,6 +94,6 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 9.1 | Smoke check de avance de etapa | backend de B | `.env` según el contrato de arranque, `npm run build` exit 0, `GET /health` → `{"status":"ok"}` | [x] backend de B |
+| 9.1 | Smoke check de avance de etapa | backend de A y de B, web de B | backends: `GET /health` OK (el de A informa `chainId: 11155111`, o sea que verificó la red). Web de B: falla en el host y pasa en contenedor (H-15 ⇒ ADR-021) | [x] 3 de 6 etapas |
 | 9.2 | Registro de intervenciones y clasificación | smoke de B | INT-01 registrada en el momento con su clasificación | [x] 2026-08-24 |
 | 9.3 | Cierre y congelamiento de la corrida | al terminar cada celda | manifest §5 completo | [ ] |
