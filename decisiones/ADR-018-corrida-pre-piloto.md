@@ -69,6 +69,16 @@ encabezado). Roles, secuencia implementador → revisor → implementador, promp
 criterios de avance y configuración del RAG son los mismos archivos que usan las celdas
 oficiales: lo que la pre-piloto prueba es la mecánica del pipeline, no una variante de él.
 
+### 2 bis. El `effort` de la pre-piloto es `high`, no `xhigh`
+
+Las celdas oficiales corren en `xhigh` (ADR-009 Decisión 3, sin cambios). La pre-piloto
+baja a `high` en las dos familias: lo que verifica es que los componentes funcionen, no
+la calidad de la implementación, y el `effort` no cambia ningún camino de código del
+pipeline —viaja como `--effort` en A y como `-c model_reasoning_effort` en B, los dos
+verificados en el smoke—. Es una diferencia más, junto con el prompt de etapa acotado,
+por la que los resultados de la pre-piloto **no** son comparables con los de ninguna
+celda.
+
 ### 3. Las dos celdas corren con RAG
 
 La pre-piloto **no manipula** el factor RAG: lo ejercita. Correr una celda sin RAG no

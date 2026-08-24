@@ -105,6 +105,16 @@ resultado observado.
          la granularidad del JSONL de `--json`, y la estimación local de costo
          desde tokens contra el dashboard de billing de OpenAI. El fix de `TMPDIR`
          y la semántica de `max_turns` **dejan de aplicar**: eran del `SandboxAgent`.
+         **Actualización (2026-08-23, pre-piloto):** el riesgo de red de abajo queda
+         **sin objeto** y en su lugar apareció uno peor, ya resuelto: con
+         `-s workspace-write` el sandbox nativo de Codex no arranca dentro del
+         contenedor (bubblewrap no puede crear user namespaces) y **todo** comando del
+         modelo falla sin cortar la corrida. **ADR-019** deja el confinamiento en manos
+         del contenedor en las dos familias; con eso no hay política de red que el CLI
+         le anuncie al modelo. Verificado además que `codex exec` necesita `CODEX_HOME`
+         escribible (hallazgo H-03, `Dockerfile.b` corregido). Ver
+         `runs/pre-piloto/hallazgos.md`.
+
          **Riesgo detectado al implementar el ítem 17:** con `-s workspace-write`,
          `codex debug prompt-input` muestra que el CLI le anuncia al modelo que
          «Network access is restricted», lo que puede impedir `npm install` /

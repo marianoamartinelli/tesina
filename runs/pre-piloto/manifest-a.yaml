@@ -34,7 +34,7 @@ modelo:
   proveedor: "anthropic"
   model_id: "claude-opus-5"
   parametros:
-    effort: "xhigh"
+    effort: "high"          # la pre-piloto corre en `high`; las 4 oficiales siguen en `xhigh` (ADR-009 D3)
     model_context_window: 1000000
 harness:
   cli: "claude-code"

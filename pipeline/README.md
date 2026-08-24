@@ -68,10 +68,20 @@ handoff son archivos bajo `.pipeline/` pasados por puntero en el prompt.
 | RAG (sólo celdas con RAG) | `--mcp-config <archivo>` | `-c mcp_servers.corpus.command/.args` |
 | Subagentes en el log | `--forward-subagent-text` | eventos de thread (mapeo sin verificar) |
 | Contexto | ventana efectiva 1 000 000 | `-c model_context_window=1000000` (ADR-010 D2) |
-| Confinamiento | `--dangerously-skip-permissions` (sin sandbox del SO) | `-s workspace-write` |
+| Confinamiento | `--dangerously-skip-permissions` (sin sandbox del SO) | `--dangerously-bypass-approvals-and-sandbox` (ADR-019) |
 | cwd / workspace | `cwd` del proceso = repo satélite | ídem, más `-C <repo>` |
 
 Detalles que no son obvios y están verificados en las versiones instaladas:
+
+- **El sandbox nativo de Codex no funciona dentro del contenedor.** Con
+  `-s workspace-write`, Codex confina cada comando con el `bwrap` embebido, y bubblewrap
+  no puede crear user namespaces bajo el seccomp por default de Docker: **todo** comando
+  del modelo falla con `bwrap: No permissions to create a new namespace` y el turno
+  completa igual, o sea que la corrida se degrada en silencio. Medido en la pre-piloto;
+  `-s danger-full-access` no lo cambia. [ADR-019](../decisiones/ADR-019-confinamiento-por-contenedor-en-ambas-familias.md)
+  lo resuelve dejando el confinamiento en manos del contenedor en las dos familias, que
+  es lo que ADR-015 ya había fijado. Con eso, el riesgo de red del ítem 2 de la checklist
+  H6 (`«Network access is restricted»`) queda sin objeto.
 
 - **La recuperación web de B no estaba desactivada.** ADR-009 D5 asumía que Codex la
   trae apagada por default; medido el 2026-08-17 sobre 0.146.0 es falso. `web_search`

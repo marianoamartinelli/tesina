@@ -55,12 +55,25 @@ FAMILIA = "b"
 # request. Su efecto real es una hipótesis a validar en la piloto (ítem 22).
 VENTANA_CONTEXTO = 1_000_000
 
-# NO VERIFICADO: el default de sandbox de `codex exec` no está documentado en
-# `codex exec --help` (0.146.0) y no se pudo comprobar sin ejecutar el CLI de
-# verdad. Se fija el modo mínimo que permite al implementador escribir en su
-# workspace, que es además el confinamiento que ADR-009 declara como asimetría
-# de B respecto de A (B sandboxea el shell, A en headless no).
-SANDBOX = "workspace-write"
+# Sin sandbox nativo: el confinamiento es el contenedor, en las dos familias
+# (ADR-019, que enmienda la fila "Confinamiento" de ADR-009 y completa ADR-015).
+#
+# Medido el 2026-08-23 en la pre-piloto: con `-s workspace-write`, Codex confina
+# cada comando con el `bwrap` que trae embebido, y bubblewrap no puede crear user
+# namespaces dentro del contenedor —el perfil seccomp por default de Docker
+# bloquea esas syscalls—, así que **todo** comando del modelo falla con
+# `bwrap: No permissions to create a new namespace`, exit 1. Sin shell no hay
+# `npm install`, ni build, ni verificación: las dos celdas B quedarían inservibles.
+# `-s danger-full-access` no cambia nada: el wrapper se aplica igual.
+#
+# De las dos salidas medidas —aflojar seccomp en el `docker run` de B, o desactivar
+# el sandbox nativo— se elige la segunda: deja la envoltura del contenedor
+# **idéntica** entre familias (`comun/contenedor.py` la arma una sola vez) y pone a
+# B en el mismo régimen que A, que ya corre sin sandbox del SO bajo
+# `--dangerously-skip-permissions`. El CLI documenta este flag para exactamente
+# este caso: "Intended solely for running in environments that are externally
+# sandboxed".
+FLAG_SIN_SANDBOX = "--dangerously-bypass-approvals-and-sandbox"
 
 # Traslado de ADR-008 al mecanismo del CLI. El supuesto original de ADR-009
 # Decisión 5 —"Codex trae la búsqueda web desactivada por default y no se activa,
@@ -90,7 +103,8 @@ FEATURES_DESACTIVADAS = ("apps", "browser_use", "computer_use")
 MODO_WEB_SEARCH = "disabled"
 
 DETALLE_HERRAMIENTAS = (
-    f"toolset nativo de Codex con sandbox {SANDBOX}; web_search={MODO_WEB_SEARCH} y "
+    f"toolset nativo de Codex sin sandbox nativo ({FLAG_SIN_SANDBOX}; el "
+    f"confinamiento es el contenedor, ADR-019); web_search={MODO_WEB_SEARCH} y "
     f"features {'/'.join(FEATURES_DESACTIVADAS)} desactivadas (ADR-008 del lado B); "
     f"config del host ignorada (--ignore-user-config); servidor MCP "
     f"'{SERVIDOR_MCP}' sólo en celdas con RAG"
@@ -147,7 +161,8 @@ def construir_comando(corrida: Corrida, paso: Paso) -> list[str]:
       `FEATURES_DESACTIVADAS`.
     - `-C <repo>`: el workspace del agente es el repo satélite, montado en
       `contenedor.DIR_REPO` (ADR-015): adentro la ruta del host no existe.
-    - `-s`: ver la nota de `SANDBOX`.
+    - `--dangerously-bypass-approvals-and-sandbox`: ver la nota de
+      `FLAG_SIN_SANDBOX` (ADR-019). Reemplaza a `-s workspace-write`.
     - `-c mcp_servers.corpus.*`: sólo en celdas con RAG.
 
     El prompt del paso NO va como argumento: el `-` final hace que el CLI lo lea
@@ -158,7 +173,7 @@ def construir_comando(corrida: Corrida, paso: Paso) -> list[str]:
         "--ignore-user-config",
         "-C", contenedor.DIR_REPO,
         "-m", corrida.modelo,
-        "-s", SANDBOX,
+        FLAG_SIN_SANDBOX,
         "-c", f"model_reasoning_effort={_toml(corrida.effort)}",
         "-c", f"model_context_window={_toml(VENTANA_CONTEXTO)}",
         "-c", f"developer_instructions={_toml(sistema_compuesto(corrida, paso))}",

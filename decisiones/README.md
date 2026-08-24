@@ -36,6 +36,7 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-016](ADR-016-sin-topes-de-presupuesto.md) | No hay topes de presupuesto: la corrida termina cuando termina el pipeline | Aceptado |
 | [ADR-017](ADR-017-credenciales-por-entorno-en-el-harness-a.md) | Las credenciales del harness A se inyectan por entorno, no por bind-mount | Aceptado |
 | [ADR-018](ADR-018-corrida-pre-piloto.md) | Corrida pre-piloto sobre un universo reducido de la spec, antes de la piloto | Aceptado |
+| [ADR-019](ADR-019-confinamiento-por-contenedor-en-ambas-familias.md) | El confinamiento es el contenedor: B corre sin su sandbox nativo | Aceptado |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan
@@ -104,3 +105,11 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 > piloto no se gaste depurando infraestructura. Su Decisión 5 fija además qué se puede
 > corregir en `evaluacion/` después de ver una implementación —defectos del harness sí,
 > el criterio de un AT no—, regla que vale también para la piloto.
+
+> **Nota (2026-08-23, sobre ADR-019):** sale del primer intento real de que el agente B
+> ejecute comandos dentro del contenedor. `-s workspace-write` hacía que **todos**
+> fallaran —bubblewrap no puede crear user namespaces con el seccomp por default de
+> Docker— sin cortar la corrida: la degradaba en silencio. B pasa a correr sin sandbox
+> nativo, con el contenedor como único confinamiento, que es el régimen que A ya tenía y
+> la dirección que ADR-015 había fijado. Enmienda la fila «Confinamiento» de la tabla de
+> ADR-009 sin editarlo, y deja sin objeto el riesgo de red del ítem 2 de la checklist H6.

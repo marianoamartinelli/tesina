@@ -70,19 +70,32 @@ editando `spec/` (congelada en `spec-v1.1`) ni ADRs aceptados.
   el perfil seccomp por default de Docker bloquea esas syscalls. Medido: el kernel de la
   VM sí los permite (`/proc/sys/user/max_user_namespaces` = 31319), y el `bwrap`
   embebido del CLI corre bien con `--security-opt seccomp=unconfined`.
-- **Descartado:** `-s danger-full-access` **no** resuelve el problema en 0.146.0: el
-  wrapper bwrap se aplica igual y los comandos siguen fallando (medido).
-- **Decisión del tesista (2026-08-23):** desactivar el sandbox nativo de B y dejar el
-  confinamiento en manos del contenedor, como ya hace A con
-  `--dangerously-skip-permissions`. Es la dirección que ADR-015 fijó —confinamiento por
-  contenedor en las dos familias— y mantiene idéntica la envoltura `docker run`, que
-  `comun/contenedor.py` arma una sola vez para ambas.
-- **Corrección:** `pipeline` + `protocolo` — flag de Codex por decidir entre
-  `--dangerously-bypass-approvals-and-sandbox` (documentado por el propio CLI como
-  «intended solely for running in environments that are externally sandboxed») y las
-  alternativas que queden; el cambio enmienda la fila «Confinamiento» de la tabla de
-  ADR-009 y necesita ADR nuevo más chequeos en `verificar_paridad.py`.
-- **Estado:** abierto — pendiente de la medición del flag.
+- **Salidas medidas** (las tres con el comando real del orquestador y el override
+  impreso antes de ejecutar):
+  - `--security-opt seccomp=unconfined` en el `docker run` de B → shell exit 0;
+  - `--dangerously-bypass-approvals-and-sandbox` en `codex exec` → shell exit 0;
+  - `-s danger-full-access` → sigue fallando: el wrapper bwrap se aplica igual.
+- **Decisión del tesista (2026-08-23):** la segunda. Desactivar el sandbox nativo de B y
+  dejar el confinamiento en manos del contenedor, como ya hace A con
+  `--dangerously-skip-permissions`. Es la dirección que ADR-015 fijó y mantiene idéntica
+  la envoltura `docker run`, que `comun/contenedor.py` arma una sola vez para ambas.
+- **Corrección:** `pipeline` + `protocolo` — **ADR-019**;
+  `harness_b/orquestar.py` pasa `--dangerously-bypass-approvals-and-sandbox` y ya no
+  `-s`; `verificar_paridad.py` suma `verificar_confinamiento` (117 → **139 chequeos**,
+  camino negativo probado). Deja sin objeto el riesgo de red del ítem 2 de la checklist
+  H6.
+- **Estado:** resuelto.
+- **Alcance:** habría degradado en silencio las dos celdas B —el turno completa igual,
+  sólo que sin haber ejecutado nada— y su implementación no sería comparable con la de A.
+
+### Error de medición en el camino a H-04
+
+Las tres primeras mediciones de alternativas fueron **inválidas**: el script de smoke
+había perdido sus ediciones (un `cd` revertido en el shell) y las tres corridas usaron el
+comando original, sin override. Se descubrió al ver que `seccomp=unconfined` fallaba en
+el smoke y funcionaba a nivel binario. El script se reescribió para **imprimir los flags
+efectivos antes de ejecutar**, que es lo que vuelve auditable una medición de este tipo.
+Vale como advertencia para la piloto: un override que no se imprime no está medido.
 
 ## H-05 — El tope efectivo de A es el rate limit de 5 horas, sin overage disponible
 

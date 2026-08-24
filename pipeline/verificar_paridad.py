@@ -376,6 +376,38 @@ def verificar_recuperacion_web(comandos: dict[str, list[str]]) -> None:
         chequear("--search" not in cmd, f"{celda}: no se pasa --search")
 
 
+def verificar_confinamiento(comandos: dict[str, list[str]]) -> None:
+    """El confinamiento es el contenedor en las dos familias (ADR-019).
+
+    Ninguna de las dos usa el sandbox del SO de su CLI: A corre con
+    `--dangerously-skip-permissions` desde ADR-009, y B pasa a correr sin su
+    sandbox nativo porque bubblewrap no puede crear user namespaces dentro del
+    contenedor (medido en la pre-piloto: todo comando del modelo fallaba). Que
+    ninguna lo use es la condición que hace comparable lo que cada agente puede
+    ejecutar; si una lo recuperara, el factor pipeline cambiaría entre familias.
+    """
+    import harness_b.orquestar as orq_b
+
+    for celda in ("a-sin-rag", "a-con-rag"):
+        cmd = comandos[celda]
+        chequear("--dangerously-skip-permissions" in cmd,
+                 f"{celda}: sin sandbox del SO (--dangerously-skip-permissions)")
+    for celda in ("b-sin-rag", "b-con-rag"):
+        cmd = comandos[celda]
+        chequear(orq_b.FLAG_SIN_SANDBOX in cmd,
+                 f"{celda}: sin sandbox nativo de Codex ({orq_b.FLAG_SIN_SANDBOX}, ADR-019)")
+        chequear("-s" not in cmd,
+                 f"{celda}: no se pasa `-s` (el sandbox de Codex no funciona en contenedor)")
+
+    # La envoltura del contenedor no compensa con permisos extra en una familia:
+    # aflojar seccomp o agregar capabilities en una sola rompería la simetría que
+    # `comun/contenedor.py` sostiene por construcción.
+    for celda, cmd in comandos.items():
+        for flag in ("--security-opt", "--cap-add", "--privileged", "--userns"):
+            chequear(flag not in cmd,
+                     f"{celda}: el docker run no lleva {flag} (envoltura idéntica)")
+
+
 def verificar_contenedor(comandos: dict[str, list[str]],
                          corridas: dict[tuple[str, str], Corrida]) -> None:
     """Envoltura en contenedor idéntica entre familias (ADR-015)."""
@@ -452,6 +484,7 @@ def main() -> int:
             verificar_servidor_mcp(corridas)
             comandos = _comandos_por_celda(corridas)
             verificar_recuperacion_web(comandos)
+            verificar_confinamiento(comandos)
             verificar_contenedor(comandos, corridas)
     verificar_corpus()
 

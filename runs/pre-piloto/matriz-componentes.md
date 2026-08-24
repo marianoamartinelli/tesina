@@ -38,7 +38,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 |---|---|---|---|---|
 | 3.1 | `claude-opus-5` con effort `xhigh` | smoke de 1 invocación | `result` con `total_cost_usd`, 7 turnos, exit 0 | [x] 2026-08-23 |
 | 3.2 | `gpt-5.6-sol` con effort `xhigh` | ídem | `turn.completed` con usage, exit 0 | [x] 2026-08-23 |
-| 3.3 | Sandbox de B | smoke de 1 invocación | **falla**: bwrap no crea namespaces ⇒ B sin shell (H-04) | [~] defecto abierto |
+| 3.3 | Confinamiento de B | smoke de 1 invocación | bwrap no crea namespaces ⇒ B sin shell (H-04); resuelto por ADR-019: sin sandbox nativo, shell exit 0 | [x] 2026-08-23 |
 | 3.4 | Delegación en subagentes (ADR-010 D1) | corrida real, ambas familias | eventos con `subagente: true` en A; mapeo por decidir en B (ítem 24) | [ ] |
 | 3.5 | Restricción de recuperación web (ADR-008) | smoke de 1 invocación | A: `WebSearch`/`WebFetch` inexistentes y `web_search_requests: 0`. B: sin verificar aún | [~] falta B |
 
