@@ -7,12 +7,15 @@ el harness A) y **piloto-02** (smoke end-to-end del harness B). Ningún ítem se
 resuelve editando `spec/` (congelada, tag `spec-v1.1`) ni ADRs aceptados: los
 cambios van por nueva versión de documento + ADR nuevo donde corresponda.
 
-**Estado al 2026-08-17:** 11 de los 24 ítems de salida cerrados, los cinco que esperaban
-ratificación (3, 4, 5, 9 y 12) incluidos: **ADR-011, ADR-012 y ADR-013 quedaron Aceptados
-el 2026-08-17**. De los 13 abiertos, once necesitan ejecutar algo
-(1, 2, 6, 7, 11, 13, 16, 19, 22, 23, 24: la corrida piloto o el entorno docker), uno es
-el sorteo del orden de celdas (15) y uno es la ratificación del precio de `gpt-5.6-sol`
-(20). Ningún CLI de agente se ejecutó todavía.
+**Estado al 2026-08-23:** **15 de los 24 ítems de salida cerrados.** La sesión del
+2026-08-23 cerró cuatro más —7, 11, 15 y 20— y volvió a cerrar el 10, que se había
+reabierto ese mismo día; los tres ADRs que lo sostienen (**ADR-014, ADR-015 y ADR-016**)
+quedaron Aceptados en la sesión. Los **9 abiertos son 1, 2, 6, 13, 16, 19, 22, 23 y 24**,
+y **todos necesitan ejecutar la piloto o el entorno docker**: no queda deuda de
+escritorio. Ningún CLI de agente se ejecutó todavía.
+
+Nota sobre el ítem 10: se reabrió el 2026-08-23 al descubrir que su premisa del lado B
+era falsa, y se cerró el mismo día con ADR-014 más los chequeos de paridad que faltaban.
 
 ## Entrada — precondiciones verificables antes de iniciar
 
@@ -22,8 +25,10 @@ resultado observado.
 
 - [ ] **Paridad:** `pipeline/verificar_paridad.py` termina con exit 0
       (`.venv/bin/python pipeline/verificar_paridad.py`).
-      *Verificado el 2026-08-16: exit 0, 77 chequeos, sobre el working tree **sin
-      commitear**. Re-correr sobre el commit de `pipeline/`.*
+      *Verificado el 2026-08-23: exit 0, **113 chequeos** (77 antes de ADR-014/015), sobre
+      el working tree. Re-correr sobre el commit de `pipeline/`. Los chequeos nuevos
+      cubren la restricción de recuperación web en las dos familias y la envoltura en
+      contenedor; su camino negativo se probó rompiéndolos a propósito.*
 - [ ] **Manifest:** secciones §1–4 de `runs/piloto-01/manifest.yaml` completas y
       **commiteadas antes de iniciar** (protocolo §3 paso 2), incluidos los campos
       `paridad_verificada`, `entorno_host` y `entorno_onchain` de la plantilla.
@@ -38,6 +43,13 @@ resultado observado.
 - [ ] **Versiones de CLI pinneadas** en el manifest: `claude --version` y
       `codex --version` (hoy 2.1.233 y 0.146.0), junto a los model IDs y al commit del
       corpus. *Ya registrados en el manifest, medidos en esta máquina el 2026-08-16.*
+- [ ] **Imágenes de los agentes construidas** (ADR-015), las tres con el mismo tag:
+      `docker build -f Dockerfile.base -t tesina/agente-base:piloto-01 .` y las dos capas
+      `Dockerfile.a` / `Dockerfile.b` con `--build-arg VERSION_CLI=` de la versión que el
+      manifest pinnea. Registrar el **digest efectivo** de cada una en el manifest, con el
+      mismo criterio que el pin del anvil (ítem 13). *Los tres Dockerfile existen desde el
+      2026-08-23; ninguna imagen se construyó todavía — el daemon de Docker estaba abajo.*
+
 - [ ] **Entorno on-chain arriba** (`evaluacion/suite-at/entorno/`):
       `docker compose up -d --wait`, luego `desplegar-usdc.py` y `fondear.py`.
 - [ ] **Harness de evaluación sano:** `evaluacion/suite-at/test_smoke.py` todo
@@ -130,20 +142,21 @@ resultado observado.
          Fuente: ADR-007 §3 ítem 5.
          Decisión esperada: ejecución u omisión, registrada en journal.
 
-7. - [ ] **Presupuestos definitivos:** los valores de protocolo §6 (200 USD /
-         24 h / tokens sin tope) son provisionales; pinnear los definitivos. Con
-         ADR-009 el presupuesto de turnos desaparece (ítem 14) y, si las oficiales
-         corren sobre suscripción, `costo_max_usd` deja de ser el tope vinculante:
-         pasan a serlo los rate limits, que son asimétricos entre proveedores y no
-         se controlan. La piloto mide el consumo real y de ahí sale la decisión
-         suscripción contra API key.
-         El protocolo v1.1 (ítem 9) deja §6 explícitamente abierto: marca
-         `PENDIENTE-PILOTO` los presupuestos definitivos y la decisión
-         suscripción-contra-API-key, sin introducir ningún número nuevo.
-         Fuente: ADR-004, punto 4 de la Decisión; ADR-009 §Consecuencias;
-         `evaluacion/protocolo.md` §6.
-         Decisión esperada: presupuestos definitivos en el protocolo y en el
-         manifest de cada corrida oficial.
+7. - [x] **Presupuestos: no hay.** **Cerrado por ADR-016** (Aceptado el 2026-08-23),
+         que congela el protocolo **v1.2** reemplazando a ADR-012. La corrida termina
+         cuando termina el pipeline: se eliminan `costo_max_usd` (200 USD) y
+         `tiempo_max_horas` (24 h), y con ellos la regla de cierre por agotamiento y la
+         rama presupuestaria del abandono de etapa (§5.7, que queda sólo por
+         estancamiento). Costo, tiempo, tokens y turnos **se siguen registrando**: dejan
+         de ser topes y pasan a ser variables dependientes — un tope habría censurado
+         justamente la variable que el experimento compara entre celdas.
+         `presupuesto_proporcional` (60/25/15) queda como referencia descriptiva, no como
+         umbral. Riesgo asumido explícitamente por el tesista: una celda puede consumir un
+         múltiplo de lo previsto sin que nada la detenga.
+         **Residuo, que ya no bloquea:** la decisión suscripción contra API key para las 4
+         oficiales se toma con el consumo que mida la piloto y se registra en el journal.
+         Fuente: `decisiones/ADR-016-sin-topes-de-presupuesto.md`;
+         `evaluacion/protocolo.md` v1.2 §6.
 
 8. - [x] **Flagships y plan B de tier medio:** **resuelto** por ADR-009 Decisión 3
          (2026-08-16, Aceptado) — re-pinneo a `claude-opus-5` y
@@ -171,27 +184,51 @@ resultado observado.
          Fuente: ADR-004; `evaluacion/protocolo.md` v1.1;
          `decisiones/ADR-012-protocolo-experimental-v1-1.md`.
 
-10. - [x] **ADR-008 (restricción de WebSearch/WebFetch en el harness A):**
-          **resuelto** — ratificado por el tesista el 2026-07-07 en la revisión
-          del PR #1; el ADR pasó a Aceptado. La restricción se trasladó al orquestador
-          CLI del ítem 17: `harness_a/orquestar.py` pasa
-          `--disallowed-tools WebSearch,WebFetch`, y `verificar_paridad.py` lo chequea.
-          Fuente: `decisiones/ADR-008-restriccion-recuperacion-web-harness-a.md`.
+10. - [x] **ADR-008 (restricción de la recuperación web): reabierto y cerrado de nuevo.**
+          El ADR fue ratificado el 2026-07-07 y su traslado al lado A está en
+          `harness_a/orquestar.py` (`--disallowed-tools WebSearch,WebFetch`).
+          **Reabierto el 2026-08-23:** el traslado al lado B descansaba en un default de
+          producto que resultó **falso**. Medido sobre `codex-cli` 0.146.0: `web_search`
+          no viene en `disabled` —una corrida de control registró dos búsquedas contra
+          GitHub— y `apps`/`browser_use`/`computer_use` vienen en `true`, con `codex_apps`
+          exponiendo los conectores de la cuenta (el agente leyó el perfil y los repos del
+          tesista). `--ignore-user-config` no apaga nada de eso.
+          **Cerrado por ADR-014**, Aceptado el 2026-08-23:
+          `-c web_search="disabled"` más `--disable apps/browser_use/computer_use` en las
+          dos celdas B. Con ambas cosas, la corrida de control no registró ningún
+          `web_search` ni `mcp_tool_call`; con los `--disable` solos, las búsquedas
+          seguían.
+          **Lo que el ítem daba por hecho sin chequeo:** `verificar_paridad.py` no
+          inspeccionaba ninguna línea de comandos, en **ninguna** de las dos familias.
+          Ahora sí (ADR-014 D2), sobre el comando real que arma cada orquestador y no por
+          grep del fuente. Ninguna corrida se había ejecutado, así que no hay dato
+          contaminado que descartar.
+          Fuente: `decisiones/ADR-008-restriccion-recuperacion-web-harness-a.md`;
+          `decisiones/ADR-014-recuperacion-web-en-el-harness-b.md`.
 
-11. - [ ] **Confinamiento del harness A** (reformulado por ADR-009): con los CLI la
-          asimetría se invierte — Codex sandboxea el shell por default
-          (`-s workspace-write`) y Claude Code en headless no. Probar el permission
-          mode y las deny rules de A, y verificar que el repo satélite y los logs
-          queden fuera del árbol de la tesina.
-          **Estado tras el ítem 17:** el orquestador A usa
-          `--dangerously-skip-permissions` (el binario 2.1.233 rechaza
-          `--permission-mode bypassPermissions` si la sesión no se lanzó con ese flag),
-          o sea sin sandbox del SO: `Bash` y `Read` pueden leer fuera del cwd, incluida
-          `evaluacion/` — la condición de no-exposición del holdout (protocolo §9) hoy
-          la sostiene sólo el procedimiento. Falta probarlo con el CLI real y decidir si
-          se agrega confinamiento del lado A o se declara la asimetría.
-          Decisión esperada: confinamiento decidido y registrado; asimetría A/B
-          igualada o declarada como amenaza (ver `analisis/amenazas-validez.md`).
+11. - [x] **Confinamiento: los agentes corren en contenedores.** **Cerrado por ADR-015**
+          (Aceptado el 2026-08-23). El tesista decidió no esperar al dato de la piloto: la
+          asimetría —Codex sandboxea el shell por default, Claude Code en headless no— se
+          elimina corriendo **las dos familias** en contenedores, sin tocar el sandbox
+          nativo de ninguno, así que cada agente sigue viendo el default de su producto.
+          Implementado: `pipeline/contenedores/` con `Dockerfile.base` (toolchain
+          idéntico) más las capas `Dockerfile.a` / `Dockerfile.b` que sólo instalan su
+          CLI, y `pipeline/comun/contenedor.py`, que arma la envoltura **una sola vez**
+          para las dos familias — montajes, red, usuario y workdir idénticos por
+          construcción.
+          **`evaluacion/` no se monta**, así que la no-exposición del holdout (protocolo
+          §9) pasa a sostenerla el mecanismo en vez del procedimiento, que era el problema
+          real de este ítem. Tampoco se monta `pipeline/` entero: sólo `comun/` y el
+          corpus, y el corpus únicamente en las celdas con RAG.
+          Credenciales por bind-mount read-only (ADR-015 D3) y **red abierta** en la
+          piloto (D4), que registra qué hosts se tocan para decidir una allowlist antes de
+          H7. `verificar_paridad.py` chequea la envoltura, que los montajes de A y B sólo
+          difieren en el archivo de credenciales, y que ambas capas parten de la misma
+          base.
+          **Residuo para la piloto:** ninguna imagen se construyó todavía (el daemon de
+          Docker estaba abajo), y que los builds de etapa funcionen adentro es parte de lo
+          que la piloto valida.
+          Fuente: `decisiones/ADR-015-agentes-en-contenedores.md`.
 
 12. - [x] **"Rúbrica del rol revisor del agente":** **implementada y pre-registrada**
           (`evaluacion/rubricas/rol-revisor.md` v1.0, protocolo §9), **ratificada el
@@ -224,10 +261,13 @@ resultado observado.
           tokens se siguen registrando (ADR-003), y los topes de costo y tiempo del
           protocolo siguen vigentes. El cambio de protocolo §6 va en el ítem 9.
 
-15. - [ ] **Sorteo del orden de las 4 celdas** antes de H7, registrado en el
-          journal (mitigación del efecto aprendizaje del evaluador).
+15. - [x] **Sorteo del orden de las 4 celdas: hecho el 2026-08-23.** Orden sorteado:
+          **1. `b-sin-rag` → 2. `a-sin-rag` → 3. `b-con-rag` → 4. `a-con-rag`.**
+          Reproducible: `random.Random(int(sha256(<commit>), 16)).shuffle(celdas)` con el
+          orden alfabético como lista de partida y el commit `ba0d92b` (HEAD al momento
+          del sorteo) como semilla. Se sortea **una sola vez** y no se re-sortea: queda
+          asentado acá y en el journal del día.
           Fuente: `evaluacion/protocolo.md` §7.
-          Decisión esperada: orden sorteado una única vez y asentado en journal.
 
 16. - [ ] **Serialización de eventos exóticos:** revisar en los JSONL de la
           piloto que la degradación a `str()` de `comun.nucleo.serializar` no
@@ -295,20 +335,18 @@ resultado observado.
           adivinar ese esquema sería inventarlo.
           Fuente: ADR-009 §Evidencia verificada y §Consecuencias.
 
-20. - [ ] **Precio por token de `gpt-5.6-sol`:** **verificado y registrado, pendiente de
-          ratificación del tesista.** `runs/piloto-01/precio-gpt-5-6-sol.md` documenta,
-          contra dos páginas de la documentación de OpenAI consultadas el 2026-08-16,
-          dos tramos: contexto corto (≤ 272 000 tokens de input) a USD 5/M entrada y
-          30/M salida, y contexto largo (> 272 000) a 10/M y 45/M, con el recargo
-          aplicado al request completo. Consecuencia: el pareo por precio de ADR-009 D3
-          se sostiene en el tramo corto (entrada idéntica, salida 20 % más cara en B —
-          la misma asimetría que ADR-005 ya había aceptado) y **no** se sostiene en el
-          largo (2.00x entrada, 1.80x salida); ese tramo no es hipotético, el turno de
-          294 318 tokens de ADR-010 D2 ya cayó dentro. La tabla se cargó en
-          `nucleo.PRECIOS_USD_POR_MTOK` con decisión de tramo por request.
-          Tildar este ítem —o rechazar el dato, en cuyo caso vuelve el centinela
-          `PRECIO_PENDIENTE`— es del tesista. Bloquea las corridas oficiales, no la
-          piloto.
+20. - [x] **Precio por token de `gpt-5.6-sol`: ratificado el 2026-08-23** por el
+          tesista. Queda vigente la tabla de dos tramos de
+          `runs/piloto-01/precio-gpt-5-6-sol.md`, verificada contra la documentación de
+          OpenAI el 2026-08-16: contexto corto (≤ 272 000 tokens de input) a USD 5/M
+          entrada y 30/M salida; contexto largo (> 272 000) a 10/M y 45/M, con el recargo
+          aplicado al **request completo**. `nucleo.PRECIOS_USD_POR_MTOK` decide tramo por
+          request; el centinela `PRECIO_PENDIENTE` no vuelve.
+          **Consecuencia que queda declarada, no resuelta:** el pareo por precio de
+          ADR-009 D3 se sostiene en el tramo corto y **no** en el largo (2.00× entrada,
+          1.80× salida), y ese tramo no es hipotético — el turno de 294 318 tokens de
+          ADR-010 D2 ya cae dentro. Sumado a `analisis/amenazas-validez.md` el
+          2026-08-23.
           Fuente: ADR-009 Decisión 3; `runs/piloto-01/precio-gpt-5-6-sol.md`.
 
 21. - [x] **Modelos del agente evaluador y del chequeo espejo:** **resuelto** por

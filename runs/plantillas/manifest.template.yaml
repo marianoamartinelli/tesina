@@ -24,8 +24,11 @@ modelo:
   model_id: ""             # ID exacto pinneado, p. ej. claude-x-y-fecha
   parametros: {}           # temperatura, max_tokens, etc., si se fijan
 harness:
-  sdk: ""                  # claude-agent-sdk | openai-agents-sdk
-  version: ""
+  # ADR-009 Decisión 1 retiró los SDK: el harness de cada familia es el CLI de su
+  # proveedor. Los campos `sdk`/`version` originales quedaron obsoletos.
+  cli: ""                  # claude-code | codex
+  version: ""              # salida exacta de `claude --version` / `codex --version`, medida AL ARRANCAR
+  auth: ""                 # suscripción | API key
 entorno_host:              # toolchain del host del que dependen las 3 etapas
   os: ""                   # sw_vers -productVersion (macOS) | uname -sr
   node: ""                 # node --version
@@ -37,10 +40,16 @@ entorno_onchain:           # entorno del smoke check de backend (anvil + USDC-mo
   url_rpc: ""              # p. ej. http://127.0.0.1:8545
   direccion_usdc_mock: ""  # dirección del contrato desplegado (desplegar-usdc.py)
   version_anvil: ""        # docker inspect --format '{{index .RepoDigests 0}}' <imagen-anvil>
-presupuesto:
-  tokens_max: null
-  costo_max_usd: null
-  tiempo_max_horas: null
+# Sin topes de presupuesto (ADR-016 / protocolo v1.2 §6): la corrida termina cuando
+# termina el pipeline. Costo, tiempo, tokens y turnos son variables dependientes (§5),
+# no umbrales. El bloque `presupuesto` de las versiones anteriores se retiró.
+
+contenedores:              # ADR-015: los agentes corren en contenedores, en ambas familias
+  tag: ""                  # el mismo para las 3 imágenes y las 4 celdas
+  base: ""                 # digest de tesina/agente-base
+  agente_a: ""             # digest de tesina/agente-a
+  agente_b: ""             # digest de tesina/agente-b
+  red: ""                  # abierta | allowlist:<descripción>; si abierta, registrar los hosts tocados
 
 # 4. Repo de la implementación generada
 repo:
@@ -51,7 +60,7 @@ repo:
 inicio: ""                 # timestamp ISO-8601
 fin: ""
 repo_commit_final: ""
-etapas:                    # desglose por etapa (presupuesto proporcional, protocolo §6)
+etapas:                    # desglose por etapa; el reparto 60/25/15 es referencia descriptiva, no umbral (ADR-016)
   backend:
     inicio: ""             # timestamp ISO-8601
     fin: ""
@@ -59,7 +68,7 @@ etapas:                    # desglose por etapa (presupuesto proporcional, proto
     costo_usd: null
     intervenciones: null
     estado: ""             # completa | incompleta (vocabulario del protocolo §5.7)
-    motivo_cierre: ""      # criterio de avance cumplido | presupuesto agotado | 3 estancamientos
+    motivo_cierre: ""      # criterio de avance cumplido | 3 estancamientos
   web:
     inicio: ""
     fin: ""

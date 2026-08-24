@@ -25,11 +25,11 @@ corpus:                    # sólo celdas con RAG; null en sin-RAG
   # verificar_paridad.py los recontrasta contra corpus/documentos/ en cada corrida:
   # 9/9 coincidentes en la verificación del 2026-08-16T19:08:07-0300 registrada abajo.
 protocolo:
-  adr: "ADR-004"           # protocolo v1.0 congelado; su reemplazo (v1.1) es el ítem 9 de la checklist H6, abierto
+  adr: "ADR-016"           # protocolo v1.2 (ADR-016 reemplaza a ADR-012, que reemplazó a ADR-004): sin topes de presupuesto
 
 # 3. Configuración del pipeline
 pipeline_commit: "PENDIENTE-ARRANQUE: commitear la reescritura del pipeline a los CLI (ítem 17) y registrar acá ese hash. Hoy los orquestadores viven sólo en el working tree (17 rutas modificadas/sin trackear bajo pipeline/); el último commit que tocó pipeline/ (e1c4403e77b3e2486584bac06a9d0be8f462da65) NO los contiene."
-paridad_verificada: "2026-08-16T19:08:07-0300 — `.venv/bin/python pipeline/verificar_paridad.py` exit 0, 77 chequeos, sobre el working tree SIN commitear. PENDIENTE-ARRANQUE: re-correrlo sobre el commit de pipeline/ una vez creado y reemplazar esta línea por timestamp + hash."
+paridad_verificada: "2026-08-23 — `.venv/bin/python pipeline/verificar_paridad.py` exit 0, 113 chequeos (77 antes de ADR-014/015), sobre el working tree SIN commitear. PENDIENTE-ARRANQUE: re-correrlo sobre el commit de pipeline/ una vez creado y reemplazar esta línea por timestamp + hash."
 modelo:
   proveedor: "anthropic"
   model_id: "claude-opus-5"        # ADR-009 Decisión 3; coincide con pipeline/config/piloto-01.yaml
@@ -42,10 +42,10 @@ harness:
   # ADR-009 Decisión 1 retira los SDK de agentes: el harness de cada familia es el CLI de
   # su proveedor. Los campos `sdk`/`version` de la plantilla se reemplazan por estos.
   cli: "claude-code"                 # invocado como `claude -p --output-format stream-json`
-  version: "2.1.233 (Claude Code)"   # salida exacta de `claude --version`, 2026-08-16
+  version: "PENDIENTE-ARRANQUE: `claude --version` al arrancar. El host tenía 2.1.233 el 2026-08-16 y 2.1.241 el 2026-08-23: el CLI se actualiza solo, así que la versión se mide al inicio de la corrida y es la que se pinnea en la imagen del contenedor (ADR-015)."
   auth: "PENDIENTE-ARRANQUE: verificar la sesión del CLI y registrar el modo (suscripción | API key). Lo verifica el tesista; el dato decide suscripción contra API key para las 4 oficiales (checklist H6, precondición «Autenticación»)."
 versiones_cli:             # ambas se pinnean aunque piloto-01 sólo invoque el CLI de A (checklist H6, precondición «Versiones de CLI»)
-  claude: "2.1.233 (Claude Code)"    # salida exacta de `claude --version`, 2026-08-16
+  claude: "PENDIENTE-ARRANQUE: `claude --version` al arrancar (2.1.233 el 2026-08-16; 2.1.241 el 2026-08-23)"
   codex: "codex-cli 0.146.0"         # salida exacta de `codex --version`, 2026-08-16
 entorno_host:              # toolchain del host del que dependen las 3 etapas; medido el 2026-08-16
   os: "macOS 26.5.2 (Darwin 25.5.0, arm64)"
@@ -58,13 +58,17 @@ entorno_onchain:           # entorno del smoke check de backend (anvil + USDC-mo
   url_rpc: "http://127.0.0.1:8545"   # puerto publicado por evaluacion/suite-at/entorno/docker-compose.yml
   direccion_usdc_mock: "PENDIENTE-ARRANQUE: con el entorno arriba, `.venv/bin/python evaluacion/suite-at/entorno/desplegar-usdc.py` y registrar la dirección que imprime."
   version_anvil: "PENDIENTE-ARRANQUE (checklist H6, ítem 13): con el contenedor levantado, `docker inspect --format '{{index .RepoDigests 0}}' \"$(docker inspect --format '{{.Image}}' suite-at-anvil)\"` —inspecciona la imagen que el contenedor está corriendo, no el ref por el que se hizo pull— y comparar la salida contra el digest que pinnea el compose: sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46."
-presupuesto:               # valores provisionales del protocolo §6; los definitivos son el ítem 7 de la checklist H6
-  tokens_max: null         # sin tope; se registra como métrica
-  costo_max_usd: 200
-  tiempo_max_horas: 24     # horas activas
-  # Bajo suscripción (ADR-009) el tope vinculante deja de ser `costo_max_usd`: pasan a
-  # serlo los rate limits, que no se controlan. Medir el consumo real de esta piloto es
-  # justamente lo que decide el punto.
+# Sin topes de presupuesto (ADR-016 / protocolo v1.2 §6): la corrida termina cuando
+# termina el pipeline. Costo, tiempo, tokens y turnos se registran como variables
+# dependientes —abajo, en §5— y no como umbrales. El bloque `presupuesto` de la plantilla
+# se retira: no hay número que pinnear.
+
+contenedores:              # ADR-015; digests efectivos, no tags (el tag es flotante)
+  tag: "piloto-01"         # el mismo para las 3 imágenes y las 4 celdas
+  base: "PENDIENTE-ARRANQUE: `docker build -f pipeline/contenedores/Dockerfile.base -t tesina/agente-base:piloto-01 pipeline/contenedores` y registrar `docker inspect --format '{{index .RepoDigests 0}}' tesina/agente-base:piloto-01` (o el Id local si no se pushea)."
+  agente_a: "PENDIENTE-ARRANQUE: ídem con Dockerfile.a y --build-arg VERSION_CLI=<claude --version>."
+  agente_b: "PENDIENTE-ARRANQUE: ídem con Dockerfile.b y --build-arg VERSION_CLI=<codex --version>. piloto-01 no invoca el CLI de B, pero la imagen se pinnea igual (misma base)."
+  red: "abierta (ADR-015 Decisión 4). PENDIENTE-ARRANQUE: registrar durante la corrida qué hosts se tocan; ese dato decide si va una allowlist antes de H7."
 
 # 4. Repo de la implementación generada
 repo:
@@ -75,7 +79,7 @@ repo:
 inicio: ""                 # timestamp ISO-8601
 fin: ""
 repo_commit_final: ""
-etapas:                    # desglose por etapa (presupuesto proporcional, protocolo §6)
+etapas:                    # desglose por etapa; el reparto 60/25/15 es referencia descriptiva, no umbral (ADR-016)
   backend:
     inicio: ""             # timestamp ISO-8601
     fin: ""
@@ -83,7 +87,7 @@ etapas:                    # desglose por etapa (presupuesto proporcional, proto
     costo_usd: null
     intervenciones: null
     estado: ""             # completa | incompleta (vocabulario del protocolo §5.7)
-    motivo_cierre: ""      # criterio de avance cumplido | presupuesto agotado | 3 estancamientos
+    motivo_cierre: ""      # criterio de avance cumplido | 3 estancamientos  (el cierre por presupuesto se retiró: ADR-016)
   web:
     inicio: ""
     fin: ""
