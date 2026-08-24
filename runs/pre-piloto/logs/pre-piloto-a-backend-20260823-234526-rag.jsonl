@@ -1,0 +1,3 @@
+{"ts": "2026-08-24T02:45:27+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-a", "etapa": "backend", "rol": "implementador", "paso": 1}
+{"ts": "2026-08-24T12:35:18+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-a", "etapa": "backend", "rol": "revisor", "paso": 2}
+{"ts": "2026-08-24T12:48:05+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-a", "etapa": "backend", "rol": "implementador", "paso": 3}

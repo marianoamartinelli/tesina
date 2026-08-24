@@ -65,36 +65,55 @@ repo:
   commit_inicial: "5ae94f730cb17828e3ca9a0c79f752ef3d5591a4"
 
 # 5. Cierre de la corrida
-inicio: ""
-fin: ""
-repo_commit_final: ""
+inicio: "2026-08-23T23:45:26-03:00"
+fin: "2026-08-24T12:12:30-03:00"
+repo_commit_final: "PENDIENTE: congelar el repo satélite y registrar el hash"
 etapas:
   backend:
-    inicio: ""
-    fin: ""
-    tokens: null
-    costo_usd: null
-    intervenciones: null
-    estado: ""
-    motivo_cierre: ""
+    inicio: "2026-08-23T23:45:26-03:00"
+    fin: "2026-08-24T10:10:18-03:00"
+    tokens: {entrada: 508, entrada_cacheada: 43124559, salida: 206435, turnos: 282}
+    costo_usd: 56.67     # nativo (`total_cost_usd`), agrupado por session_id — ver H-11
+    intervenciones: 1    # INT-01 (smoke de avance)
+    estado: "completa"
+    motivo_cierre: "criterio de avance cumplido (GET /health con chainId 11155111 verificado)"
   web:
-    inicio: ""
-    fin: ""
-    tokens: null
-    costo_usd: null
-    intervenciones: null
-    estado: ""
-    motivo_cierre: ""
+    inicio: "2026-08-24T10:16:55-03:00"
+    fin: "2026-08-24T11:06:40-03:00"
+    tokens: {entrada: 462, entrada_cacheada: 27547200, salida: 155224, turnos: 236}
+    costo_usd: 36.52
+    intervenciones: 1    # INT-02
+    estado: "completa"
+    motivo_cierre: "criterio de avance cumplido (build de producción exit 0, en contenedor)"
   mobile:
-    inicio: ""
-    fin: ""
-    tokens: null
-    costo_usd: null
-    intervenciones: null
-    estado: ""
-    motivo_cierre: ""
-logs_jsonl: []
-costo_total_usd: null
-tokens_totales: null
-intervenciones_total: null
-notas: ""
+    inicio: "2026-08-24T11:07:44-03:00"
+    fin: "2026-08-24T12:12:30-03:00"
+    tokens: {entrada: 612, entrada_cacheada: 50687351, salida: 239450, turnos: 315}
+    costo_usd: 49.01
+    intervenciones: 1    # INT-03
+    estado: "completa"
+    motivo_cierre: "criterio de avance cumplido (expo export --platform android exit 0)"
+logs_jsonl:
+  - "pre-piloto-a-backend-20260823-234526.jsonl"
+  - "pre-piloto-a-web-20260824-101655.jsonl"
+  - "pre-piloto-a-mobile-20260824-110744.jsonl"
+costo_total_usd: 142.20
+tokens_totales: {entrada: 1582, entrada_cacheada: 121359110, salida: 601109, turnos: 833}
+intervenciones_total: 3   # las tres son smokes de avance, ninguna corrección al agente
+nota_costo: >-
+  Costo **nativo** del CLI (`total_cost_usd` del evento `result`), agrupado por
+  `session_id`: una invocación de rol emite varios `result` con el mismo acumulado y
+  sumarlos triplica (hallazgo H-11). Bajo suscripción este número es el equivalente en
+  API, no lo facturado. El tope efectivo no es económico sino el **rate limit de 5 horas
+  sin overage** (H-05).
+nota_tiempo: >-
+  El tiempo de pared de la etapa backend **no es utilizable**: la máquina durmió unas 8
+  horas y congeló la corrida (H-10). Las etapas web (50 min) y mobile (65 min), con
+  `caffeinate` activo, sí son representativas.
+notas: >-
+  Corrida descartable (ADR-018), mismo universo reducido y mismo `effort: high` que
+  `pre-piloto-b`. Las tres etapas cerraron completas con sus tres smokes pasados.
+  Evaluación: black-box 51 pasa / 3 falla / 2 skip —las 3 fallas son 404 de endpoints
+  fuera del alcance (H-18), idénticas a las de B—; métricas estáticas por componente
+  (backend 6533, web 1922, mobile 3575 loc), 2,3x el código de B para el mismo alcance.
+  **Cero consultas al corpus** en las tres etapas (H-12), igual que B.

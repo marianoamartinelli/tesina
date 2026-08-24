@@ -15,16 +15,6 @@ Categorías de causa raíz (del marco metodológico de la propuesta):
 
 ---
 
-## INT-01
-
-- **Timestamp:**
-- **Etapa/componente:** (p. ej. backend/matching, cliente-web)
-- **Categoría causa raíz:** (1–8)
-- **Disparador:** qué observó el evaluador que motivó intervenir (criterio del protocolo)
-- **Descripción:** qué estaba mal
-- **Intervención:** qué se le dijo/hizo al agente (textual si fue un prompt)
-- **Resultado:** cómo respondió el agente
-- **Referencias:** AT-id / HU / INV-* / commit del repo de la corrida
 
 ## INT-01 — Smoke check de avance de la etapa backend (no es intervención sobre el agente)
 
