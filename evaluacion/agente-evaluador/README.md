@@ -23,11 +23,35 @@ audita el 100 % de los veredictos contra su evidencia (ADR-004 §2.5).
   ejecución u omisión se decide por el costo observado en la piloto (checklist H6, ítem 6).
 - **Runtime:** `claude -p` en modo headless, con lectura de archivos y bash — las únicas
   herramientas que la evaluación white-box necesita (ADR-010 Decisión 3, que reemplaza el
-  runtime de ADR-007 Decisión 1). Los flags concretos de la invocación (permisos de
-  herramientas, formato de salida, registro del JSONL) siguen sin fijarse:
-  **PENDIENTE-ARRANQUE**, a resolver antes de H8. El orquestador de generación
-  (`pipeline/harness_a/orquestar.py`, checklist H6 ítem 17) sirve de referencia, pero no
-  cubre esta invocación: el evaluador no es una celda del pipeline.
+  runtime de ADR-007 Decisión 1). Los flags concretos los fija **`correr.py`**, escrito en
+  la pre-piloto (ADR-018), que cierra el `PENDIENTE-ARRANQUE` que este README tenía:
+
+  ```bash
+  .venv/bin/python evaluacion/agente-evaluador/correr.py \
+      --sut <repo-congelado> --salida runs/<id>/no-automatizables --pasada 1 [--dry-run]
+  ```
+
+  Lo que decide, y por qué está acá y no en el briefing (que es texto congelado):
+
+  - **Aislamiento de insumos por mecanismo:** arma un directorio de trabajo bajo `/tmp`
+    con **sólo** lo que el briefing §2 permite —briefing, rúbrica, plantilla, `spec/`,
+    `corpus/` y la copia del SUT sin `.git`— y corre el CLI ahí. El agente no ve el árbol
+    de la tesina, así que la prohibición de mirar `suite-at/`, `runs/`, `journal/` y
+    `analisis/` no depende de que la respete: es el criterio de ADR-015 aplicado al
+    evaluador.
+  - **Aislamiento de la config del host:** `--setting-sources ""` y `--strict-mcp-config`,
+    como en la generación (ADR-009 D5). El evaluador **no** usa el servidor MCP del RAG:
+    el briefing lo manda leer el corpus como archivos y citar documento y sección.
+  - **Sin recuperación web:** `--disallowed-tools WebSearch,WebFetch`. Acá el motivo es
+    más fuerte que en la generación — la regla de oro del briefing obliga a que toda
+    referencia normativa salga del corpus congelado.
+  - **Registro:** JSONL con el mismo formato que el pipeline (`comun/nucleo.py`), con los
+    SHA-256 del briefing y de la rúbrica en el evento inicial.
+  - **No corre en contenedor**, a diferencia de la generación: necesita hablar con el SUT
+    y el nodo on-chain que corren en el host, y no hay paridad entre celdas que preservar
+    (es el mismo instrumento, corrido igual las 8 veces).
+  - `--effort xhigh`, el mismo de las corridas de generación. Ningún ADR fija el `effort`
+    del evaluador: queda a ratificación del tesista.
 - **Sesión fresca por celda y por pasada**, sin memoria de las anteriores y sin `resume`;
   dos pasadas independientes por celda (ADR-007 §3 punto 3).
 - **Insumos permitidos y prohibidos:** los enumera el briefing §2 (spec `spec-v1.1`,
