@@ -505,3 +505,49 @@ Las **dos pasadas independientes** sobre `pre-piloto-b` corrieron y validaron
   veredicto lo firma el tesista (ADR-004 §2.5).
 - `duracion_min` declarada: 176 min en la pasada 1 y 202 en la pasada 2, contra ~17 y
   ~20 minutos de reloj — ver H-19.
+
+## H-12 (cierre) — Ninguna de las dos familias consultó el corpus, en ninguna etapa
+
+Conteo final sobre los `-rag.jsonl` de la corrida completa de B (3 etapas) y de las 2
+etapas cerradas de A:
+
+| celda | arranques del servidor MCP | **consultas al corpus** |
+|---|---|---|
+| `pre-piloto-a` | 8 | **0** |
+| `pre-piloto-b` | 34 | **0** |
+
+El servidor arrancó las 42 veces sin error y la herramienta quedó declarada en cada
+sesión; en el smoke de infraestructura, pedida explícitamente, respondió en las dos
+familias con el pasaje correcto de `bip-0044.mediawiki`. **El mecanismo funciona: los
+agentes no lo usan por iniciativa propia**, ni siquiera implementando la épica 06 entera
+—BIP-39, BIP-32, BIP-44— que es exactamente el contenido que el corpus congela.
+
+**Lo que esto pone en riesgo:** el 2×2 manipula *con/sin RAG*. Si el agente no consulta,
+la celda `X-con-rag` difiere de `X-sin-rag` sólo en que hubo una herramienta disponible
+que nadie llamó, y el factor mide **disponibilidad**, no **uso**. El efecto principal del
+RAG saldría indistinguible de cero por construcción, no por resultado.
+
+**Por qué no lo corrijo:** que el agente elija no usar una herramienta disponible **es un
+resultado legítimo** y publicable. Forzar la consulta desde el prompt —"consultá el
+corpus antes de implementar un estándar"— convierte el factor en otro distinto (RAG
+obligatorio contra RAG opcional), afecta a las 4 celdas y cambia lo que el experimento
+mide. Es una decisión de diseño del tesista.
+
+**Opciones, para decidir:**
+
+1. **Dejarlo como está** y reportar la no-consulta como hallazgo del experimento. Riesgo:
+   el efecto principal del RAG probablemente dé nulo, y el 2×2 pierde la mitad de su
+   potencia explicativa.
+2. **Instruir el uso en el prompt de rol**, byte-idéntico en las 4 celdas (en las celdas
+   sin RAG la instrucción no tiene a qué referirse, lo que ya es una asimetría a
+   resolver). Cambia el factor a "RAG instruido".
+3. **Subir la saliencia sin obligar**: mejorar la descripción de la herramienta MCP para
+   que el modelo la considere. Es el cambio más chico, pero igual toca un instrumento
+   pre-registrado y su efecto es incierto.
+
+Cualquiera de las tres necesita ADR y entra en la ventana H6, antes de las oficiales.
+
+**Dato lateral:** 34 arranques del servidor MCP en B para 9 invocaciones de rol (~3,8 por
+invocación) contra 8 en A para 8 invocaciones. Cada CLI lanza el servidor stdio con
+distinta frecuencia —B parece hacerlo también por subagente—, algo a tener en cuenta si
+alguna vez se mide el costo del RAG por corrida.
