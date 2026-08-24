@@ -288,3 +288,53 @@ Vale como advertencia para la piloto: un override que no se imprime no está med
   identidad vieja y la corrida está en vuelo—; el dato queda medido. La corrección rige
   desde la piloto.
 - **Estado:** resuelto.
+
+## H-14 — El estimador de costo de B sobreestima ~19× por dos supuestos falsos
+
+- **Componente:** 5.6 — cierra parte de los ítems 19 y 20 de la checklist H6
+- **Medido** sobre los 3 `turn.completed` de la etapa backend de `pre-piloto-b`:
+
+  | turno | `input_tokens` | de esos, `cached_input_tokens` | `output_tokens` | estimado como está | descontando caché |
+  |---|---|---|---|---|---|
+  | 1 | 9 963 410 | 9 520 384 (96 %) | 46 190 | USD 101,71 | USD 6,51 |
+  | 2 | 2 951 262 | 2 801 152 (95 %) | 12 182 | USD 30,06 | USD 1,12 |
+  | 3 | 4 375 668 | 4 145 664 (95 %) | 10 648 | USD 44,24 | USD 1,47 |
+  | **total** | **17 290 340** | **16 467 200 (95 %)** | **69 020** | **USD 176,01** | **USD 9,10** |
+
+- **Supuesto falso 1 — el umbral de tramo largo no aplica al agregado del turno.**
+  `costo_estimado_usd` compara los tokens de entrada contra `umbral_tramo_largo`
+  (272 000) y, si lo supera, factura **todo** al tramo largo. Su propio docstring dice
+  que se llama «por request… nunca sobre el total de la etapa», pero `turn.completed`
+  es exactamente un agregado: 9,96 M de entrada en un turno son decenas o cientos de
+  requests, y **ninguno** necesariamente cruzó el umbral. El estimador cobra el doble de
+  entrada y 1,5× de salida sobre todo, sin evidencia.
+- **Supuesto falso 2 — el 95 % de la entrada es caché y se cobra como entrada fresca.**
+  `turn.completed` informa `cached_input_tokens` aparte, y el estimador lo ignora. La
+  tarifa de entrada cacheada no está en `PRECIOS_USD_POR_MTOK`.
+- **Consecuencia:** el número que hoy produce el pipeline para B no sirve ni como cota
+  superior útil (19× de diferencia). Y como A informa `total_cost_usd` nativo, comparar
+  costo entre familias con el estimador actual sería comparar dos cosas distintas.
+- **Corrección:** `pipeline` — (a) no aplicar el tramo largo sobre agregados de turno:
+  o se estima por request, o se documenta que la estimación es de tramo corto; (b) sumar
+  la tarifa de entrada cacheada a `PRECIOS_USD_POR_MTOK` y descontarla. Qué tarifa usar
+  para la caché es la decisión que el ítem 20 dejaba explícitamente al tesista; los
+  números de arriba le dan el orden de magnitud de lo que está en juego.
+- **Estado:** abierto — implementación al cerrar las etapas en curso.
+
+## Referencia de consumo real, medida (para dimensionar H7)
+
+Etapa backend acotada a 6 HU, `effort high`, 3 invocaciones de rol:
+
+| | A (`claude-opus-5`) | B (`gpt-5.6-sol`) |
+|---|---|---|
+| costo | **USD 30,06** sólo el paso 1 (nativo) | USD 9,10 los 3 pasos (estimado, caché descontada) |
+| tokens de entrada | 12,8 M de caché leída en el paso 1 | 17,3 M en los 3 pasos (95 % caché) |
+| tokens de salida | 95 287 en el paso 1 | 69 020 en los 3 pasos |
+| turnos | 65 en el paso 1 | 3 turnos (agregados) |
+
+La comparación **no es simétrica todavía** —A es un paso y B son tres, y los dos números
+salen de fuentes distintas (nativo contra estimado)—, pero el orden de magnitud alcanza
+para lo que importa: una corrida oficial es la spec **entera** (57 HU contra 6), con
+`effort xhigh`, 3 etapas de 3 pasos, ×4 celdas. ADR-016 quitó los topes de presupuesto
+asumiendo que el consumo sería manejable; este es el primer dato real para revisar ese
+supuesto.
