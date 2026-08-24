@@ -164,3 +164,25 @@ Vale como advertencia para la piloto: un override que no se imprime no está med
   falla por esto, se agrega `build-essential` + `python3-dev` a `Dockerfile.base` (es la
   base común: el cambio es simétrico por construcción) y se re-registra el digest.
 - **Estado:** registrado, sin acción por ahora.
+
+## H-09 — El smoke de la etapa mobile no era ejecutable como está enunciado
+
+- **Componente:** 9.1 (smoke de avance de etapa)
+- **Observado:** el criterio de avance de mobile es «la app mobile compila y **corre en
+  Expo**» (protocolo §4.1, `etapas.yaml`). «Corre en Expo» no es verificable sin
+  emulador ni dispositivo, y no hay ninguno: ni en el contenedor del agente ni en el
+  host de la corrida. Sin un procedimiento concreto, el criterio se vuelve un juicio del
+  operador y deja de ser idéntico entre celdas.
+- **Medido en el contenedor, sobre un proyecto Expo recién creado:**
+  - `npx expo export --platform android` → **funciona**, genera el bundle
+    (`_expo/static/js/android/index-….hbc`, 1,4 MB) y `metadata.json`, exit 0. Es
+    compilación real del bundle JS: si el código no compila, falla.
+  - `npx expo export --platform web` → falla en un proyecto que no declaró `react-dom`
+    y `react-native-web`. Es una falta del proyecto, no del ambiente; sirve como smoke
+    sólo si el agente incluyó el target web.
+  - Etapa web: `npm create vite` + `npx vite build` → **funciona** (dist generado).
+- **Corrección propuesta:** fijar el smoke de mobile como
+  `npx expo export --platform android` con exit 0, y el de web como el build de
+  producción que el README del SUT documente. Toca el protocolo (§4.1) y `etapas.yaml`,
+  así que va por ADR junto con H-07.
+- **Estado:** abierto — la corrección se aplica al cerrar las etapas backend en curso.
