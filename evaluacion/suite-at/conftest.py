@@ -138,13 +138,13 @@ def pytest_runtest_makereport(item, call):
         registro["outcome"] = "failed"
 
 
-def pytest_terminal_summary(terminalreporter, exitstatus, config):
-    """Escribe resultados-at.csv y resume por categoría (no automatizables aparte)."""
+def _filas_del_reporte(config, exitstatus):
+    """Filas del reporte por AT, o None si esta corrida no debe reportar."""
     ats_por_test = getattr(config, "_ats_por_test", {})
     if not ats_por_test:
-        return  # corrida sin tests de AT (p. ej. sólo smoke): no se reporta
-    if exitstatus == pytest.ExitCode.USAGE_ERROR or exitstatus == pytest.ExitCode.INTERRUPTED:
-        return  # corrida abortada (p. ej. marker inválido): no se reporta
+        return None  # corrida sin tests de AT (p. ej. sólo smoke): no se reporta
+    if exitstatus in (pytest.ExitCode.USAGE_ERROR, pytest.ExitCode.INTERRUPTED):
+        return None  # corrida abortada (p. ej. marker inválido): no se reporta
 
     catalogo = reporte.cargar_catalogo()
     no_autom = reporte.cargar_no_automatizables()
@@ -153,12 +153,35 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
         for nodeid, datos in config._resultados_tests.items()
         if nodeid in ats_por_test
     }
-    filas = reporte.agregar_resultados(catalogo, no_autom, resultados_tests, ats_por_test)
+    return reporte.agregar_resultados(catalogo, no_autom, resultados_tests, ats_por_test)
 
+
+def pytest_sessionfinish(session, exitstatus):
+    """Escribe resultados-at.csv — el dato primario de H8.
+
+    Va acá y **no** en `pytest_terminal_summary` porque ese hook no corre con
+    `--no-summary`: medido en la pre-piloto, una corrida con ese flag terminaba en verde
+    y **no dejaba CSV**, sin ningún aviso. El flag es de presentación —el resumen imprime
+    los 56 ATs no automatizables con su motivo completo, que son párrafos— y es razonable
+    que el evaluador lo use; que de eso dependa el dato primario de la evaluación es un
+    defecto, no una decisión.
+    """
+    filas = _filas_del_reporte(session.config, exitstatus)
+    if filas is None:
+        return
     destino = os.environ.get("SUITE_RESULTADOS_AT")
-    ruta = reporte.escribir_resultados(
+    session.config._ruta_resultados = reporte.escribir_resultados(
         filas, Path(destino) if destino else reporte.RUTA_RESULTADOS
     )
+    session.config._filas_reporte = filas
+
+
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    """Resume por categoría en la terminal (el CSV ya lo escribió `sessionfinish`)."""
+    filas = getattr(config, "_filas_reporte", None)
+    if filas is None:
+        return
+    ruta = getattr(config, "_ruta_resultados", reporte.RUTA_RESULTADOS)
 
     conteo = reporte.resumen(filas)
     total = sum(conteo.values())

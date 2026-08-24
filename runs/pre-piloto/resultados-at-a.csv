@@ -1,40 +1,40 @@
 at_id,resultado,test,duracion_segundos,detalle
-AT-01-01-01,falla,tests/test_ep01_registro.py::test_registro_exitoso_con_credenciales_validas,0.098,
-AT-01-01-02,pasa,tests/test_ep01_registro.py::test_normalizacion_del_email_en_el_registro,0.046,
-AT-01-01-03,pasa,tests/test_ep01_registro.py::test_email_ya_registrado_se_rechaza_con_409,0.100,
-AT-01-01-04a,pasa,tests/test_ep01_registro.py::test_email_sin_arroba_es_validation_error,0.043,
+AT-01-01-01,falla,tests/test_ep01_registro.py::test_registro_exitoso_con_credenciales_validas,0.099,
+AT-01-01-02,pasa,tests/test_ep01_registro.py::test_normalizacion_del_email_en_el_registro,0.091,
+AT-01-01-03,pasa,tests/test_ep01_registro.py::test_email_ya_registrado_se_rechaza_con_409,0.146,
+AT-01-01-04a,pasa,tests/test_ep01_registro.py::test_email_sin_arroba_es_validation_error,0.046,
 AT-01-01-04b,pasa,tests/test_ep01_registro.py::test_email_con_dominio_sin_punto_es_validation_error,0.044,
-AT-01-01-04c,pasa,tests/test_ep01_registro.py::test_email_con_parte_local_vacia_es_validation_error,0.044,
-AT-01-01-04d,pasa,tests/test_ep01_registro.py::test_email_con_espacio_interno_es_validation_error,0.045,
-AT-01-01-04e,pasa,tests/test_ep01_registro.py::test_email_con_puntos_invalidos_en_dominio_es_validation_error,0.089,
-AT-01-01-05,pasa,tests/test_ep01_registro.py::test_password_demasiado_corta_es_validation_error,0.044,
-AT-01-01-06,pasa,tests/test_ep01_registro.py::test_password_demasiado_larga_es_validation_error,0.044,
+AT-01-01-04c,pasa,tests/test_ep01_registro.py::test_email_con_parte_local_vacia_es_validation_error,0.045,
+AT-01-01-04d,pasa,tests/test_ep01_registro.py::test_email_con_espacio_interno_es_validation_error,0.046,
+AT-01-01-04e,pasa,tests/test_ep01_registro.py::test_email_con_puntos_invalidos_en_dominio_es_validation_error,0.091,
+AT-01-01-05,pasa,tests/test_ep01_registro.py::test_password_demasiado_corta_es_validation_error,0.045,
+AT-01-01-06,pasa,tests/test_ep01_registro.py::test_password_demasiado_larga_es_validation_error,0.046,
 AT-01-01-07,pasa,tests/test_ep01_registro.py::test_campo_requerido_faltante_es_validation_error,0.003,
-AT-01-01-08,pasa,tests/test_ep01_registro.py::test_tipo_de_dato_incorrecto_es_validation_error,0.046,
-AT-01-01-09,pasa,tests/test_ep01_registro.py::test_precedencia_email_invalido_antes_que_password_invalida,0.001,
+AT-01-01-08,pasa,tests/test_ep01_registro.py::test_tipo_de_dato_incorrecto_es_validation_error,0.047,
+AT-01-01-09,pasa,tests/test_ep01_registro.py::test_precedencia_email_invalido_antes_que_password_invalida,0.002,
 AT-01-01-10,pasa,tests/test_ep01_registro.py::test_dos_registros_concurrentes_con_el_mismo_email,0.117,
-AT-01-01-11,pasa,tests/test_ep01_registro.py::test_cuenta_registrada_sobrevive_un_reinicio,2.950,
-AT-01-01-12,pasa,tests/test_ep01_registro.py::test_password_en_el_limite_inferior_valido,0.091,
-AT-01-01-13,pasa,tests/test_ep01_registro.py::test_password_en_el_limite_superior_valido,0.090,
-AT-01-01-14,pasa,tests/test_ep01_registro.py::test_email_en_el_limite_superior_valido,0.046,
-AT-01-01-15,pasa,tests/test_ep01_registro.py::test_email_que_excede_el_maximo_es_validation_error,0.048,
+AT-01-01-11,pasa,tests/test_ep01_registro.py::test_cuenta_registrada_sobrevive_un_reinicio,2.984,
+AT-01-01-12,pasa,tests/test_ep01_registro.py::test_password_en_el_limite_inferior_valido,0.094,
+AT-01-01-13,pasa,tests/test_ep01_registro.py::test_password_en_el_limite_superior_valido,0.091,
+AT-01-01-14,pasa,tests/test_ep01_registro.py::test_email_en_el_limite_superior_valido,0.051,
+AT-01-01-15,pasa,tests/test_ep01_registro.py::test_email_que_excede_el_maximo_es_validation_error,0.049,
 AT-01-01-16,pasa,tests/test_ep01_registro.py::test_precedencia_campo_faltante_antes_que_politica_de_password,0.003,
-AT-01-01-17,pasa,tests/test_ep01_registro.py::test_precedencia_tipo_incorrecto_antes_que_unicidad,0.046,
+AT-01-01-17,pasa,tests/test_ep01_registro.py::test_precedencia_tipo_incorrecto_antes_que_unicidad,0.048,
 AT-01-01-18,pasa,tests/test_ep01_registro.py::test_campo_desconocido_en_el_payload_es_validation_error,0.045,
 AT-01-01-19,pasa,tests/test_ep01_registro.py::test_account_id_opaco_y_no_secuencial,0.190,
-AT-01-01-20,skip,tests/test_ep01_registro.py::test_anti_flood_de_registro_responde_rate_limited,2.745,
-AT-01-02-01,pasa,tests/test_ep01_login.py::test_login_exitoso_devuelve_token_con_expiracion,0.096,
-AT-01-02-02,pasa,tests/test_ep01_login.py::test_login_normaliza_capitalizacion_y_espacios_del_email,0.100,
-AT-01-02-03,pasa,tests/test_ep01_login.py::test_el_token_autentica_una_llamada_protegida,0.129,
-AT-01-02-04,pasa,tests/test_ep01_login.py::test_password_incorrecta_es_invalid_credentials,0.139,
-AT-01-02-05,pasa,tests/test_ep01_login.py::test_email_inexistente_es_indistinguible_de_password_incorrecta,0.182,
+AT-01-01-20,skip,tests/test_ep01_registro.py::test_anti_flood_de_registro_responde_rate_limited,2.754,
+AT-01-02-01,pasa,tests/test_ep01_login.py::test_login_exitoso_devuelve_token_con_expiracion,0.097,
+AT-01-02-02,pasa,tests/test_ep01_login.py::test_login_normaliza_capitalizacion_y_espacios_del_email,0.101,
+AT-01-02-03,pasa,tests/test_ep01_login.py::test_el_token_autentica_una_llamada_protegida,0.140,
+AT-01-02-04,pasa,tests/test_ep01_login.py::test_password_incorrecta_es_invalid_credentials,0.147,
+AT-01-02-05,pasa,tests/test_ep01_login.py::test_email_inexistente_es_indistinguible_de_password_incorrecta,0.191,
 AT-01-02-06,pasa,tests/test_ep01_login.py::test_payload_de_login_mal_formado_es_validation_error,0.002,
 AT-01-02-07,pasa,tests/test_ep01_login.py::test_precedencia_esquema_antes_que_credenciales,0.001,
-AT-01-02-08,pasa,tests/test_ep01_login.py::test_sesiones_multiples_concurrentes_no_se_invalidan,0.147,
-AT-01-02-09,skip,tests/test_ep01_login.py::test_rate_limiting_de_login_tras_multiples_fallos,2.750,
-AT-01-02-10,pasa,tests/test_ep01_login.py::test_heuristica_de_impredecibilidad_del_token,4.559,
-AT-01-02-11,pasa,tests/test_ep01_login.py::test_indistinguibilidad_temporal_anti_timing_attack,104.129,
-AT-01-02-12,pasa,tests/test_ep01_login.py::test_email_con_formato_invalido_en_login_no_es_validation_error,0.085,
+AT-01-02-08,pasa,tests/test_ep01_login.py::test_sesiones_multiples_concurrentes_no_se_invalidan,0.146,
+AT-01-02-09,skip,tests/test_ep01_login.py::test_rate_limiting_de_login_tras_multiples_fallos,2.746,
+AT-01-02-10,pasa,tests/test_ep01_login.py::test_heuristica_de_impredecibilidad_del_token,4.513,
+AT-01-02-11,pasa,tests/test_ep01_login.py::test_indistinguibilidad_temporal_anti_timing_attack,104.123,
+AT-01-02-12,pasa,tests/test_ep01_login.py::test_email_con_formato_invalido_en_login_no_es_validation_error,0.089,
 AT-01-02-13,no_automatizado,,,"El log de auditoría de autenticación (RNE-9) es interno por definición: la propia HU declara que ""no es accesible desde la API del usuario final"" y que el AT es ""verificable por inspección interna; no observable por caja negra en la respuesta de la API"". No existe superficie HTTP/WS/on-chain que lo exponga (exponerlo violaría RNE-3). Se evalúa por inspección de código/operativa en H8."
 AT-01-03-01,sin_test,,,AT backend sin test ni declaración de no automatizable
 AT-01-03-02,sin_test,,,AT backend sin test ni declaración de no automatizable
@@ -312,9 +312,9 @@ AT-06-01-02,no_automatizado,,,"Known-answer test de la derivación BIP-39 (mnemo
 AT-06-01-03,no_automatizado,,,"Determinismo de la derivación de seed: exige derivar dos veces la seed binaria desde un (mnemonic, passphrase) elegido y compararlas byte a byte (RN-7). La seed nunca sale del sistema (RN-5) y la función de derivación no es invocable por REST/WS. Se evalúa white-box (known-answer tests propios del SUT o inspección) en H8."
 AT-06-01-04,no_automatizado,,,"Exige generar dos mnemonics independientes y compararlos, pero el SUT provisiona un único seed por despliegue (RN-4) y no expone mnemonic ni seed (RN-5): no hay superficie black-box para obtener dos generaciones ni sus valores. Se evalúa en H8 ejecutando dos provisioning en entornos limpios e inspeccionando white-box que difieren."
 AT-06-01-05,no_automatizado,,,"Rechazo de mnemonic con checksum BIP-39 inválido: el provisioning es un proceso interno de arranque, no un endpoint (la spec fija abort con exit code != 0 y code VALIDATION_ERROR en stderr). Exige inyectar el mnemonic por la configuración del despliegue (mecanismo que la spec no fija y el entorno de evaluación no provee) y observar exit code/stderr del proceso. Se evalúa en H8 con un procedimiento de arranque orquestado (white-box operativo)."
-AT-06-01-06,falla,tests/test_ep06_wallet_direcciones.py::test_endpoints_autenticados_no_exponen_mnemonic_seed_ni_clave_privada,0.103,
-AT-06-01-07,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.146,
-AT-06-01-08,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.146,
+AT-06-01-06,falla,tests/test_ep06_wallet_direcciones.py::test_endpoints_autenticados_no_exponen_mnemonic_seed_ni_clave_privada,0.105,
+AT-06-01-07,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.174,
+AT-06-01-08,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.174,
 AT-06-01-09,no_automatizado,,,"Rechazo de mnemonic de 12 palabras (longitud != 24, RN-2a): igual que AT-06-01-05, requiere inyectar un mnemonic elegido en la configuración del despliegue y observar el abort del proceso de arranque (exit code/stderr), sin superficie REST/WS. Se evalúa en H8 con arranque orquestado white-box."
 AT-06-01-10,no_automatizado,,,"Rechazo de mnemonic con palabra fuera del wordlist BIP-39 (RN-2b): igual que AT-06-01-05/09, exige inyección del mnemonic por configuración del despliegue y observación del abort del proceso de arranque. Se evalúa en H8 con arranque orquestado white-box."
 AT-06-01-11,no_automatizado,,,Fallo de descifrado del seed al arrancar: exige corromper el almacenamiento cifrado o remover/alterar la credencial AES-256-GCM del entorno (estado interno del SUT) y observar el abort con exit code != 0 e INTERNAL_ERROR en stderr. Sin superficie black-box para provocarlo ni observarlo. Se evalúa en H8 manipulando el despliegue (white-box operativo).
@@ -322,32 +322,32 @@ AT-06-01-12,no_automatizado,,,"Atomicidad ante crash durante la escritura del se
 AT-06-01-13,no_automatizado,,,"Smoke test de integridad al arrancar: el propio escenario prescribe que ""por inyección del test harness"" el seed cargado no derive la dirección persistida (simular corrupción), lo que requiere manipular estado interno y observar el abort del arranque. Se evalúa white-box en H8 (inyección + verificación del error crítico antes de procesar operaciones)."
 AT-06-02-01,no_automatizado,,,"Known-answer test de derivación con MNEMONIC_HARDHAT e índice 0: exige invocar la derivación con un mnemonic elegido. El seed del SUT lo genera o importa el propio SUT y el entorno de evaluación no se lo fija (entorno/README.md, contrato de arranque), y la función de derivación no es invocable por REST/WS. Se evalúa white-box (tests del SUT o derivación de referencia con el mnemonic de la corrida) en H8."
 AT-06-02-02,no_automatizado,,,"Known-answer test de los índices 1..3 con MNEMONIC_HARDHAT: mismo motivo que AT-06-02-01 (mnemonic elegido + función interna sin superficie REST/WS). La parte ""cada índice distinto produce una dirección distinta"" sí es observable y está cubierta como unicidad entre cuentas (tests de AT-06-03-01/03-05). Se evalúa white-box en H8."
-AT-06-02-03,pasa,tests/test_ep06_wallet_direcciones.py::test_toda_direccion_emitida_cumple_checksum_eip55,0.292,
+AT-06-02-03,pasa,tests/test_ep06_wallet_direcciones.py::test_toda_direccion_emitida_cumple_checksum_eip55,0.294,
 AT-06-02-04,no_automatizado,,,"Componentes hardened del path (indices 2147483692/2147483708/2147483648): la construcción de los índices de derivación es interna y el contrato público no expone el path (derivationPath es opcional en HU-06-04 RN-6, no exigible a toda implementación). Se evalúa por inspección de código en H8; la corrección de la cadena completa se cubre con los KAT white-box (AT-06-02-01/02) y con AT-06-03-07."
 AT-06-02-05,no_automatizado,,,"El escenario exige derivar dos veces ""un mismo seed y un mismo address_index"" elegidos: el contrato de la épica 09 no permite ni lo uno ni lo otro (GET /deposit-address devuelve la dirección del índice que el SUT ya asignó a la cuenta autenticada, sin parámetro de índice ni de seed). Y aun observando la misma dirección dos veces, la igualdad no distingue una derivación reproducible de una lectura del mapeo persistido o de una caché: la pureza de la función —lo que el AT afirma— es inobservable desde afuera. La consecuencia observable (la dirección de una cuenta nunca cambia entre consultas, ni siquiera tras un reinicio) está cubierta por AT-06-03-02, AT-06-04-08 y AT-06-02-06. Se evalúa white-box en H8 con el KAT de derivación (misma familia que AT-06-02-01) más la inspección de que el camino no depende de RNG, reloj ni estado mutable."
-AT-06-02-06,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.146,
-AT-06-02-07,falla,tests/test_ep06_wallet_direcciones.py::test_respuestas_con_direcciones_no_exponen_clave_privada,0.098,
+AT-06-02-06,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.174,
+AT-06-02-07,falla,tests/test_ep06_wallet_direcciones.py::test_respuestas_con_direcciones_no_exponen_clave_privada,0.101,
 AT-06-02-08,no_automatizado,,,Índice con clave BIP-32 inválida (I_L >= n o k_hijo == 0): el escenario prescribe inyectar un mock/stub de HMAC-SHA512 en el SUT porque la condición (~2^-127) no se activa de forma natural. Es instrumentación white-box por definición; sin superficie black-box para provocarla. Se evalúa por inspección/tests del SUT en H8.
 AT-06-02-09,no_automatizado,,,"address_index fuera del rango no-hardened (>= 2^31): ninguna superficie pública acepta un address_index (GET /deposit-address solo recibe asset; la asignación es interna), y llevar al asignador a 2^31 requeriría 2^31 altas de cuenta (inalcanzable). El VALIDATION_ERROR de RN-9 no es provocable black-box. Se evalúa white-box (tests del SUT sobre su función de derivación/asignación) en H8."
-AT-06-03-01,pasa,tests/test_ep06_wallet_direcciones.py::test_cuenta_nueva_recibe_direccion_eip55_exclusiva,0.198,
+AT-06-03-01,pasa,tests/test_ep06_wallet_direcciones.py::test_cuenta_nueva_recibe_direccion_eip55_exclusiva,0.196,
 AT-06-03-02,pasa,tests/test_ep06_wallet_direcciones.py::test_reobtener_la_direccion_no_asigna_una_nueva,0.101,
 AT-06-03-03,no_automatizado,,,"Exige estado limpio (sin asignaciones previas) y observar address_index = 0 y 1: el índice no se expone por el contrato público (derivationPath opcional, HU-06-04 RN-6) y la suite no puede garantizar estado limpio ni orden de ejecución (cualquier test previo crea cuentas con asignación eager). La proyección observable (direcciones distintas entre cuentas) está cubierta por los tests de AT-06-03-01 y AT-06-03-05; la contigüidad desde 0 se evalúa sobre el estado persistido (INV-EPICA-06-A) en H8."
-AT-06-03-04,pasa,tests/test_ep06_wallet_direcciones.py::test_una_sola_direccion_para_eth_y_usdc,0.099,
-AT-06-03-05,pasa,tests/test_ep06_wallet_direcciones.py::test_asignaciones_concurrentes_no_colisionan,1.332,
-AT-06-03-06,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.146,
+AT-06-03-04,pasa,tests/test_ep06_wallet_direcciones.py::test_una_sola_direccion_para_eth_y_usdc,0.104,
+AT-06-03-05,pasa,tests/test_ep06_wallet_direcciones.py::test_asignaciones_concurrentes_no_colisionan,1.300,
+AT-06-03-06,pasa,tests/test_ep06_wallet_direcciones.py::test_direcciones_asignadas_son_identicas_tras_un_reinicio,3.174,
 AT-06-03-07,no_automatizado,,,"Propiedad de coherencia índice -> dirección contra una derivación BIP-44 de referencia ""sobre ese mismo mnemonic"": requiere conocer el mnemonic de 24 palabras del SUT, que es secreto por diseño (HU-06-01 RN-5) y no lo fija ni provee el entorno de evaluación (entorno/README.md). Se evalúa en H8: el evaluador obtiene white-box el mnemonic de la corrida (custodia controlada) y ejecuta la derivación de referencia externa comparando con las direcciones asignadas."
 AT-06-03-08,no_automatizado,,,"ACCOUNT_NOT_FOUND por cuenta inexistente: la asignación es una operación interna sin endpoint propio (HU-06-03, ""Naturaleza de la operación"") y el endpoint público no acepta selector de cuenta (la identidad se toma exclusivamente del token, HU-06-04 RN-2); un token que no corresponde a una cuenta válida falla antes con UNAUTHENTICATED (precedencia HU-06-04 RN-9) y la baja de cuentas está fuera de alcance. No hay forma black-box de referenciar una cuenta inexistente ante el asignador. Se evalúa white-box (tests del SUT sobre su asignador) en H8."
 AT-06-03-09,no_automatizado,,,"Asignación eager al alta: distinguir eager (al crear la cuenta) de lazy (primera consulta) exige leer el estado persistido o el evento interno antes de toda consulta, pero cualquier observación black-box pasa por GET /deposit-address, que dispararía el fallback idempotente (HU-06-04 RN-5) y vuelve indistinguibles ambos disparos. El registro persistido (accountId, addressIndex, derivationPath, network, chainId) tampoco es observable por el contrato público. Se evalúa sobre el estado persistido / evento de dominio (white-box) en H8."
 AT-06-03-10,no_automatizado,,,"Evento DepositAddressAssigned y consulta interna: el evento es de dominio interno y GET /internal/deposit-addresses es explícitamente no público (RN-11), fuera del contrato de la épica 09 al que la suite está restringida. Su efecto (toda dirección monitoreada desde la asignación) se observa solo indirectamente vía la acreditación de depósitos, cubierta por los ATs de la épica 07. Se evalúa white-box/integración en H8."
-AT-06-04-01,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_eth_devuelve_contrato_completo,0.104,
-AT-06-04-02,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_usdc_devuelve_la_misma_direccion_y_token_address,0.098,
-AT-06-04-03,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_sin_credencial_es_unauthenticated,0.008,
-AT-06-04-04,pasa,tests/test_ep06_wallet_direcciones.py::test_selector_de_cuenta_inyectado_se_ignora,0.201,
-AT-06-04-05,pasa,tests/test_ep06_wallet_direcciones.py::test_activo_no_soportado_es_validation_error,0.098,
-AT-06-04-06,pasa,tests/test_ep06_wallet_direcciones.py::test_chain_id_distinto_de_sepolia_es_chain_id_mismatch,0.099,
-AT-06-04-07,pasa,tests/test_ep06_wallet_direcciones.py::test_primera_consulta_devuelve_200_y_direccion_estable,0.100,
+AT-06-04-01,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_eth_devuelve_contrato_completo,0.100,
+AT-06-04-02,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_usdc_devuelve_la_misma_direccion_y_token_address,0.102,
+AT-06-04-03,pasa,tests/test_ep06_wallet_direcciones.py::test_consulta_sin_credencial_es_unauthenticated,0.007,
+AT-06-04-04,pasa,tests/test_ep06_wallet_direcciones.py::test_selector_de_cuenta_inyectado_se_ignora,0.198,
+AT-06-04-05,pasa,tests/test_ep06_wallet_direcciones.py::test_activo_no_soportado_es_validation_error,0.102,
+AT-06-04-06,pasa,tests/test_ep06_wallet_direcciones.py::test_chain_id_distinto_de_sepolia_es_chain_id_mismatch,0.095,
+AT-06-04-07,pasa,tests/test_ep06_wallet_direcciones.py::test_primera_consulta_devuelve_200_y_direccion_estable,0.103,
 AT-06-04-08,pasa,tests/test_ep06_wallet_direcciones.py::test_consultas_repetidas_devuelven_siempre_la_misma_direccion,0.106,
-AT-06-04-09,pasa,tests/test_ep06_wallet_direcciones.py::test_primeras_consultas_concurrentes_devuelven_una_sola_direccion,0.099,
+AT-06-04-09,pasa,tests/test_ep06_wallet_direcciones.py::test_primeras_consultas_concurrentes_devuelven_una_sola_direccion,0.098,
 AT-07-01-01,sin_test,,,AT backend sin test ni declaración de no automatizable
 AT-07-01-02,sin_test,,,AT backend sin test ni declaración de no automatizable
 AT-07-01-03,sin_test,,,AT backend sin test ni declaración de no automatizable

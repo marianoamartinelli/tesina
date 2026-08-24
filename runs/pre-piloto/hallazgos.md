@@ -551,3 +551,47 @@ Cualquiera de las tres necesita ADR y entra en la ventana H6, antes de las ofici
 invocación) contra 8 en A para 8 invocaciones. Cada CLI lanza el servidor stdio con
 distinta frecuencia —B parece hacerlo también por subagente—, algo a tener en cuenta si
 alguna vez se mide el costo del RAG por corrida.
+
+## H-21 — `--no-summary` hacía que la suite no escribiera el CSV, en silencio
+
+- **Componente:** 6.3 (suite contra un SUT real) — afecta al **dato primario de H8**
+- **Observado:** `resultados-at.csv` se escribía dentro de `pytest_terminal_summary`, un
+  hook que **no corre** si se pasa `--no-summary`. Con ese flag la corrida termina en
+  verde, imprime su `N passed` y **no deja CSV**, sin aviso ni error. Reproducido a
+  propósito: la misma selección de tests, con y sin el flag, escribe o no escribe el
+  archivo.
+- **Por qué es fácil caer:** el resumen de terminal imprime los **56 ATs no
+  automatizables con su motivo completo** —párrafos enteros— antes del `short test
+  summary`, así que `--no-summary` es lo primero que uno agrega para poder leer la
+  salida. Yo mismo lo usé en cuatro corridas de esta sesión, y dos CSV quedaron sin
+  regenerar sin que nada lo indicara.
+- **Consecuencia si pasa en H8:** el evaluador cree tener el resultado de la celda y en
+  realidad conserva el CSV de la corrida anterior, o ninguno. Como el archivo tiene el
+  mismo nombre, el error es silencioso y **sobrevive a la revisión**.
+- **Corrección aplicada:** el CSV se escribe en `pytest_sessionfinish`, que corre siempre;
+  `pytest_terminal_summary` queda sólo para imprimir. Verificado: con `--no-summary` el
+  archivo ahora se escribe. El smoke del harness sigue en 40 passed.
+- **Estado:** resuelto.
+
+## Resultado black-box de las dos celdas (comparable)
+
+Con el harness ya corregido (H-16, H-17, H-21) y los dos SUT corriendo en contenedor
+(ADR-021), sobre los 56 ATs con test del alcance:
+
+| | pasa | falla | skip | no automatizado | sin test (fuera del alcance) |
+|---|---|---|---|---|---|
+| `pre-piloto-a` | **51** | 3 | 2 | 56 | 409 |
+| `pre-piloto-b` | **51** | 3 | 2 | 56 | 409 |
+
+**Idénticos**, y las 3 fallas son los mismos AT-ids en las dos celdas —AT-01-01-01,
+AT-06-01-06, AT-06-02-07—, todas por 404 de `/balances` y `/withdrawals`: endpoints de
+épicas que el prompt de la pre-piloto excluyó (H-18). O sea: **ninguna de las dos
+implementaciones tiene un defecto real dentro de su alcance** según la suite.
+
+Los 2 skips son legítimos y están declarados en el propio test: rate limiting de registro
+y de login son opcionales por configuración (HU-01-01 RN-10, HU-01-02 RN-9) y el "Dado"
+del AT no se cumple si la implementación no los activa. **Atención para H8:** ADR-011
+exige `skip = 0` para una evaluación válida, y estos dos skips no dependen de
+`SUITE_CMD_REINICIO_SUT` sino de una decisión de configuración del SUT. Hay que decidir
+antes de H7 si esa regla admite esta excepción o si el contrato de arranque debe exigir
+el rate limiting activo.
