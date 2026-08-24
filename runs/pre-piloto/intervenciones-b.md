@@ -51,3 +51,17 @@ Categorías de causa raíz (del marco metodológico de la propuesta):
 La regla de no-exposición del holdout (protocolo §4.3) vale también acá: la corrida de
 `pre-piloto-b` no terminó (faltan las etapas web y mobile), así que la suite se corre
 **una sola vez al cierre**, no entre etapas. El smoke de avance usa sólo el health-check.
+
+## INT-02 — Smoke check de avance de la etapa web
+
+- **Timestamp:** 2026-08-24 ~10:30 (-03)
+- **Etapa/componente:** web / procedimiento de avance de etapa
+- **Categoría causa raíz:** no aplica — procedimiento del protocolo, no corrección al
+  agente.
+- **Disparador:** cierre de la etapa web (3 pasos, exit 0, evento `fin`).
+- **Descripción y resultado:** `npm run build` del cliente web **falla en el host**
+  (`@rollup/rollup-linux-arm64-gnu` no encontrado) y **pasa en el contenedor** de la
+  misma imagen, en 508 ms, con `dist/` generado. Criterio de avance **cumplido**, con el
+  criterio de ADR-020 (build de producción, exit 0) ejecutado donde corresponde
+  (ADR-021). No se le dijo nada al agente.
+- **Referencias:** `runs/pre-piloto/hallazgos.md` H-15; ADR-020; ADR-021.
