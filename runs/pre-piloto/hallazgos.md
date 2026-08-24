@@ -595,3 +595,30 @@ exige `skip = 0` para una evaluación válida, y estos dos skips no dependen de
 `SUITE_CMD_REINICIO_SUT` sino de una decisión de configuración del SUT. Hay que decidir
 antes de H7 si esa regla admite esta excepción o si el contrato de arranque debe exigir
 el rate limiting activo.
+
+## Métricas estáticas, ya separadas por componente
+
+El residuo que ADR-022 dejó abierto —cómo separar backend/web/mobile cuando el agente los
+deja en un mismo repo— se resolvió agregando `EXCL_DIRS_EXTRA` a `medir.sh`: exclusiones
+adicionales que el evaluador elige leyendo el README del SUT, y que quedan registradas en
+la columna `notas` del CSV para que la medición sea auditable. Sin eso, medir el backend
+con la ruta del repo contaba también los dos clientes: `pre-piloto-a/backend` daba 12 030
+loc en vez de 6 533.
+
+| celda | componente | loc | funciones | ccn prom. | duplicación | deps prod+dev |
+|---|---|---|---|---|---|---|
+| A | backend | **6 533** | 412 | 1,96 | 2,22 % | 5+2 |
+| A | web | 1 922 | 183 | 2,12 | 2,62 % | 3+10 |
+| A | mobile | 3 575 | 394 | 1,65 | 1,67 % | 10+8 |
+| B | backend | **2 877** | 198 | 2,15 | 0,18 % | 4+5 |
+| B | web | 1 002 | 66 | 2,12 | 0,75 % | 2+10 |
+| B | mobile | 1 422 | 138 | 1,99 | 2,07 % | 8+5 |
+
+Para el **mismo alcance y el mismo resultado black-box** (51/3/2 en las dos celdas), A
+escribió **2,3× más código** que B: 12 030 contra 5 301 loc en total. Complejidad
+ciclomática promedio parecida (1,65–2,15 en los seis componentes) y duplicación baja en
+ambos.
+
+**Esto no es un resultado del experimento** —la pre-piloto no es comparable: prompt
+acotado, `effort high` en vez de `xhigh`, una sola corrida por celda— pero muestra que
+las métricas estáticas **discriminan**, que es lo que había que verificar de ellas.

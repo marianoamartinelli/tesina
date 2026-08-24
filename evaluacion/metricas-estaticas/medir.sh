@@ -39,6 +39,19 @@ EXCL_DIRS="node_modules,.git,dist,build,out,coverage,vendor,Pods,__pycache__,.ne
 # (`deps_directas_prod` / `_dev`), que es la métrica que sí dice algo.
 EXCL_ARCHIVOS="package-lock.json|yarn.lock|pnpm-lock.yaml|poetry.lock|Cargo.lock|go.sum|composer.lock|Gemfile.lock"
 
+# Exclusiones adicionales para separar componentes cuando el agente los deja en un mismo
+# repo — el residuo que ADR-022 dejó abierto. Layout típico medido en la pre-piloto:
+# backend en la raíz y clientes en `web/` y `mobile/`, así que medir el backend con la
+# ruta del repo cuenta también los dos clientes. El evaluador lo resuelve leyendo el
+# README del SUT y pasando, por ejemplo:
+#
+#   EXCL_DIRS_EXTRA="web,mobile" medir.sh <repo> <run_id> backend <csv>
+#
+# Queda registrado en la columna `notas` del CSV para que la medición sea auditable.
+if [ -n "${EXCL_DIRS_EXTRA:-}" ]; then
+  EXCL_DIRS="${EXCL_DIRS},${EXCL_DIRS_EXTRA}"
+fi
+
 # ---------- argumentos ----------
 if [ $# -lt 3 ]; then
   echo "Uso: $0 <ruta_componente> <run_id> <componente> [csv_salida]" >&2
@@ -50,6 +63,7 @@ COMPONENTE="$3"
 CSV="${4:-./metricas-estaticas.csv}"
 FECHA="$(date +%Y-%m-%d)"
 NOTAS=""
+if [ -n "${EXCL_DIRS_EXTRA:-}" ]; then NOTAS="${NOTAS}excluidos ademas: ${EXCL_DIRS_EXTRA}; "; fi
 
 # ---------- verificación de herramientas y versiones ----------
 falta() { echo "ERROR: falta la herramienta '$1' (ver README §6)" >&2; exit 2; }
