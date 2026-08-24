@@ -483,3 +483,25 @@ Primera ejecución del agente evaluador de ADR-007 en todo el proyecto:
   agente los deja en un mismo repo. En `pre-piloto-b` el backend está en la raíz y los
   clientes en `web/` y `mobile/`, pero nada garantiza ese layout en las 4 celdas.
 - **Estado:** resuelto, con ese residuo anotado.
+
+## Resultado del white-box completo: concordancia 21/22 entre pasadas
+
+Las **dos pasadas independientes** sobre `pre-piloto-b` corrieron y validaron
+(`validar-resultados.py` OK en las dos, 56 items cada una).
+
+- **Concordancia en el alcance: 21 de 22 (95 %).** Pasada 1: 22 `PASA`. Pasada 2: 21
+  `PASA` + 1 `NO_EVALUABLE`.
+- **Única discrepancia — AT-06-03-10**, y es de fondo, no de ruido: las dos pasadas
+  coinciden en los **hechos** —el evento `DepositAddressAssigned` se emite dentro de la
+  misma transacción que la asignación, y existe la consulta interna del conjunto
+  asignado— y difieren en si el criterio cerrado exige **además** que el monitor de la
+  épica 07 lo consuma. La épica 07 está fuera del alcance de la pre-piloto, así que la
+  discrepancia es un artefacto del universo reducido y no aparecería en una corrida
+  oficial.
+- **Lo que esto dimensiona para H8:** ~1 discrepancia cada 22 ATs evaluados con
+  procedimiento completo. Sobre 56 ATs por celda y 4 celdas, del orden de **10
+  arbitrajes humanos** en total, no cientos. El material queda preparado en
+  `no-automatizables-b/arbitraje.md`, con la evidencia de ambas pasadas lado a lado; el
+  veredicto lo firma el tesista (ADR-004 §2.5).
+- `duracion_min` declarada: 176 min en la pasada 1 y 202 en la pasada 2, contra ~17 y
+  ~20 minutos de reloj — ver H-19.

@@ -1,0 +1,597 @@
+metadatos:
+  celda: "celda-en-evaluacion"
+  fecha: 2026-08-24
+  pasada: 2
+  modelo_evaluador: "claude-opus-5"
+  briefing_version: "v1.1"
+  rubrica_version: "v1.2"
+
+resultados:
+  - at_id: AT-01-02-13
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/database.ts:142-149", detalle: "tabla auth_audit (audit_id, timestamp, email, result CHECK IN ('SUCCESS','FAILURE'), reason, origin)" }
+      - { tipo: archivo, ref: "src/services/auth-service.ts:132-143", detalle: "auditLoginAttempt() inserta timestamp ISO-8601 UTC (new Date().toISOString()), email normalizado (normalizeEmail: trim+lowercase, línea 138), result y reason" }
+      - { tipo: archivo, ref: "src/app.ts:189-198", detalle: "hook onResponse audita TODA request a POST /api/v1/auth/login; el default es FAILURE, de modo que ningún desenlace queda sin registrar" }
+      - { tipo: archivo, ref: "src/app.ts:150-187,252", detalle: "setErrorHandler fija loginAuditOutcome={FAILURE, reason: error.code} (INVALID_CREDENTIALS para credenciales inválidas); la línea 252 fija SUCCESS en el camino feliz" }
+      - { tipo: comando, ref: "curl -s -X POST $EXCHANGE_API_URL/api/v1/auth/login -d '{\"email\":\"Audit.WB@Example.COM\",...}' (SUT principal en localhost:3103; un intento con contraseña correcta y otro con contraseña incorrecta)", detalle: "HTTP 200 con token; HTTP 401 {\"error\":{\"code\":\"INVALID_CREDENTIALS\"}}" }
+      - { tipo: comando, ref: "docker exec sut-b node -e '...new DatabaseSync(\"/repo/data/exchange.sqlite\",{readOnly:true})...SELECT audit_id,timestamp,email,result,reason FROM auth_audit WHERE email=?' (lectura sólo lectura del almacenamiento del SUT vivo)", detalle: "2046 | 2026-08-24T14:35:25.704Z | audit.wb@example.com | SUCCESS | null ;; 2047 | 2026-08-24T14:35:25.757Z | audit.wb@example.com | FAILURE | INVALID_CREDENTIALS" }
+      - { tipo: archivo, ref: "src/app.ts:38-45,209-325", detalle: "mapa de rutas completo (KNOWN_ROUTES + registros app.get/app.post): /health, /auth/register, /auth/login, /auth/logout, /me, /deposit-address; ninguna expone el log" }
+      - { tipo: comando, ref: "grep -rn 'auth_audit' $COPIA_EVAL --exclude-dir=node_modules --exclude-dir=dist", detalle: "sólo src/database.ts:142 (DDL), src/services/auth-service.ts:140 (INSERT) y dos tests; ninguna lectura desde una ruta HTTP ni desde el WebSocket privado" }
+    justificacion: >-
+      Ambos intentos (exitoso y fallido) quedaron registrados con los cuatro campos exigidos:
+      timestamp UTC ISO-8601, email normalizado a minúsculas, result SUCCESS/FAILURE y
+      reason = INVALID_CREDENTIALS en el fallido. El log sólo se escribe: ninguna ruta de la
+      API de usuario ni el canal WebSocket lo leen, por lo que se cumple el criterio cerrado.
+    duracion_min: 12
+
+  - at_id: AT-01-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "alcance declarado de la corrida pre-piloto (subconjunto de 22 ATs)", detalle: "AT fuera del subconjunto declarado; no se ejecutó el procedimiento de la rúbrica" }
+    justificacion: "Fuera del subconjunto de la corrida pre-piloto; no evaluado."
+    duracion_min: 0
+
+  - at_id: AT-01-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "alcance declarado de la corrida pre-piloto (subconjunto de 22 ATs)", detalle: "AT fuera del subconjunto declarado; no se ejecutó el procedimiento de la rúbrica" }
+    justificacion: "Fuera del subconjunto de la corrida pre-piloto; no evaluado."
+    duracion_min: 0
+
+  - at_id: AT-02-03-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; el esquema persistido sólo tiene accounts, sessions, wallet_metadata, deposit_addresses, domain_events, skipped_address_indices, auth_audit. Épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-03-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|ORDER_LOCK|ORDER_RELEASE|TRADE_FILL|REVERSAL|/balances' $COPIA_EVAL/src ; grep -n 'CREATE TABLE' src/database.ts", detalle: "0 hallazgos; épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|/balances' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "0 hallazgos; el mapa de rutas no incluye /balances. Épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-02-04-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'ledger|posting|/balances' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "0 hallazgos; el mapa de rutas no incluye /balances. Épica 02 no implementada (README.md:16-19)" }
+    justificacion: "Épica 02 (balances y ledger) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-03-02-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'matching|orderbook|/orders|/trades' $COPIA_EVAL/src", detalle: "0 hallazgos; épica 03 (motor de matching) no implementada (README.md:16-19)" }
+    justificacion: "Épica 03 (motor de matching) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-03-05-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'matching|orderbook|/orders|/trades' $COPIA_EVAL/src", detalle: "0 hallazgos; épica 03 (motor de matching) no implementada (README.md:16-19)" }
+    justificacion: "Épica 03 (motor de matching) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-03-07-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'matching|orderbook|/orders|/trades' $COPIA_EVAL/src", detalle: "0 hallazgos; épica 03 (motor de matching) no implementada (README.md:16-19)" }
+    justificacion: "Épica 03 (motor de matching) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-03-07-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'matching|orderbook|/orders|/trades' $COPIA_EVAL/src", detalle: "0 hallazgos; épica 03 (motor de matching) no implementada (README.md:16-19)" }
+    justificacion: "Épica 03 (motor de matching) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-04-05-14
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni '/orders|clientOrderId|cancel' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "0 hallazgos de gestión de órdenes; el mapa de rutas no incluye /orders. Épica 04 no implementada (README.md:16-19)" }
+    justificacion: "Épica 04 (gestión de órdenes) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-05-01-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'settlement|TRADE_FILL|fee' $COPIA_EVAL/src", detalle: "sin módulo de settlement ni cálculo de fees; épica 05 no implementada (README.md:16-19)" }
+    justificacion: "Épica 05 (settlement y fees) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-05-01-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'settlement|TRADE_FILL|fee' $COPIA_EVAL/src", detalle: "sin módulo de settlement ni cálculo de fees; épica 05 no implementada (README.md:16-19)" }
+    justificacion: "Épica 05 (settlement y fees) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-05-01-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'settlement|TRADE_FILL|fee' $COPIA_EVAL/src", detalle: "sin módulo de settlement ni cálculo de fees; épica 05 no implementada (README.md:16-19)" }
+    justificacion: "Épica 05 (settlement y fees) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-05-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'settlement|TRADE_FILL|fee' $COPIA_EVAL/src", detalle: "sin módulo de settlement ni cálculo de fees; épica 05 no implementada (README.md:16-19)" }
+    justificacion: "Épica 05 (settlement y fees) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-05-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'settlement|TRADE_FILL|fee' $COPIA_EVAL/src", detalle: "sin módulo de settlement ni cálculo de fees; épica 05 no implementada (README.md:16-19)" }
+    justificacion: "Épica 05 (settlement y fees) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-05-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'settlement|TRADE_FILL|fee' $COPIA_EVAL/src", detalle: "sin módulo de settlement ni cálculo de fees; épica 05 no implementada (README.md:16-19)" }
+    justificacion: "Épica 05 (settlement y fees) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-06-01-01
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:165-168", detalle: "generateProjectSeed(): Mnemonic.fromEntropy(randomBytes(32), \"\", wordlists.en).phrase — CSPRNG del entorno (node:crypto randomBytes, importado en la línea 6), 32 bytes = 256 bits ⇒ 24 palabras del wordlist inglés" }
+      - { tipo: comando, ref: "grep -rn 'Math.random|seedrandom|mulberry|xorshift' $COPIA_EVAL/src", detalle: "(sin hallazgos) — no hay PRNG sembrado ni Math.random en el código propio" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:138-140,153-163", detalle: "mnemonicToSeed(mnemonic, passphrase = \"\"): normaliza mnemonic y passphrase a NFKD y llama pbkdf2Sync(mnemonic, `mnemonic${passphrase}`, 2048, 64, \"sha512\") — passphrase por defecto vacía" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §\"From mnemonic to seed\" (líneas 91-99) y §\"Generating the mnemonic\" (tabla ENT=256 ⇒ CS=8, MS=24)", detalle: "PBKDF2 con password = mnemonic NFKD, salt = \"mnemonic\"+passphrase NFKD, 2048 iteraciones, HMAC-SHA512, dkLen 512 bits; ENT 256 ⇒ 24 palabras" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-generacion.ts <wordlist del corpus> (driver propio en $COPIA_TMP=/tmp/eval-wb-p2/sut, valida el checksum con un implementador independiente del SUT)", detalle: "gen1/gen2: palabras=24 seedBytes=64 checksum256bitsValido=true todasEnWordlist=true" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:175-191", detalle: "encryptSeed(): AES-256-GCM, clave de 32 bytes verificada, nonce randomBytes(12) generado por cada operación de cifrado, authTagLength 16, formato nonce||ciphertext||tag; decryptSeed() fija setAuthTag y falla si no verifica" }
+      - { tipo: archivo, ref: "src/config.ts:35-44,93", detalle: "la credencial proviene sólo del entorno (WALLET_ENCRYPTION_KEY, hex o base64:), exige exactamente 32 bytes; no hay clave embebida" }
+      - { tipo: archivo, ref: "src/database.ts:112-115,179-190", detalle: "el blob cifrado se persiste en wallet_metadata; la clave nunca se persiste junto al material cifrado" }
+      - { tipo: comando, ref: "lectura del blob de una instancia descartable recién provisionada (node:sqlite readOnly sobre /tmp/eval-wb-p2/inst/CRED/exchange.sqlite)", detalle: "len=92 bytes = 12 (nonce) + 64 (seed cifrado) + 16 (tag), consistente con AES-256-GCM y seed de 64 bytes" }
+    justificacion: >-
+      Los cuatro puntos se verifican: entropía de 256 bits del CSPRNG del entorno con mnemonic
+      de 24 palabras y checksum válido (comprobado con un validador independiente sobre el
+      wordlist del corpus), PBKDF2-HMAC-SHA512/2048/64 con passphrase vacía por defecto sobre
+      texto NFKD, y persistencia cifrada AES-256-GCM con nonce por operación, tag verificado y
+      credencial tomada exclusivamente del entorno.
+    duracion_min: 14
+
+  - at_id: AT-06-01-02
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:153-163", detalle: "función interna mnemonic→seed del SUT: mnemonicToSeed(mnemonic, passphrase)" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-kat.ts (driver propio escrito en $COPIA_TMP=/tmp/eval-wb-p2/sut/eval-drivers/, importa src/crypto/wallet.js sin modificarlo)", detalle: "[AT-06-01-02] seed(CANONICO,'TREZOR') = c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §\"From mnemonic to seed\" (líneas 96-99)", detalle: "referencia normativa del KDF: PBKDF2, password = mnemonic NFKD, salt = \"mnemonic\"+passphrase, 2048 iteraciones, HMAC-SHA512, 64 bytes" }
+      - { tipo: comando, ref: "npx vitest run test/wallet.test.ts en $COPIA_TMP (F6 complementario; test propio en test/wallet.test.ts:33-37 con el valor esperado exacto de HU-06-01)", detalle: "13 tests passed (1 file)" }
+    justificacion: >-
+      El driver ejecutado contra la función interna del SUT con MNEMONIC_BIP39_CANONICO y
+      passphrase \"TREZOR\" devuelve exactamente la seed hex fijada por HU-06-01 §Vector de
+      prueba canónico, carácter a carácter. El KAT propio del SUT usa ese mismo valor esperado
+      y pasa.
+    duracion_min: 8
+
+  - at_id: AT-06-01-03
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-determinismo.ts (invocación 1, pid=83314) en $COPIA_TMP", detalle: "seed24=408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-determinismo.ts (invocación 2, proceso separado, pid=83337)", detalle: "seed24=408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840" }
+      - { tipo: comando, ref: "diff <(grep -v '^pid=' det1.txt) <(grep -v '^pid=' det2.txt)", detalle: "IDENTICOS (sin diferencias)" }
+      - { tipo: comando, ref: "node eval-drivers/verificar-constantes.mjs corpus/documentos/bip-0039-wordlist-english.txt", detalle: "MNEMONIC_24_VALIDO calculado desde la entropía 0x00×32 = abandon ×23 + art → coincide con la constante de la rúbrica (true)" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §\"Generating the mnemonic\" (tabla ENT/CS/MS) y §\"From mnemonic to seed\"", detalle: "algoritmo usado para derivar y verificar la constante y el KDF" }
+    justificacion: >-
+      Dos invocaciones en procesos distintos del mismo driver derivan byte a byte la misma seed
+      para MNEMONIC_24_VALIDO con passphrase vacía. La constante fue verificada previamente
+      contra el algoritmo del corpus, de modo que el vector es el prescripto por la rúbrica.
+    duracion_min: 7
+
+  - at_id: AT-06-01-04
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "instancia descartable I1 desde $COPIA_TMP (puerto 3901, DATABASE_PATH=/tmp/eval-wb-p2/inst/I1/exchange.sqlite limpio, sin HD_MNEMONIC) + POST /api/v1/auth/register + GET /api/v1/deposit-address?asset=ETH", detalle: "{\"asset\":\"ETH\",\"address\":\"0xE5B5eae9B5Abc9126dB0227bAA4883C3f1bfA853\",\"network\":\"sepolia\",\"chainId\":\"11155111\"}" }
+      - { tipo: comando, ref: "destrucción de I1 (kill + rm -rf de su almacenamiento) y arranque de la instancia descartable I2 (puerto 3902, almacenamiento limpio propio), mismo procedimiento", detalle: "{\"asset\":\"ETH\",\"address\":\"0x14d2740B2eE41b7AC14264FD6aec77793b881C06\",\"network\":\"sepolia\",\"chainId\":\"11155111\"}" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:165-168", detalle: "la entropía del provisioning es randomBytes(32) del CSPRNG; no hay valor fijo" }
+    justificacion: >-
+      Dos provisioning independientes, cada uno con almacenamiento limpio propio, producen
+      direcciones distintas para el índice 0 (0xE5B5ea… vs 0x14d274…), lo que descarta entropía
+      fija o hardcodeada. La comparación se hizo sobre direcciones, no sobre ciphertexts.
+    duracion_min: 9
+
+  - at_id: AT-06-01-05
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "node eval-drivers/verificar-constantes.mjs corpus/documentos/bip-0039-wordlist-english.txt (verificación de la constante en $COPIA_TMP)", detalle: "wordlist palabras = 2048; mnemonic de la entropía 0x00×32 = abandon ×23 + art (= MNEMONIC_24_VALIDO, true) ⇒ abandon ×24 difiere en la última palabra y tiene checksum inválido" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §\"Generating the mnemonic\" (CS = ENT/32; checksum = primeros ENT/32 bits de SHA-256(entropía))", detalle: "algoritmo usado para construir y verificar la constante" }
+      - { tipo: archivo, ref: "README.md:239-240, .env.example:19-20, src/config.ts:96-98", detalle: "MECANISMO DE IMPORT HALLADO (búsqueda única de §\"Mecanismo de import del mnemonic\", imputada a este AT): variable de entorno HD_MNEMONIC (y HD_MNEMONIC_PASSPHRASE) → AppConfig.hdMnemonic. Búsqueda ejecutada: revisión de README/.env.example + grep -rni 'mnemonic|seed.phrase|seedPhrase' $COPIA_EVAL excluyendo node_modules/dist, siguiendo cada hallazgo hasta la lectura de configuración" }
+      - { tipo: archivo, ref: "src/database.ts:173-178", detalle: "punto de entrada del provisioning: si config.hdMnemonic está definido, validateProjectMnemonic() antes de derivar la seed" }
+      - { tipo: comando, ref: "instancia descartable limpia desde $COPIA_TMP (puerto 3903, almacenamiento propio) con HD_MNEMONIC='abandon ×24'", detalle: "EXIT=1 ;; stderr: 'VALIDATION_ERROR: el backend no pudo iniciar de forma segura' (sin mnemonic, seed ni clave en el mensaje)" }
+      - { tipo: comando, ref: "lectura sólo lectura del almacenamiento de esa instancia (node:sqlite readOnly)", detalle: "wallet_metadata: [] ;; deposit_addresses: 0 filas — no se persistió ningún seed" }
+    justificacion: >-
+      Con el mecanismo de import hallado (HD_MNEMONIC), un mnemonic de 24 palabras con checksum
+      inválido hace abortar el provisioning con exit code 1 y VALIDATION_ERROR en stderr, sin
+      filtrar material secreto y sin persistir seed alguno. Se cumple el criterio cerrado.
+    duracion_min: 15
+
+  - at_id: AT-06-01-09
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:142-151", detalle: "validateProjectMnemonic(): primero valida longitud == 24 palabras y lanza VALIDATION_ERROR con field 'mnemonic'; recién después valida wordlist/checksum" }
+      - { tipo: comando, ref: "instancia descartable limpia desde $COPIA_TMP (puerto 3904, almacenamiento propio) con HD_MNEMONIC=MNEMONIC_BIP39_CANONICO (12 palabras, checksum válido); mecanismo de import declarado en AT-06-01-05", detalle: "EXIT=1 ;; stderr: 'VALIDATION_ERROR: el backend no pudo iniciar de forma segura'" }
+      - { tipo: comando, ref: "lectura sólo lectura del almacenamiento de esa instancia (node:sqlite readOnly)", detalle: "wallet_metadata: [] — no se adoptó ni persistió seed" }
+    justificacion: >-
+      El mnemonic de 12 palabras (válido para 128 bits) se rechaza por la regla de longitud de
+      RN-2(a): el proceso aborta con exit code 1 y VALIDATION_ERROR en stderr y el almacenamiento
+      queda sin seed, de modo que no se adopta una entropía de 128 bits.
+    duracion_min: 6
+
+  - at_id: AT-06-01-10
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "grep -cx xyzzy corpus/documentos/bip-0039-wordlist-english.txt", detalle: "0 — la palabra no pertenece al wordlist de 2048 (verificado también por el conteo del driver: wordlist palabras = 2048)" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:147-149", detalle: "validateProjectMnemonic() delega en Mnemonic.isValidMnemonic(normalized, wordlists.en) — pertenencia al wordlist inglés y checksum; su fallo lanza VALIDATION_ERROR" }
+      - { tipo: comando, ref: "instancia descartable limpia desde $COPIA_TMP (puerto 3905, almacenamiento propio) con HD_MNEMONIC='abandon ×23 + xyzzy'; mecanismo de import declarado en AT-06-01-05", detalle: "EXIT=1 ;; stderr: 'VALIDATION_ERROR: el backend no pudo iniciar de forma segura'" }
+      - { tipo: comando, ref: "lectura sólo lectura del almacenamiento de esa instancia (node:sqlite readOnly)", detalle: "wallet_metadata: [] — sin seed persistido" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039-wordlist-english.txt (2048 palabras) y bip-0039.mediawiki §\"Wordlist\"", detalle: "referencia normativa de la pertenencia al wordlist inglés" }
+    justificacion: >-
+      Verificado contra el corpus que 'xyzzy' no está en el wordlist de 2048 palabras, el
+      provisioning rechaza el mnemonic de 24 palabras con esa palabra: exit code 1,
+      VALIDATION_ERROR en stderr y almacenamiento sin seed.
+    duracion_min: 6
+
+  - at_id: AT-06-01-11
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "instancia descartable CRED desde $COPIA_TMP (puerto 3906, almacenamiento limpio propio) provisionada y luego detenida; lectura sólo lectura del blob", detalle: "encrypted_seed len=92 sha256=2aacbff76b65234b2c61a1bd3924bf44ed32d474b0c4c1d780390432fec1987f" }
+      - { tipo: comando, ref: "re-arranque de la misma instancia SIN WALLET_ENCRYPTION_KEY", detalle: "EXIT=1 ;; stderr: 'INTERNAL_ERROR: el backend no pudo iniciar de forma segura' (sin material secreto)" }
+      - { tipo: comando, ref: "re-arranque de la misma instancia con WALLET_ENCRYPTION_KEY incorrecta (0x00…01)", detalle: "EXIT=1 ;; stderr: 'INTERNAL_ERROR: el backend no pudo iniciar de forma segura'" }
+      - { tipo: comando, ref: "lectura del blob tras ambos intentos fallidos", detalle: "len=92 sha256=2aacbff76b65234b2c61a1bd3924bf44ed32d474b0c4c1d780390432fec1987f — idéntico: el almacenamiento cifrado quedó intacto, no se regeneró ni sobrescribió" }
+      - { tipo: comando, ref: "variante de blob corrupto: copia CRED-CORRUPTO con el byte 40 del ciphertext invertido (XOR 1) y re-arranque con la credencial correcta (puerto 3907)", detalle: "EXIT=1 ;; stderr: 'INTERNAL_ERROR: …' ;; blob tras el intento sha256=8ddba5a3… (el corrupto, sin sobrescribir con un seed nuevo)" }
+      - { tipo: archivo, ref: "src/database.ts:153-165; src/crypto/wallet.ts:183-191; src/config.ts:35-44; src/server.ts:11-17", detalle: "el tag GCM se verifica al descifrar; cualquier fallo lanza 'INTERNAL_ERROR: no se pudo descifrar o autenticar el seed custodial' y main() escribe el code en stderr con exitCode 1, sin camino de regeneración" }
+    justificacion: >-
+      Los tres escenarios (credencial ausente, credencial incorrecta y blob corrupto) abortan el
+      arranque con exit code 1 e INTERNAL_ERROR en stderr, sin filtrar material secreto. El blob
+      persistido quedó byte a byte intacto en cada caso: no se regeneró seed ni se continuó sin él.
+    duracion_min: 13
+
+  - at_id: AT-06-01-12
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/database.ts:179-190", detalle: "única escritura persistente del seed: encryptSeed() y luego this.transaction(() => { INSERT INTO wallet_metadata …; relectura; decryptSeed; comparación byte a byte }) — todo dentro de una sola unidad atómica; si la verificación falla, la transacción hace rollback" }
+      - { tipo: archivo, ref: "src/database.ts:56-66", detalle: "transaction(): BEGIN IMMEDIATE / COMMIT / ROLLBACK ante cualquier error" }
+      - { tipo: archivo, ref: "src/database.ts:42-46", detalle: "PRAGMA journal_mode = WAL y PRAGMA synchronous = FULL — commit atómico y durable" }
+      - { tipo: comando, ref: "grep -rn 'wallet_metadata' $COPIA_EVAL/src", detalle: "sólo src/database.ts:154 (SELECT), 181 (INSERT) y 183 (SELECT de verificación): no hay escrituras del seed fuera de la transacción" }
+      - { tipo: archivo, ref: "src/database.ts:153-170", detalle: "criterio de 'provisionado' en la carga: sólo se adopta el seed si decryptSeed() verifica el tag GCM y la longitud es 64; cualquier fallo lanza INTERNAL_ERROR. Además, si hay asignaciones persistidas pero falta el seed, aborta en vez de re-provisionar (líneas 167-170)" }
+      - { tipo: comando, ref: "re-arranque con un byte del blob invertido (mismo procedimiento citado en AT-06-01-11, instancia CRED-CORRUPTO)", detalle: "EXIT=1, INTERNAL_ERROR: un blob alterado/incompleto no se interpreta como seed válido" }
+    justificacion: >-
+      La persistencia del seed cifrado ocurre íntegramente dentro de una transacción SQLite
+      (BEGIN IMMEDIATE/COMMIT/ROLLBACK) sobre una base en WAL con synchronous=FULL, y no existe
+      ninguna escritura del seed fuera de esa unidad. La carga sólo acepta un blob que descifra y
+      autentica correctamente, comprobado empíricamente con un blob alterado.
+    duracion_min: 10
+
+  - at_id: AT-06-01-13
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/database.ts:194-205", detalle: "verifyWalletIntegrity(): toma la fila de menor address_index del mapeo persistido, deriva desde el seed cargado y, si la dirección no coincide, lanza 'INTERNAL_ERROR: falló el smoke test de integridad de la wallet HD'" }
+      - { tipo: archivo, ref: "src/database.ts:47-50; src/app.ts:121", detalle: "la verificación corre en el constructor de Store, invocado en buildApp() antes de registrar rutas y de app.listen(): aborta antes de procesar operaciones" }
+      - { tipo: comando, ref: "instancia descartable SMOKE desde $COPIA_TMP (puerto 3908, almacenamiento limpio propio); alta de una cuenta; detención", detalle: "mapeo antes: {address_index: 0, address: 0x22853849dE4039024B5C46D5feffC2eDd63b60BB}" }
+      - { tipo: comando, ref: "corrupción declarada del almacenamiento descartable: UPDATE deposit_addresses SET address=? — carácter en posición 10 'd' → 'a' (formato hex preservado): 0x22853849aE4039024B5C46D5feffC2eDd63b60BB", detalle: "sólo se alteró la dirección persistida del índice más bajo; el seed no se tocó" }
+      - { tipo: comando, ref: "re-arranque de la instancia SMOKE tras la corrupción; luego curl http://127.0.0.1:3908/health", detalle: "EXIT=1 ;; stderr: 'INTERNAL_ERROR: el backend no pudo iniciar de forma segura' ;; curl rc=7 (nunca escuchó el puerto)" }
+      - { tipo: comando, ref: "lectura sólo lectura del almacenamiento tras el intento", detalle: "deposit_addresses conserva [{address_index:0, address:0x22853849aE…}] y el seed su sha256=e0a40088… — no se regeneró seed ni se reasignaron direcciones" }
+    justificacion: >-
+      Con el mapeo cuenta→address_index no vacío y la dirección del índice más bajo alterada, el
+      arranque ejecuta la verificación RN-10, aborta con error crítico (exit 1, INTERNAL_ERROR) y
+      nunca llega a escuchar el puerto. Ni el seed ni el mapeo fueron regenerados.
+    duracion_min: 12
+
+  - at_id: AT-06-02-01
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:66-95,193-241", detalle: "cadena completa del SUT: masterKey() (HMAC-SHA512 con clave 'Bitcoin seed'), deriveChild() (CKDpriv hardened/normal), deriveAddress() (keccak256 de X||Y sin el byte 0x04) y toChecksumAddress() → getAddress (EIP-55)" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-kat.ts en $COPIA_TMP (deriva la seed con la propia mnemonicToSeed del SUT y luego deriveAddress)", detalle: "[AT-06-02-01/02] index=0 address=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 path=m/44'/60'/0'/0/0" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0032.mediawiki §\"Private parent key → private child key\" (líneas 75-81) y §\"The key tree\" (línea 66); bip-0044.mediawiki §\"Path levels\" (líneas 29-37); erc-55.md", detalle: "referencias normativas de CKDpriv, de los 5 niveles del path y del checksum de la dirección" }
+      - { tipo: comando, ref: "npx vitest run test/wallet.test.ts (F6 complementario; test propio en test/wallet.test.ts:69-83 con la tabla de HU-06-02)", detalle: "13 tests passed" }
+    justificacion: >-
+      El driver, invocando la cadena interna del SUT con MNEMONIC_HARDHAT y passphrase vacía,
+      produce para m/44'/60'/0'/0/0 exactamente 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266,
+      carácter a carácter incluido el checksum EIP-55, que es el valor de la tabla de HU-06-02.
+    duracion_min: 9
+
+  - at_id: AT-06-02-02
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-kat.ts en $COPIA_TMP (índices 0..3 con MNEMONIC_HARDHAT)", detalle: "index=1 → 0x70997970C51812dc3A010C7d01b50e0d17dc79C8 ; index=2 → 0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC ; index=3 → 0x90F79bf6EB2c4f870365E785982E1f101E93b906 ; index=0 → 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 — las cuatro distintas entre sí" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:204,215-224", detalle: "el address_index es el quinto nivel del path, de modo que índices distintos derivan claves distintas" }
+      - { tipo: corpus, ref: "corpus/documentos/erc-55.md", detalle: "referencia normativa del checksum mixed-case comparado carácter a carácter" }
+    justificacion: >-
+      Las tres direcciones de los índices 1, 2 y 3 coinciden exactamente con la tabla de
+      HU-06-02 Escenario 2, incluido el checksum EIP-55, y las cuatro direcciones (0..3) son
+      distintas entre sí.
+    duracion_min: 4
+
+  - at_id: AT-06-02-04
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:13-20", detalle: "HARDENED_OFFSET = 2**31; BIP44_ETHEREUM_PREFIX = [44 + 2^31, 60 + 2^31, 2^31, 0] = [2147483692, 2147483708, 2147483648, 0] — purpose/coin_type/account hardened, change = 0 no hardened" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:198-204", detalle: "requestedIndices = [...BIP44_ETHEREUM_PREFIX, addressIndex] con addressIndex validado en [0, 2^31−1] ⇒ el quinto nivel nunca es hardened" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:77-84,132-136", detalle: "deriveChild() aplica la forma hardened (0x00 || ser256(k) || ser32(i)) sólo si index >= 2^31; formatPath() emite el apóstrofe únicamente para esos niveles" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-kat.ts (path emitido por la propia derivación)", detalle: "path=m/44'/60'/0'/0/0, m/44'/60'/0'/0/1, m/44'/60'/0'/0/2, m/44'/60'/0'/0/3" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0044.mediawiki §\"Path levels\" (líneas 29-37: m / purpose' / coin_type' / account' / change / address_index; \"Apostrophe in the path indicates that BIP32 hardened derivation is used\") y bip-0032.mediawiki §\"The key tree\" (línea 66: índices ≥ 2^31 son hardened)", detalle: "referencia normativa del hardening por nivel" }
+    justificacion: >-
+      Los tres primeros niveles se construyen con el offset 2^31 aplicado exactamente a 44, 60 y 0
+      (2147483692 / 2147483708 / 2147483648) y los dos últimos quedan por debajo de 2^31; el path
+      emitido por la derivación real es m/44'/60'/0'/0/index, conforme a BIP-44 del corpus.
+    duracion_min: 7
+
+  - at_id: AT-06-02-05
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-determinismo.ts (proceso 1, pid=83314) en $COPIA_TMP", detalle: "addr0=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 ; pub0=0x048318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed753547f11ca8696646f2f3acb08e31016afac23e630c5d11f59f61fef57b0d2aa5" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-determinismo.ts (proceso 2, pid=83337)", detalle: "addr0 y pub0 idénticos; diff sin diferencias (IDENTICOS)" }
+      - { tipo: comando, ref: "grep -rn 'randomBytes|randomUUID|getRandomValues|Date' $COPIA_EVAL/src/crypto/wallet.ts", detalle: "randomBytes aparece sólo en generateProjectSeed (línea 166) y encryptSeed (línea 177); el camino masterKey→deriveChild→deriveNextValidChild→deriveAddress no usa RNG, reloj ni estado mutable" }
+    justificacion: >-
+      Dos procesos separados derivan idéntica clave pública y dirección para el mismo (seed, path).
+      La inspección del camino de derivación confirma que es función pura: no interviene
+      aleatoriedad, reloj ni estado mutable compartido.
+    duracion_min: 5
+
+  - at_id: AT-06-02-08
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:21,87-90", detalle: "SECP256K1_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141; deriveChild() lanza InvalidDerivedKeyError si parse256(I_L) >= n (línea 88) o si k_hijo == 0 (línea 90)" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:103-130", detalle: "deriveNextValidChild(): ante InvalidDerivedKeyError avanza determinísticamente al índice siguiente (bucle index += 1) acumulando los saltos en `skipped`, con cota superior explícita para no cruzar 2^31 ni desbordar uint32" }
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:212-240", detalle: "deriveAddress() devuelve el índice efectivamente usado (effectiveIndices) y registra skippedIndices / skippedDerivations" }
+      - { tipo: archivo, ref: "src/services/wallet-service.ts:41-70; src/database.ts:117-140", detalle: "el índice efectivo se persiste en deposit_addresses y cada salto en la tabla skipped_address_indices (reason='INVALID_BIP32_CHILD'), dentro de la misma transacción" }
+      - { tipo: comando, ref: "npx vitest run test/wallet.test.ts en $COPIA_TMP (F6: tests propios test/wallet.test.ts:102-149 que fuerzan la condición con un HMAC-SHA512 mockeado, tanto I_L >= n como k_hijo = 0, y asertan el salto, el path resultante y el determinismo entre dos corridas)", detalle: "13 tests passed (1 file)" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0032.mediawiki §\"Private parent key → private child key\" (línea 81)", detalle: "\"In case parse256(IL) ≥ n or ki = 0, the resulting key is invalid, and one should proceed with the next value for i\"" }
+    justificacion: >-
+      El chequeo propio de ambas condiciones existe con el orden n de secp256k1 correcto, y el SUT
+      las maneja avanzando al índice siguiente de forma determinista (verificado por tests que
+      fuerzan la condición y comparan dos corridas), registrando el índice efectivamente usado y
+      persistiendo los índices saltados para auditoría.
+    duracion_min: 11
+
+  - at_id: AT-06-02-09
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/crypto/wallet.ts:13,198-202", detalle: "MAX_ADDRESS_INDEX = 2**31 - 1; deriveAddress() valida !Number.isSafeInteger || < 0 || > MAX_ADDRESS_INDEX y lanza validationError([{field: 'address_index', …}]) en las líneas 198-202, ANTES de masterKey() (línea 203)" }
+      - { tipo: archivo, ref: "src/errors.ts:7,59-61", detalle: "validationError produce ApiError('VALIDATION_ERROR', { issues: [...] }) con status 422" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-bordes.ts en $COPIA_TMP", detalle: "index=2147483648 → VALIDATION_ERROR status=422 details={\"issues\":[{\"field\":\"address_index\",\"message\":\"Debe estar entre 0 y 2147483647\"}]} ;; index=2147483647 → OK address=0x9d90537E6c8631CF4cBf3F3049519844027a3d68 path=m/44'/60'/0'/0/2147483647" }
+      - { tipo: archivo, ref: "src/database.ts:117-125", detalle: "refuerzo en el esquema: CHECK (address_index >= 0 AND address_index < 2147483648)" }
+    justificacion: >-
+      La validación de rango existe con el borde exacto (2^31 se rechaza, 2^31−1 se acepta), se
+      ejecuta antes de invocar la derivación y produce VALIDATION_ERROR 422 con details.issues
+      señalando el campo address_index.
+    duracion_min: 6
+
+  - at_id: AT-06-03-03
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "instancia descartable EAGER desde $COPIA_TMP (puerto 3909, DATABASE_PATH limpio propio); POST /api/v1/auth/register de cuenta.a@example.com y luego de cuenta.b@example.com (secuencial)", detalle: "201 accountId 7947ffeb-9f16-45d3-aebf-1f5168063fbb ; 201 accountId f8cdbe69-25e0-44cc-a3f1-42f7ac1025ad" }
+      - { tipo: comando, ref: "lectura sólo lectura del mapeo persistido (node:sqlite readOnly; SELECT … FROM deposit_addresses JOIN accounts ORDER BY address_index)", detalle: "A → address_index 0, address 0x615DB4B7692fdaB5f98d5319b9AB10067b733FE1 ; B → address_index 1, address 0x5B74f73c074ab162d65eBb88814dA3fbF3Df886e — contiguos desde 0, sin huecos, direcciones distintas y en formato mixed-case EIP-55" }
+      - { tipo: archivo, ref: "src/services/wallet-service.ts:34-43", detalle: "el índice siguiente se calcula como MAX(address_index)+1 (0 si la tabla está vacía), dentro de la transacción" }
+      - { tipo: comando, ref: "destrucción de la instancia y de su almacenamiento (kill + rm -rf /tmp/eval-wb-p2/inst)", detalle: "instancia descartable eliminada" }
+    justificacion: >-
+      En estado limpio, las dos cuentas creadas secuencialmente reciben exactamente los
+      address_index 0 y 1 en orden de alta, sin huecos ni reúso, y sus direcciones persistidas son
+      distintas y con checksum mixed-case EIP-55.
+    duracion_min: 8
+
+  - at_id: AT-06-03-07
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "README.md:239, .env.example:19, src/config.ts:98, src/database.ts:173-175", detalle: "mecanismo de import hallado y declarado en AT-06-01-05: variable de entorno HD_MNEMONIC, validada y adoptada por el provisioning" }
+      - { tipo: comando, ref: "instancia descartable IMPORT desde $COPIA_TMP (puerto 3910, almacenamiento limpio propio) con HD_MNEMONIC=MNEMONIC_24_VALIDO ('abandon' ×23 + 'art'); 3 altas; lectura sólo lectura del mapeo persistido", detalle: "0 → 0xF278cF59F82eDcf871d630F28EcC8056f25C1cdb (m/44'/60'/0'/0/0) ; 1 → 0xf785bD075874b8423D3583728a981399f31e95aA ; 2 → 0x60Af1c6A5D03F9f1B1b74931499bC99E72fF8DA9" }
+      - { tipo: comando, ref: "derivación de referencia EXTERNA al SUT: docker run -d --name anvil-ref --entrypoint anvil ghcr.io/foundry-rs/foundry:stable --mnemonic 'abandon … art' --accounts 4 ; docker logs anvil-ref ; docker rm -f anvil-ref", detalle: "(0) 0xF278cF59F82eDcf871d630F28EcC8056f25C1cdb ; (1) 0xf785bD075874b8423D3583728a981399f31e95aA ; (2) 0x60Af1c6A5D03F9f1B1b74931499bC99E72fF8DA9 ; (3) 0xDF7F9c4b9B9b9580B265DCD892173e9bD90e067F" }
+      - { tipo: comando, ref: "node eval-drivers/verificar-constantes.mjs (verificación previa de MNEMONIC_24_VALIDO contra el algoritmo del corpus)", detalle: "mnemonic de la entropía 0x00×32 = abandon ×23 + art (true)" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0032.mediawiki, bip-0044.mediawiki §\"Path levels\", erc-55.md", detalle: "referencias normativas de la derivación de referencia y del checksum comparado" }
+    justificacion: >-
+      Con el mismo mnemonic importado, las tres direcciones asignadas por el SUT a los índices
+      0, 1 y 2 coinciden exactamente —checksum EIP-55 incluido— con las que una derivación BIP-44
+      externa (anvil efímero) produce para m/44'/60'/0'/0/i.
+    duracion_min: 13
+
+  - at_id: AT-06-03-08
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/services/wallet-service.ts:25-32", detalle: "getOrAssign(): tras el lookup idempotente, if (!this.store.findAccountById(accountId)) throw new ApiError('ACCOUNT_NOT_FOUND', { accountId }) — la guarda ocurre ANTES de abrir la transacción que reserva índice y deriva (línea 31)" }
+      - { tipo: archivo, ref: "src/errors.ts:10,36-51", detalle: "ACCOUNT_NOT_FOUND mapea a status 404 y el details {accountId} viaja en el envelope" }
+      - { tipo: comando, ref: "npx tsx eval-drivers/driver-account-not-found.ts en $COPIA_TMP (base limpia propia; invoca walletService.getOrAssign con un accountId inexistente)", detalle: "code= ACCOUNT_NOT_FOUND status= 404 details= {\"accountId\":\"00000000-0000-4000-8000-000000000000\"} ;; asignaciones antes/después = 0 / 0 ;; skipped_address_indices = 0" }
+      - { tipo: archivo, ref: "src/database.ts:117-118", detalle: "refuerzo: deposit_addresses.account_id REFERENCES accounts(account_id) con PRAGMA foreign_keys = ON (línea 43)" }
+    justificacion: >-
+      La guarda de existencia de cuenta existe en el asignador, se evalúa antes de reservar índice
+      o derivar, y devuelve ACCOUNT_NOT_FOUND (404) con details.accountId. El driver confirma que
+      el mapeo no se muta: 0 asignaciones antes y después.
+    duracion_min: 7
+
+  - at_id: AT-06-03-09
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "src/services/auth-service.ts:57-70", detalle: "disparo eager: register() abre una transacción que inserta la cuenta y llama walletService.assignInsideTransaction(account.account_id) en la misma unidad atómica — no depende de ninguna consulta del usuario" }
+      - { tipo: comando, ref: "instancia descartable EAGER (puerto 3909, almacenamiento limpio propio): POST /api/v1/auth/register y NINGUNA llamada a GET /api/v1/deposit-address", detalle: "201 {\"accountId\":\"7947ffeb-9f16-45d3-aebf-1f5168063fbb\",\"email\":\"cuenta.a@example.com\",\"status\":\"ACTIVE\",…}" }
+      - { tipo: comando, ref: "lectura inmediata sólo lectura del registro persistido (node:sqlite readOnly sobre deposit_addresses)", detalle: "account_id 7947ffeb-9f16-45d3-aebf-1f5168063fbb | address_index 0 | address 0x615DB4B7692fdaB5f98d5319b9AB10067b733FE1 | derivation_path m/44'/60'/0'/0/0 | network sepolia | chain_id 11155111 — los seis campos presentes" }
+      - { tipo: archivo, ref: "src/database.ts:117-125,208-224; src/crypto/wallet.ts:11-12", detalle: "el esquema fija network CHECK = 'sepolia' y chain_id CHECK = '11155111'; addressRecord() los completa desde las constantes NETWORK y CHAIN_ID" }
+    justificacion: >-
+      Inmediatamente después del alta y sin ninguna consulta del usuario, el registro persistido de
+      la asignación existe con accountId, addressIndex, address (EIP-55), derivationPath
+      m/44'/60'/0'/0/0, network 'sepolia' y chainId '11155111'. El disparo es eager desde el alta,
+      dentro de la misma transacción.
+    duracion_min: 8
+
+  - at_id: AT-06-03-10
+    veredicto: NO_EVALUABLE
+    causa: OTRO
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'DepositAddressAssigned|deposit_address_assigned|internal/deposit' $COPIA_EVAL --exclude-dir=node_modules --exclude-dir=dist", detalle: "hallazgos sólo en src/services/wallet-service.ts (7,72-85,89-108), src/database.ts (127-134), README.md:190 y dos tests; NO existe ninguna ruta /internal/deposit-addresses ni consumidor fuera de los tests" }
+      - { tipo: archivo, ref: "src/services/wallet-service.ts:71-85", detalle: "MECANISMO (a) PRESENTE: tras persistir la asignación y dentro de la MISMA transacción, INSERT INTO domain_events (event_type='DepositAddressAssigned') con payload {accountId, addressIndex, address, chainId} — los cuatro campos requeridos" }
+      - { tipo: archivo, ref: "src/services/wallet-service.ts:89-108; src/database.ts:87-92", detalle: "MECANISMO (b) PRESENTE como consulta interna en proceso: listAssigned() → getAssignedAddresses() (conjunto completo de direcciones asignadas) y listAssignedEvents(); no se expone como endpoint HTTP" }
+      - { tipo: comando, ref: "lectura sólo lectura de domain_events en la instancia descartable EAGER tras dos altas (sin consultar deposit-address)", detalle: "DepositAddressAssigned {\"accountId\":\"7947ffeb…\",\"addressIndex\":0,\"address\":\"0x615DB4B7692fdaB5f98d5319b9AB10067b733FE1\",\"chainId\":\"11155111\"} y el análogo para addressIndex 1 — emitidos en el alta, sin ventana respecto de la primera consulta del usuario" }
+      - { tipo: comando, ref: "grep -rni 'eth_getLogs|indexador|confirmaciones|/deposits' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts ; README.md:16-19", detalle: "0 hallazgos: el monitor de depósitos de la épica 07 no existe en la implementación, por lo que no hay punto de consumo que localizar ni ejercitar" }
+    justificacion: >-
+      El lado productor del contrato RN-11 está presente y verificado: el evento se emite con los
+      cuatro campos dentro de la misma transacción que la asignación, y existe la consulta interna
+      del conjunto asignado. El criterio cerrado exige además que el monitor de la épica 07 se
+      alimente de él, y ese monitor no existe en la implementación, de modo que esa conjunción no
+      es confirmable ni refutable (tampoco se observa la condición de FALLA: no hay descubrimiento
+      con ventana). Se registra para arbitraje humano conforme a briefing §5.
+    duracion_min: 12
+
+  - at_id: AT-07-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'eth_getLogs|indexador|confirmaciones|/deposits|monitor' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "0 hallazgos; no hay monitor ni indexador on-chain. Épica 07 no implementada (README.md:16-19)" }
+    justificacion: "Épica 07 (depósitos on-chain) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-07-04-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'eth_getLogs|indexador|confirmaciones|/deposits|monitor' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "0 hallazgos; épica 07 no implementada (README.md:16-19)" }
+    justificacion: "Épica 07 (depósitos on-chain) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-07-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'eth_getLogs|indexador|confirmaciones|/deposits|monitor' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "0 hallazgos; épica 07 no implementada (README.md:16-19)" }
+    justificacion: "Épica 07 (depósitos on-chain) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-07-04-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'eth_getLogs|indexador|confirmaciones|/deposits|monitor' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "0 hallazgos; épica 07 no implementada (README.md:16-19)" }
+    justificacion: "Épica 07 (depósitos on-chain) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-08-03-09a
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'withdraw|/withdrawals|eth_sendRawTransaction|nonce|hot wallet' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "sin módulo de retiros ni firma de transacciones; épica 08 no implementada (README.md:16-19)" }
+    justificacion: "Épica 08 (retiros on-chain) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-08-03-09b
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'withdraw|/withdrawals|eth_sendRawTransaction|nonce|hot wallet' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "sin módulo de retiros ni firma de transacciones; épica 08 no implementada (README.md:16-19)" }
+    justificacion: "Épica 08 (retiros on-chain) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-08-03-09c
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "grep -rni 'withdraw|/withdrawals|eth_sendRawTransaction|nonce|hot wallet' $COPIA_EVAL/src ; grep -n '\"/api/v1' src/app.ts", detalle: "sin módulo de retiros ni firma de transacciones; épica 08 no implementada (README.md:16-19)" }
+    justificacion: "Épica 08 (retiros on-chain) no implementada en esta corrida pre-piloto."
+    duracion_min: 0
+
+  - at_id: AT-09-04-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "alcance declarado de la corrida pre-piloto (subconjunto de 22 ATs); README.md:16-19 declara que el WebSocket no genera eventos de dominios no implementados", detalle: "AT fuera del subconjunto declarado; no se ejecutó el procedimiento de la rúbrica" }
+    justificacion: "Fuera del subconjunto de la corrida pre-piloto; no evaluado."
+    duracion_min: 0
+
+  - at_id: AT-09-05-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: comando, ref: "alcance declarado de la corrida pre-piloto (subconjunto de 22 ATs); README.md:16-19 declara que el WebSocket no genera eventos de dominios no implementados", detalle: "AT fuera del subconjunto declarado; no se ejecutó el procedimiento de la rúbrica" }
+    justificacion: "Fuera del subconjunto de la corrida pre-piloto; no evaluado."
+    duracion_min: 0
