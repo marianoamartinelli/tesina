@@ -28,8 +28,8 @@ protocolo:
   adr: "ADR-016"           # protocolo v1.2 (ADR-016 reemplaza a ADR-012, que reemplazó a ADR-004): sin topes de presupuesto
 
 # 3. Configuración del pipeline
-pipeline_commit: "1ba07e025a95a8c99b69adb0764ac78fa3d97daf"   # commiteado el 2026-08-23; contiene los orquestadores CLI, la contenerización (ADR-015) y los 113 chequeos de paridad
-paridad_verificada: "2026-08-23 — `.venv/bin/python pipeline/verificar_paridad.py` exit 0, 113 chequeos, sobre el commit 1ba07e0 con pipeline/ sin cambios sin commitear. Re-correr como puerta de arranque el día de la corrida."
+pipeline_commit: "PENDIENTE-ARRANQUE: registrar el hash del commit de pipeline/ vigente al arrancar. Al 2026-08-23 los orquestadores CLI y la contenerización están commiteados; el cableado de --env-file de ADR-017 entra en el commit siguiente."
+paridad_verificada: "2026-08-23 — `.venv/bin/python pipeline/verificar_paridad.py` exit 0, 117 chequeos (113 antes de ADR-017), sobre pipeline/ sin cambios sin commitear. Re-correr como puerta de arranque el día de la corrida."
 modelo:
   proveedor: "anthropic"
   model_id: "claude-opus-5"        # ADR-009 Decisión 3; coincide con pipeline/config/piloto-01.yaml
@@ -43,7 +43,7 @@ harness:
   # su proveedor. Los campos `sdk`/`version` de la plantilla se reemplazan por estos.
   cli: "claude-code"                 # invocado como `claude -p --output-format stream-json`
   version: "2.1.241 (Claude Code)"   # medida el 2026-08-23 y horneada en tesina/agente-a:piloto-01
-  auth: "PENDIENTE-ARRANQUE: suscripción (`claude` logueado en el host), pero el archivo `~/.claude/.credentials.json` que ADR-015 D3 manda montar tiene un token VENCIDO el 2026-06-23: en macOS el vigente vive en el Keychain (`security find-generic-password -s 'Claude Code-credentials'`). Verificado el 2026-08-23: el CLI dentro del contenedor responde `Not logged in`. Falta decidir el mecanismo de inyección y registrar acá el modo efectivo."
+  auth: "PENDIENTE-ARRANQUE: suscripción vía `CLAUDE_CODE_OAUTH_TOKEN` en pipeline/contenedores/.env (ADR-017, que enmienda ADR-015 D3: el bind-mount no sirve del lado A en macOS, donde la credencial vigente vive en el Keychain). Falta que el tesista genere el token con `claude setup-token` y complete el .env; registrar acá el modo efectivo (suscripción | API key), nunca el token."
 versiones_cli:             # ambas se pinnean aunque piloto-01 sólo invoque el CLI de A (checklist H6, precondición «Versiones de CLI»)
   claude: "2.1.241 (Claude Code)"    # 2026-08-23; era 2.1.233 el 2026-08-16 (el CLI se actualiza solo)
   codex: "codex-cli 0.146.0"         # salida exacta de `codex --version`, 2026-08-16

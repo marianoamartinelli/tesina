@@ -32,8 +32,9 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-012](ADR-012-protocolo-experimental-v1-1.md) | Protocolo experimental v1.1 (reemplaza a ADR-004) | Reemplazado por ADR-016 |
 | [ADR-013](ADR-013-mecanismo-importar-mnemonic.md) | Mecanismo de import del mnemonic en la evaluación white-box | Aceptado |
 | [ADR-014](ADR-014-recuperacion-web-en-el-harness-b.md) | La recuperación web del harness B no venía desactivada: mecanismo explícito | Aceptado |
-| [ADR-015](ADR-015-agentes-en-contenedores.md) | Los agentes corren en contenedores, con toolchain común y capa por CLI | Aceptado |
+| [ADR-015](ADR-015-agentes-en-contenedores.md) | Los agentes corren en contenedores, con toolchain común y capa por CLI | Aceptado (D3 enmendada por ADR-017 del lado A) |
 | [ADR-016](ADR-016-sin-topes-de-presupuesto.md) | No hay topes de presupuesto: la corrida termina cuando termina el pipeline | Aceptado |
+| [ADR-017](ADR-017-credenciales-por-entorno-en-el-harness-a.md) | Las credenciales del harness A se inyectan por entorno, no por bind-mount | Aceptado |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan
@@ -84,3 +85,12 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 > pipeline— y costo, tiempo y tokens quedan como variables dependientes en vez de topes
 > (cierra el ítem 7). Como en la ventana anterior, el contenido de los ADRs reemplazados
 > no se edita: sólo cambia su estado.
+
+> **Nota (2026-08-23, segunda sesión del día):** **ADR-017** enmienda la Decisión 3 de
+> ADR-015 sin editarla, y sale de la primera invocación real de un CLI dentro del
+> contenedor: `claude -p` respondió `Not logged in` porque en macOS la credencial vigente
+> vive en el Keychain, mientras que `~/.claude/.credentials.json` —el archivo que D3
+> mandaba montar— tenía un token vencido. A pasa a autenticarse con
+> `CLAUDE_CODE_OAUTH_TOKEN` (de `claude setup-token`) vía `--env-file`; B conserva el
+> bind-mount de su `auth.json`, que sí es un archivo vigente. Es una asimetría de
+> plataforma, no de diseño, y se declara en `analisis/amenazas-validez.md`.

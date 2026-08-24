@@ -35,8 +35,9 @@ Falla (exit code != 0) si se rompe cualquiera de estas garantías:
     (ADR-014 Decisión 2). Hasta ADR-014, el verificador no inspeccionaba ninguna
     línea de comandos: el traslado se daba por hecho sin chequeo que lo sostuviera.
 10. Toda invocación va envuelta en `docker run` (ADR-015), con montajes idénticos
-    entre familias salvo el archivo de credenciales, sin montar el holdout
-    (`evaluacion/`) ni `pipeline/` entero, y con la misma imagen base y tag.
+    entre familias salvo el `auth.json` de B, sin montar el holdout (`evaluacion/`) ni
+    `pipeline/` entero, con la misma imagen base y tag, y con el mismo `--env-file` de
+    credenciales en las 4 celdas.
 
 Correr antes de cada corrida (protocolo §2 / ADR-004):
     .venv/bin/python pipeline/verificar_paridad.py
@@ -393,9 +394,18 @@ def verificar_contenedor(comandos: dict[str, list[str]],
     for sufijo in ("sin-rag", "con-rag"):
         solo_a = destinos(f"a-{sufijo}") - destinos(f"b-{sufijo}")
         solo_b = destinos(f"b-{sufijo}") - destinos(f"a-{sufijo}")
-        chequear(solo_a == {contenedor.CREDENCIALES["a"][1]}
-                 and solo_b == {contenedor.CREDENCIALES["b"][1]},
+        # A no monta credencial: se autentica por `--env-file` porque en macOS no hay
+        # archivo vigente que montar (ver contenedor.CREDENCIALES). O sea que la única
+        # diferencia admisible de montajes es el auth.json de B.
+        chequear(solo_a == set() and solo_b == {contenedor.CREDENCIALES["b"][1]},
                  f"{sufijo}: los montajes de A y B sólo difieren en las credenciales")
+
+    # El mismo archivo de credenciales por entorno para las 4 celdas: uno por familia
+    # sería una asimetría de invocación.
+    for celda, cmd in comandos.items():
+        chequear("--env-file" in cmd
+                 and cmd[cmd.index("--env-file") + 1] == str(contenedor.ARCHIVO_ENV),
+                 f"{celda}: --env-file apunta al archivo único de credenciales")
 
     # El holdout no se monta, en ninguna celda: es lo que hace que la
     # no-exposición del protocolo §9 la sostenga el mecanismo (ADR-015 D5).

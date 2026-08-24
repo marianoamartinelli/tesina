@@ -15,7 +15,9 @@ Lo que el contenedor monta, y sólo eso:
 - el **código del RAG** (`comun/`) y el **corpus**, read-only, sólo en celdas con
   RAG. `comun/` y no `pipeline/` entero: `config/` y `verificar_paridad.py` son
   instrumentos del experimento y el agente no los ve;
-- las **credenciales** de la familia, read-only (ADR-015 Decisión 3).
+- las **credenciales** de la familia: por bind-mount read-only en B (ADR-015 Decisión 3)
+  y por `--env-file` en A, que en macOS no tiene un archivo de credencial vigente que
+  montar (ver `CREDENCIALES` y `ARCHIVO_ENV`).
 
 `evaluacion/` NO se monta, en ninguna celda: es el holdout, y ese es el motivo por
 el que ADR-015 cierra el ítem 11 de la checklist H6 — la no-exposición pasa a
@@ -64,10 +66,21 @@ DIR_CORPUS = "/pipeline/corpus/documentos"
 
 # Credenciales de suscripción, read-only (ADR-015 Decisión 3). Cada familia monta
 # sólo la suya: el contenedor de A nunca ve las credenciales de B ni al revés.
+#
+# **A no está acá.** Medido el 2026-08-23: en macOS la credencial vigente de Claude Code
+# vive en el Keychain y `~/.claude/.credentials.json` quedó con un token vencido el
+# 2026-06-23, así que montarlo da `Not logged in` adentro. A se autentica por variable de
+# entorno (`CLAUDE_CODE_OAUTH_TOKEN`, de `claude setup-token`), vía ARCHIVO_ENV. B sí
+# conserva el bind-mount: su `auth.json` es un archivo real y vigente.
 CREDENCIALES = {
-    "a": (Path.home() / ".claude" / ".credentials.json", "/home/agente/.claude/.credentials.json"),
     "b": (Path.home() / ".codex" / "auth.json", "/home/agente/.codex/auth.json"),
 }
+
+# Credenciales por entorno, iguales para las dos familias (`--env-file`). El archivo no
+# se versiona; su plantilla es `contenedores/.env.example`. Se pasa a las dos aunque hoy
+# sólo A lo necesite: un `--env-file` por familia sería una asimetría de invocación, y el
+# archivo es el mismo para las 4 celdas.
+ARCHIVO_ENV = Path(__file__).resolve().parent.parent / "contenedores" / ".env"
 
 # Variables de entorno por familia. `CODEX_HOME` apunta al montaje para que el CLI
 # encuentre `auth.json` sin que le pasemos un HOME distinto: ADR-009 Decisión 5
@@ -115,8 +128,9 @@ def montajes(corrida, familia: str) -> list[Montaje]:
     if corrida.rag_config is not None:
         ms.append(Montaje(dir_comun, DIR_COMUN, ro=True))
         ms.append(Montaje(corrida.rag_config.ruta_corpus, DIR_CORPUS, ro=True))
-    origen, destino = CREDENCIALES[familia]
-    ms.append(Montaje(origen, destino, ro=True))
+    if familia in CREDENCIALES:
+        origen, destino = CREDENCIALES[familia]
+        ms.append(Montaje(origen, destino, ro=True))
     return ms
 
 
@@ -129,11 +143,13 @@ def envolver(comando_cli: list[str], corrida, familia: str,
     - `--network host` **no** se usa: red del contenedor, abierta pero propia.
       ADR-015 Decisión 4 deja la red abierta en la piloto —la necesitan
       `npm install` y `expo export`— y la piloto registra qué hosts se tocan.
+    - `--env-file`: credenciales por entorno; el mismo archivo para las 4 celdas.
     - `--entrypoint ""`: la imagen trae el CLI como entrypoint para uso manual,
       pero acá el comando completo lo arma el orquestador, que es quien conoce
       los flags de ADR-008/009/010.
     """
-    flags: list[str] = [RUNTIME, "run", "--rm", "-i", "-w", DIR_REPO]
+    flags: list[str] = [RUNTIME, "run", "--rm", "-i", "-w", DIR_REPO,
+                        "--env-file", str(ARCHIVO_ENV)]
     for montaje in montajes(corrida, familia):
         flags += montaje.a_flag()
     for clave, valor in sorted(ENTORNO[familia].items()):

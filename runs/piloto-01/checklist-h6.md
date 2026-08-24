@@ -32,8 +32,8 @@ resultado observado.
 
 - [ ] **Paridad:** `pipeline/verificar_paridad.py` termina con exit 0
       (`.venv/bin/python pipeline/verificar_paridad.py`).
-      *Verificado el 2026-08-23: exit 0, **113 chequeos** (77 antes de ADR-014/015), sobre
-      el commit `1ba07e0` con `pipeline/` sin cambios sin commitear — o sea que el reparo
+      *Verificado el 2026-08-23: exit 0, **117 chequeos** (77 antes de ADR-014/015/017), sobre
+      el commit de `pipeline/` sin cambios sin commitear — o sea que el reparo
       «re-correr sobre el commit» quedó saldado. Re-correr igual el día de la corrida:
       esta puerta se verifica al arrancar, no de una vez. Los chequeos nuevos
       cubren la restricción de recuperación web en las dos familias y la envoltura en
@@ -45,21 +45,21 @@ resultado observado.
       auth, digest efectivo de anvil, dirección del USDC-mock, repo satélite, hash de
       paridad sobre el commit) están marcados `PENDIENTE-ARRANQUE:` con el comando que
       los cierra. Falta completarlos y commitearlo.*
-- [ ] **Autenticación — BLOQUEANTE, mecanismo por decidir.** Con ADR-009 la piloto corre
-      sobre las **suscripciones** del tesista, no sobre API keys.
-      *Verificado el 2026-08-23: el `claude` del contenedor responde **`Not logged in`**.
-      Causa: en macOS las credenciales vigentes viven en el **Keychain**
-      (`security find-generic-password -s "Claude Code-credentials"`, vigente), mientras
-      que `~/.claude/.credentials.json` —el archivo que **ADR-015 Decisión 3** manda
-      montar— quedó con un token **vencido el 2026-06-23**. La D3 se escribió asumiendo
-      que ese archivo era la credencial viva; en esta plataforma no lo es.*
-      *`~/.codex/auth.json` sí es un archivo real y vigente (`auth_mode` + tokens OAuth),
-      así que el problema es **sólo del lado A** — una asimetría de plataforma, no de
-      diseño.*
-      Decisión esperada: mecanismo de inyección de la credencial de A elegido y
-      registrado (exportar del Keychain a un archivo temporal por corrida, `claude login`
-      dentro de un volumen por celda, u otro), más el modo de auth efectivo en el
-      manifest. Si el mecanismo cambia lo que D3 fija, va por ADR.
+- [ ] **Autenticación: mecanismo resuelto por ADR-017; falta cargar el token.** Con
+      ADR-009 la piloto corre sobre las **suscripciones** del tesista, no sobre API keys.
+      *El bind-mount que ADR-015 D3 fijaba no sirve del lado A en macOS: el `claude` del
+      contenedor respondía `Not logged in` porque la credencial vigente vive en el
+      Keychain y `~/.claude/.credentials.json` tenía un token vencido el 2026-06-23.
+      **ADR-017** (Aceptado el 2026-08-23) pasa A a `CLAUDE_CODE_OAUTH_TOKEN` por
+      `--env-file`; B conserva el bind-mount de su `auth.json`, que sí es vigente.*
+      **Lo que falta, y es del tesista:** generar el token con `claude setup-token`,
+      copiar `pipeline/contenedores/.env.example` a `.env` y completarlo. El `.env` está
+      gitignoreado. Verificado el 2026-08-23 con un valor de prueba: la variable llega
+      adentro del contenedor y las vacías quedan vacías.
+      Registrar en el manifest el **modo de auth** (suscripción | API key) — nunca el
+      token. El dato de consumo de la piloto decide suscripción contra API key para las 4
+      oficiales (ítem 7).
+
 - [ ] **Versiones de CLI pinneadas** en el manifest: `claude --version` y
       `codex --version` (hoy 2.1.233 y 0.146.0), junto a los model IDs y al commit del
       corpus. *Ya registrados en el manifest, medidos en esta máquina el 2026-08-16.*

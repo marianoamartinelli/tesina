@@ -128,9 +128,14 @@ Detalles que no son obvios y están verificados en las versiones instaladas:
   corre **adentro** y escribe su JSONL ahí), y —sólo en celdas con RAG— `comun/` y el
   corpus, read-only. **`evaluacion/` nunca se monta**: la no-exposición del holdout la
   sostiene el mecanismo, no el procedimiento.
-- Credenciales: las del `claude` y el `codex` instalados en la máquina (suscripción),
-  montadas read-only en el contenedor de su familia (ADR-015 D3). Ninguno de los dos usa
-  API keys.
+- Credenciales (suscripción, no API keys), por mecanismos distintos según la familia
+  —**asimetría de plataforma**, ADR-017—: **A** por `CLAUDE_CODE_OAUTH_TOKEN` en
+  `contenedores/.env`, que el orquestador pasa con `--env-file` a las 4 celdas; el token
+  lo genera `claude setup-token`. **B** por bind-mount read-only de `~/.codex/auth.json`
+  (ADR-015 D3), que sí es un archivo vigente. En macOS la credencial viva de Claude Code
+  está en el Keychain, que un contenedor no puede leer: montar el archivo da
+  `Not logged in`. `.env.example` es la plantilla versionada; el `.env` real no se
+  commitea.
 - **Registro**: cada etapa escribe
   `<repo-satelite>/../logs/<celda>-<etapa>-<timestamp>.jsonl`, un evento por línea con
   flush inmediato: `inicio` (modelo, effort, versión del CLI, SHA-256 de los prompts,
@@ -253,7 +258,7 @@ Cada consulta queda registrada con su celda, etapa, rol y número de paso en el 
 
 ## Qué garantiza `verificar_paridad.py`
 
-Corre **113 chequeos** y sale con código ≠ 0 si falla cualquiera:
+Corre **117 chequeos** y sale con código ≠ 0 si falla cualquiera:
 
 1. Las 4 configs oficiales tienen exactamente los campos
    `{celda, harness, modelo, effort, rag, etapas}` y **sólo difieren** en los factores
@@ -283,11 +288,12 @@ Corre **113 chequeos** y sale con código ≠ 0 si falla cualquiera:
    Decisión 2). Se chequea el comando que arma cada orquestador, no su fuente: un grep
    pasaría igual con un flag escrito que nunca llega al comando.
 10. Toda invocación va envuelta en `docker run --rm -i` (ADR-015); los montajes de A y B
-    difieren **sólo** en el archivo de credenciales; no se monta el holdout
-    (`evaluacion/`) ni `pipeline/` entero; las 4 celdas usan el mismo tag de imagen; y
-    ambas capas (`Dockerfile.a`, `Dockerfile.b`) parten de la misma base.
+    difieren **sólo** en el `auth.json` de B; las 4 celdas apuntan al mismo `--env-file`
+    de credenciales (ADR-017); no se monta el holdout (`evaluacion/`) ni `pipeline/`
+    entero; las 4 celdas usan el mismo tag de imagen; y ambas capas (`Dockerfile.a`,
+    `Dockerfile.b`) parten de la misma base.
 
-Estado al 2026-08-23: los 113 chequeos pasan. El camino negativo se probó sobre copias
+Estado al 2026-08-23: los 117 chequeos pasan. El camino negativo se probó sobre copias
 del repo con seis adulteraciones (model ID viejo, `effort` distinto en una celda, prompt
 de rol sin la instrucción de delegación, prompt de rol nombrando un proveedor y la
 herramienta RAG, un documento del corpus modificado, y un orquestador con su propio bucle
