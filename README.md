@@ -24,20 +24,28 @@ Próximo hito: **H6 — corrida piloto**, que valida el pipeline end-to-end ante
 sobre los SDK de agentes y pasan a ser los CLI de cada proveedor (`claude -p` y
 `codex exec`), con los model IDs re-pinneados a `claude-opus-5` / `gpt-5.6-sol`—. El
 código de `pipeline/` ya está reescrito sobre esa base (orquestadores de roles, RAG como
-servidor MCP stdio único, **113 chequeos de paridad**); los `correr.py` sobre SDK quedan
+servidor MCP stdio único, **139 chequeos de paridad**); los `correr.py` sobre SDK quedan
 en el árbol como camino de vuelta hasta que la piloto valide el reemplazo. De la deuda de
 proceso de [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) hay **16 de
 24 ítems cerrados** —protocolo **v1.2**, partición 465/56 de los ATs backend, rúbrica del
 rol revisor, manifest de `piloto-01`, agentes en contenedores y orden de las 4 celdas
-sorteado—, con ADR-011/012/013 aceptados el 2026-08-17 y **ADR-014/015/016 el
-2026-08-23**: la recuperación web del lado B, que un default de producto no desactivaba
-como ADR-009 suponía; la contenerización de las dos familias, que elimina la asimetría de
-confinamiento; y la baja de los topes de presupuesto, que pasan a ser variables medidas.
-**Los 8 ítems abiertos necesitan todos la corrida misma.** El arranque está casi
-listo —imágenes construidas, entorno on-chain arriba con su digest verificado, paridad en
-verde sobre el commit— y el bloqueante que queda es la **autenticación del CLI de A
-dentro del contenedor**: en macOS la credencial vigente vive en el Keychain y no en el
-archivo que ADR-015 D3 manda montar. Ningún CLI de agente ejecutó una etapa todavía.
+sorteado—, con ADR-011/012/013 aceptados el 2026-08-17 y ADR-014/015/016 el 2026-08-23.
+La autenticación de las dos familias quedó resuelta y verificada (**ADR-017**: A por
+`CLAUDE_CODE_OAUTH_TOKEN`, B por bind-mount de su `auth.json`).
+
+**Corrida pre-piloto (ADR-018), 2026-08-23.** Antes de la piloto corre una verificación
+end-to-end de todos los componentes sobre un **universo reducido** de la spec —6 HU de
+backend (registro, login y la épica 06 completa, que es la que fuerza el RAG) y 2 de
+cliente—, en las dos familias y con `effort high`. Estado, evidencia por componente y
+defectos en [`runs/pre-piloto/`](runs/pre-piloto/). **Es la primera vez que los CLI de
+agente ejecutan etapas del pipeline**, y ya encontró cuatro defectos de ambiente que la
+piloto habría pagado caro: `codex exec` no arrancaba en el contenedor por `CODEX_HOME` no
+escribible; el sandbox nativo de Codex dejaba al agente B **sin shell** dentro del
+contenedor sin cortar la corrida (**ADR-019**: el confinamiento pasa a ser el contenedor
+en las dos familias); el tope efectivo de A no es de presupuesto sino el rate limit de 5
+horas sin overage; y el nodo on-chain del host no es alcanzable desde el contenedor. Se
+escribió además el runner del **agente evaluador white-box**, que cerró el
+`PENDIENTE-ARRANQUE` de su invocación.
 
 ## Mapa del repositorio
 
