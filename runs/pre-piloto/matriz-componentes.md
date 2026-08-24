@@ -39,8 +39,8 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | 3.1 | `claude-opus-5` con effort `xhigh` | smoke de 1 invocación | `result` con `total_cost_usd`, 7 turnos, exit 0 | [x] 2026-08-23 |
 | 3.2 | `gpt-5.6-sol` con effort `xhigh` | ídem | `turn.completed` con usage, exit 0 | [x] 2026-08-23 |
 | 3.3 | Confinamiento de B | smoke de 1 invocación | bwrap no crea namespaces ⇒ B sin shell (H-04); resuelto por ADR-019: sin sandbox nativo, shell exit 0 | [x] 2026-08-23 |
-| 3.4 | Delegación en subagentes (ADR-010 D1) | etapa backend | A: 3 llamadas a `Agent`, 113 mensajes con `subagente: true`. B: mapeo aún sin decidir (ítem 24) | [~] falta B |
-| 3.5 | Restricción de recuperación web (ADR-008) | smoke de 1 invocación | A: `WebSearch`/`WebFetch` inexistentes y `web_search_requests: 0`. B: sin verificar aún | [~] falta B |
+| 3.4 | Delegación en subagentes (ADR-010 D1) | 3 etapas × 2 celdas | A: 1 736/7 612 eventos de subagente. B: 24 `collab_tool_call`, **todos sin receptores** — no delegó (H-22, cierra el ítem 24) | [x] mapeo resuelto |
+| 3.5 | Restricción de recuperación web (ADR-008) | 3 etapas × 2 celdas | A: `web_search_requests: 0`. B: **cero** items `web_search` | [x] 2026-08-24 |
 
 ## 4. RAG por MCP (ADR-009 D2)
 
@@ -57,10 +57,10 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 |---|---|---|---|---|
 | 5.1 | Esquema del stream de A | 3 etapas de A | tipos confirmados; **varios `result` por invocación** con el mismo acumulado (H-11) y sus `parent_tool_use_id` en null; subagentes atribuidos en los mensajes | [x] cierra el ítem 19 del lado A |
 | 5.2 | Esquema del JSONL de B | 3 etapas de B | `turn.completed.usage` = `input_tokens`, `cached_input_tokens`, `cache_write_input_tokens`, `output_tokens`, `reasoning_output_tokens`; items `command_execution`, `mcp_tool_call`, `agent_message` | [x] cierra el ítem 19 del lado B |
-| 5.3 | `serializar` no pierde información | inspección del JSONL contra el stream crudo | ningún payload degradado a `str()` (ítem 16) | [ ] |
+| 5.3 | `serializar` no pierde información | 1 107 payloads de B | **0 degradados a `str()`** (cierra el ítem 16) | [x] 2026-08-24 |
 | 5.4 | stderr por paso a archivo | etapa backend | un archivo por paso, vacíos en el camino feliz | [x] 2026-08-24 |
-| 5.5 | Costo: `total_cost_usd` de A | paso 1 de la etapa backend | USD 30,06 en `result`; **hay 3 `result` por invocación con el mismo total** — no se suman (H-11) | [~] falta el fix del cómputo |
-| 5.6 | Costo: estimador local de B | post-proceso del JSONL de B | corre: 3 `turn.completed`, 17,3 M tokens de entrada → USD 176 estimados. **Sospechoso**: aplica el umbral de tramo largo sobre el total del turno, no por request, y no descuenta la entrada cacheada (H-14) | [~] a revisar |
+| 5.5 | Costo: `total_cost_usd` de A | 3 etapas de A | `costo_por_sesion` agrupa por `session_id` y no suma duplicados: **USD 142,20** en total (H-11 resuelto) | [x] 2026-08-24 |
+| 5.6 | Costo: estimador local de B | 3 etapas de B | corregido (H-14): sin tramo largo sobre agregados y con entrada cacheada separada. Da una **cota superior** de USD 262 mientras la tarifa de caché no se ratifique (ítem 20) | [x] con residuo del ítem 20 |
 
 ## 6. Evaluación black-box (H5 / ADR-011)
 

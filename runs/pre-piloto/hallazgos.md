@@ -644,3 +644,33 @@ universo es de 6 HU, las dos celdas son de la misma generación de modelos, y el
 es del mismo proveedor que una de ellas. Lo que la pre-piloto verifica es que el
 **instrumento funciona** —produce veredictos con evidencia citada, validables y
 reproducibles entre pasadas—, no la calidad de lo evaluado.
+
+## H-22 — A delega en subagentes y B no: el mapeo del ítem 24, resuelto
+
+- **Componente:** 3.4 (delegación en subagentes, ADR-010 D1) — cierra el **ítem 24** de la
+  checklist H6
+- **Mapeo, ahora verificado en las dos familias:**
+  - **A:** los mensajes de subagente llegan con `parent_tool_use_id` seteado, que es lo
+    que `nucleo.es_de_subagente` ya usaba. Medido: **1 736 de 7 612 eventos** (23 %) de
+    las tres etapas quedaron atribuidos a subagentes.
+  - **B:** la primitiva es el item `collab_tool_call`, con `sender_thread_id`,
+    `receiver_thread_ids`, `prompt` y `agents_states`. Aparece **24 veces** en las tres
+    etapas — **todas con `tool: "wait"`, `receiver_thread_ids: []` y `agents_states: {}`**.
+- **El hallazgo:** con el mismo prompt de rol —byte-idéntico entre familias, ADR-010
+  Decisión 1 instruye delegar el trabajo independiente y acotado—, **A delegó masivamente
+  y B no delegó en ninguna etapa**: sus 24 llamadas de colaboración no tienen receptores.
+- **Qué falta saber, y es material para la piloto:** si B **no puede** delegar en
+  `codex exec` (la primitiva existe pero no hay agentes que lanzar en ese modo) o si
+  **eligió** no hacerlo. La diferencia importa: lo primero es una limitación de plataforma
+  que hay que declarar como amenaza a la validez —los dos brazos no tendrían la misma
+  capacidad—, y lo segundo es un resultado del experimento.
+- **Estado:** mapeo resuelto; la causa de la asimetría, abierta.
+
+## Cierre de componentes verificables por mecanismo
+
+- **ADR-008 del lado B (componente 3.5):** **cero** items `web_search` en las tres etapas.
+  Sumado a los `web_search_requests: 0` de A, el traslado de ADR-008 queda verificado en
+  las dos familias sobre corridas reales, no sólo en el comando.
+- **Fidelidad del registro (componente 5.3):** **0 de 1 107** payloads degradados a
+  `str()` por `nucleo.serializar` en B. El JSONL conserva los eventos verbatim, que es lo
+  que el ítem 16 de la checklist H6 pedía comprobar.
