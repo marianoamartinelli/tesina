@@ -50,6 +50,23 @@ mkdir -p "$REPO"
 git -C "$RAIZ_TESINA" archive "$TAG" spec | tar -x -C "$REPO"
 
 git -C "$REPO" init -q -b main
+
+# Identidad de commit **fijada y neutra**, idéntica en las 4 celdas.
+#
+# El prompt de sistema le pide al agente commitear a medida que avanza, pero un
+# contenedor recién creado no tiene identidad git: sin esto, el primer `git commit`
+# falla con `Author identity unknown` y cada agente inventa la suya. Medido en la
+# pre-piloto (hallazgo H-13): A commiteó como «Agente Implementador <agente@local>» y
+# B como «Codex <codex@local>» — o sea que el autor de los commits **revela el modelo
+# generador**, y el historial, que es dato del experimento (métricas estáticas, rúbrica
+# del rol revisor), deja de ser comparable entre celdas.
+#
+# Va en el repo satélite y no en la imagen a propósito: así viaja con la corrida, es
+# la misma para las dos familias por construcción y no invalida el digest de ninguna
+# imagen ya registrada en un manifest.
+git -C "$REPO" config user.name "agente"
+git -C "$REPO" config user.email "agente@tesina.local"
+
 git -C "$REPO" add -A
 git -C "$REPO" -c user.name="pipeline" -c user.email="pipeline@tesina.local" \
     commit -q -m "spec: $TAG ($COMMIT_SPEC) — estado inicial del repo satélite $ID"

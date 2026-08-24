@@ -259,3 +259,32 @@ Vale como advertencia para la piloto: un override que no se imprime no está med
   siguientes, y cuánto consulta B al terminar. Con la etapa cerrada, el dato queda
   medido en las dos familias.
 - **Estado:** abierto — a elevar al tesista con el conteo final de las dos celdas.
+
+## H-13 — El agente no podía commitear, y al resolverlo solo firmó con una identidad que delata el modelo
+
+- **Componente:** 2.1 / 2.2 (ambiente del contenedor) / 8.4 (métricas estáticas)
+- **Observado:** el prompt de sistema (regla 4) le pide al agente «commiteá con mensajes
+  descriptivos a medida que avances», pero el contenedor no trae identidad git. Las dos
+  familias chocaron con `Author identity unknown … Please tell me who you are` en su
+  primer `git commit` —una vez cada una— y **cada una la resolvió a su manera**:
+  - `pre-piloto-a`: `Agente Implementador <agente@local>`
+  - `pre-piloto-b`: **`Codex <codex@local>`**
+- **Por qué importa, doble:**
+  1. **Des-anonimización.** El autor de los commits nombra al proveedor. El agente
+     evaluador white-box no lo vería —el briefing §2 exige la copia de evaluación sin
+     `.git`, y `correr.py` la prepara así—, pero el historial queda en el repo de la
+     corrida, que alimenta las métricas estáticas y la rúbrica del rol revisor, y el
+     briefing §3.4 prohíbe explícitamente que el origen influya en un veredicto.
+  2. **Variable no controlada.** Que cada celda elija su identidad, su convención de
+     mensajes y cuánto commitea vuelve el historial no comparable, justo cuando es dato
+     del experimento.
+- **Corrección aplicada:** `crear-repo-satelite.sh` fija `user.name = agente` y
+  `user.email = agente@tesina.local` en el repo satélite al crearlo. Va en el repo y no
+  en la imagen a propósito: viaja con la corrida, es idéntica para las dos familias por
+  construcción y **no invalida el digest** de ninguna imagen ya registrada en un
+  manifest. Verificado creando un repo satélite nuevo y commiteando: el autor sale
+  `agente <agente@tesina.local>`.
+- **Alcance:** los repos de la pre-piloto **no** se corrigen —ya tienen commits con la
+  identidad vieja y la corrida está en vuelo—; el dato queda medido. La corrección rige
+  desde la piloto.
+- **Estado:** resuelto.
