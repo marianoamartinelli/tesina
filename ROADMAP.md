@@ -53,10 +53,10 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   TODO-REVISAR (status HTTP del reenvío idempotente de retiros,
   `test_ep08_solicitud.py`) a resolver en la piloto. **Revisado el 2026-08-16 dentro de
   la ventana H6:** la partición pasa a **465 automatizados + 56 white-box** (ADR-011,
-  Propuesto) al migrar a tests condicionales los 10 ATs de persistencia que alegaban
-  falta de control del ciclo de vida del SUT; la suite pasa a 456 funciones de test; los
-  2 TODO-REVISAR quedan resueltos con el criterio `{200, 202}`, pendiente de
-  ratificación del tesista.)*
+  **Aceptado el 2026-08-17**) al migrar a tests condicionales los 10 ATs de persistencia
+  que alegaban falta de control del ciclo de vida del SUT; la suite pasa a 456 funciones
+  de test; los 2 TODO-REVISAR quedan resueltos con el criterio `{200, 202}`, ratificado
+  el mismo día.)*
 
 ## Fase de ejecución comparativa
 
@@ -68,12 +68,15 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   comprende `piloto-01` (corrida completa con el harness A) y `piloto-02` (smoke
   end-to-end del harness B). Desde ADR-009 incluye además la reescritura del pipeline
   para orquestar los CLI (ítem 17) y la validación del set de roles
-  implementador/revisor. *(En curso — 11 de los 24 ítems de la checklist cerrados:
-  pipeline reescrito, protocolo v1.1, partición 465/56, rúbrica del rol revisor y
-  manifest de `piloto-01`, con ADR-011/012/013 esperando ratificación. Casi todo lo
-  abierto necesita la corrida misma, y ningún CLI de agente se ejecutó todavía.)*
+  implementador/revisor. *(En curso — **15 de los 24 ítems** de la checklist cerrados al
+  2026-08-23: pipeline reescrito, protocolo **v1.2**, partición 465/56, rúbrica del rol
+  revisor, manifest de `piloto-01`, agentes contenedorizados y orden de las 4 celdas
+  sorteado. ADR-011/012/013 Aceptados el 2026-08-17; ADR-014/015/016 el 2026-08-23. **Los
+  9 ítems abiertos necesitan todos la corrida o el entorno docker**: no queda deuda de
+  escritorio. Ningún CLI de agente se ejecutó todavía.)*
 - [ ] **H7 — Corridas oficiales.** Las 4 celdas del factorial, en ventana temporal
-  corta (los modelos comerciales cambian): A-sin-RAG, A-con-RAG, B-sin-RAG, B-con-RAG.
+  corta (los modelos comerciales cambian), en el orden sorteado el 2026-08-23:
+  **B-sin-RAG → A-sin-RAG → B-con-RAG → A-con-RAG**.
   Cada corrida: repo propio + manifest + log de intervenciones + métricas.
 - [ ] **H8 — Evaluación.** Ejecución del harness de evaluación sobre las 4
   implementaciones; consolidación del dataset comparativo en `analisis/`.

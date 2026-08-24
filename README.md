@@ -20,17 +20,21 @@ white-box (ADR-007) para los ATs no automatizables (521 AT-ids backend + 78 web 
 Próximo hito: **H6 — corrida piloto**, que valida el pipeline end-to-end antes de las
 4 corridas oficiales de H7. Plan completo de hitos en [ROADMAP.md](ROADMAP.md).
 
-**En curso (2026-08-16):** ADR-009 cambió la base de los harness —dejan de construirse
+**En curso (2026-08-23):** ADR-009 cambió la base de los harness —dejan de construirse
 sobre los SDK de agentes y pasan a ser los CLI de cada proveedor (`claude -p` y
 `codex exec`), con los model IDs re-pinneados a `claude-opus-5` / `gpt-5.6-sol`—. El
 código de `pipeline/` ya está reescrito sobre esa base (orquestadores de roles, RAG como
-servidor MCP stdio único, 77 chequeos de paridad); los `correr.py` sobre SDK quedan en el
-árbol como camino de vuelta hasta que la piloto valide el reemplazo. De la deuda de
-proceso de [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) hay 11 de
-24 ítems cerrados —protocolo v1.1, partición 465/56 de los ATs backend, rúbrica del rol
-revisor, manifest de `piloto-01`—, con ADR-011, ADR-012 y ADR-013 **aceptados el
-2026-08-17**. Casi todo lo que queda abierto necesita la corrida piloto, y
-ningún CLI de agente se ejecutó todavía.
+servidor MCP stdio único, **113 chequeos de paridad**); los `correr.py` sobre SDK quedan
+en el árbol como camino de vuelta hasta que la piloto valide el reemplazo. De la deuda de
+proceso de [`runs/piloto-01/checklist-h6.md`](runs/piloto-01/checklist-h6.md) hay **15 de
+24 ítems cerrados** —protocolo **v1.2**, partición 465/56 de los ATs backend, rúbrica del
+rol revisor, manifest de `piloto-01`, agentes en contenedores y orden de las 4 celdas
+sorteado—, con ADR-011/012/013 aceptados el 2026-08-17 y **ADR-014/015/016 el
+2026-08-23**: la recuperación web del lado B, que un default de producto no desactivaba
+como ADR-009 suponía; la contenerización de las dos familias, que elimina la asimetría de
+confinamiento; y la baja de los topes de presupuesto, que pasan a ser variables medidas.
+**Los 9 ítems abiertos necesitan todos la corrida piloto o el entorno docker**, y ningún
+CLI de agente se ejecutó todavía.
 
 ## Mapa del repositorio
 
