@@ -65,3 +65,15 @@ La regla de no-exposición del holdout (protocolo §4.3) vale también acá: la 
   criterio de ADR-020 (build de producción, exit 0) ejecutado donde corresponde
   (ADR-021). No se le dijo nada al agente.
 - **Referencias:** `runs/pre-piloto/hallazgos.md` H-15; ADR-020; ADR-021.
+
+## INT-03 — Smoke check de avance de la etapa mobile
+
+- **Timestamp:** 2026-08-24 ~11:05 (-03)
+- **Etapa/componente:** mobile / procedimiento de avance de etapa
+- **Categoría causa raíz:** no aplica — procedimiento del protocolo.
+- **Disparador:** cierre de la etapa mobile (3 pasos, exit 0, evento `fin`).
+- **Descripción y resultado:** `npx expo export --platform android` **en el contenedor**
+  (ADR-020 fija el comando, ADR-021 el dónde): exit 0, bundle
+  `_expo/static/js/android/index-….hbc` de 2,2 MB más `metadata.json`. Criterio de avance
+  **cumplido**. Con esto la corrida `pre-piloto-b` queda **completa: 3 etapas, 3 smokes**.
+- **Referencias:** ADR-020; ADR-021; matriz de componentes 9.1.

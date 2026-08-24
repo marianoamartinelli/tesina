@@ -1,0 +1,10 @@
+{"ts": "2026-08-24T12:45:57+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "implementador", "paso": 1}
+{"ts": "2026-08-24T12:46:29+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "implementador", "paso": 1}
+{"ts": "2026-08-24T12:46:32+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "implementador", "paso": 1}
+{"ts": "2026-08-24T12:46:35+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "implementador", "paso": 1}
+{"ts": "2026-08-24T13:01:19+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "revisor", "paso": 2}
+{"ts": "2026-08-24T13:01:49+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "revisor", "paso": 2}
+{"ts": "2026-08-24T13:01:54+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "revisor", "paso": 2}
+{"ts": "2026-08-24T13:01:59+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "revisor", "paso": 2}
+{"ts": "2026-08-24T13:05:44+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "implementador", "paso": 3}
+{"ts": "2026-08-24T13:05:59+0000", "tipo": "servidor_rag_inicio", "herramienta": "consultar_corpus", "k": 6, "corpus": "/corpus/documentos", "celda": "pre-piloto-b", "etapa": "web", "rol": "implementador", "paso": 3}
