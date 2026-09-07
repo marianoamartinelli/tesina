@@ -808,3 +808,29 @@ etapa (protocolo §5.8) deja de ser excepcional.
      la spec ahora se cumple?), lo que cambia el sentido de RV-12.
 - **Estado:** instrumento ejercitado; la cláusula de re-pre-registro de la rúbrica
   (protocolo §9) es el camino para corregirlo antes de H7.
+
+## H-27 — La evaluación gestionada por agentes corrió de punta a punta: rol revisor sobre B, dos pasadas y arbitraje por Grok
+
+- **Componente:** 8.3 con el runtime de ADR-026 (`evaluacion/agente-instrumentos/correr.py`,
+  Grok Build 1.0.4, `grok-4.6`, effort `xhigh`), sobre `pre-piloto-b`, 2026-09-06/07
+- **Medido:**
+
+  | sesión | pared | entrada | caché leída | salida | resultado |
+  |---|---|---|---|---|---|
+  | pasada 1 | 13 min 33 s | 226 281 | 2 044 032 | 44 836 | 35 PASA / 1 FALLA; censo 11 |
+  | pasada 2 | 14 min 51 s | 295 658 | 2 292 352 | 49 812 | 35 PASA / 1 FALLA; censo 11 |
+  | arbitraje | 8 min 22 s | 250 640 | 1 073 536 | 28 111 | 2 discrepantes resueltos |
+
+  Parte B: **36/36 concordantes** (la única FALLA, RV-07 en mobile, en las dos). Censo:
+  9/11 concordantes; las dos discrepancias (`backend,2` y `mobile,3`, en `eje` y
+  `severidad`) las resolvió el árbitro citando archivo:línea del snapshot paso 2, la spec y
+  la regla R2 de la rúbrica —una a favor de la pasada 2, otra a favor de ninguna—, con
+  `arbitraje.md` y `veredicto-final/` completos.
+- **Contra el ensayo de Claude (H-26):** mismos 35/36 y la misma FALLA. Dos jueces de
+  proveedores distintos, mismo instrumento, mismo veredicto.
+- **Lo que funciona por mecanismo:** el aislamiento (`GROK_HOME` por invocación + `HOME`
+  vacío: 0 plugins, 0 MCP, 24 skills bundled), el registro JSONL con el formato del
+  pipeline (1 694 y ~1 900 eventos, `usage` al cierre), las sesiones archivadas en
+  `sesiones-grok/`, y la detección mecánica de discrepancias del runner.
+- **Estado:** el circuito de ADR-026 está verificado para un instrumento; los otros cuatro
+  se ejercitan en la pre-piloto-2. Salidas en `runs/pre-piloto/evaluacion-agentes/rol-revisor/`.

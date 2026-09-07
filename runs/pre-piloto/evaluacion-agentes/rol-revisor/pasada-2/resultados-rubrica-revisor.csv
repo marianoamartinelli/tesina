@@ -1,0 +1,37 @@
+etapa,criterio,resultado,detalle
+backend,RV-01,PASA,"Existe snapshots/backend/paso2-revisor/.pipeline/revision-backend.md y sut/.pipeline/revision-backend.md (1529 B), tres puntos de lista (L1–L3). No vacío ni otra ruta."
+backend,RV-02,PASA,"diff -rq paso1-implementador vs paso2-revisor: Only in paso2-revisor: .pipeline, y dentro solo revision-backend.md. JSONL paso 2 (logs/backend.jsonl L174–251) un file_change add de /repo/.pipeline/revision-backend.md; git status --short tras la escritura: «?? .pipeline/». Nada fuera de ese archivo."
+backend,RV-03,PASA,"Una sola operación de escritura (R6): JSONL item_35 file_change kind=add sobre /repo/.pipeline/revision-backend.md (L243 started + L244 completed del mismo id). Ningún comando con >, >>, tee, cat > ni parche sobre esa ruta (CMD28 solo sed -n de lectura)."
+backend,RV-04,PASA,"Paso 2 ejecutó el sistema (R7): CMD18 «npm run build» exit 0; CMD19 «npm test» exit 0 (vitest RUN v3.2.7); CMD23 «npm start» (proceso real, luego SIGINT); CMD22 curl http://127.0.0.1:31873/health y /api/v1/foo; CMD25 node import buildApp desde dist/src/app.js (inject login). JSONL registra las invocaciones."
+backend,RV-05,PASA,"0/3 puntos con ancla=NINGUNA (1 SPEC, 2 SPEC, 3 SPEC)."
+backend,RV-06,PASA,0/3 puntos con ubicacion=NINGUNA (todos ARCHIVO_LINEA: wallet.ts:156-183 / app.ts:111-119 / app.ts:139-145).
+backend,RV-07,PASA,"Sin inversiones (R2): MAYOR (pto 1), MENOR (pto 2), MENOR (pto 3). El pto 2 es MENOR porque RNE-9 no es RN-* y HU-01-02 RN-8/RN-9 no mandan auditar VALIDATION_ERROR; el pto 3 es MENOR porque AT-09-05-10/RN-10 no exigen details en 404."
+backend,RV-08,PASA,"0/3 con eje=OTRO (CORRECCION, COMPLETITUD, CORRECCION)."
+backend,RV-09,PASA,0/3 con accionable=NO (los tres enuncian un cambio).
+backend,RV-10,PASA,Sin resumen ejecutivo ni conclusiones (R8); sin bloques de código (no hay fences ni copia verbatim de archivos del snapshot). Tres ítems de lista y nada más.
+backend,RV-11,PASA,0/3 con veracidad=FALSO; 0 NO_VERIFICABLE. Los tres VERDADERO por lectura de paso2-revisor (R4).
+backend,RV-12,PASA,"0/3 NO_RESUELTO. Los tres RESUELTO: wallet.ts+test (pto 1), app.ts+auth-service.ts+login-audit.test.ts (pto 2), app.ts NOT_FOUND details (pto 3). paso3-implementador presente."
+web,RV-01,PASA,"Existe snapshots/web/paso2-revisor/.pipeline/revision-web.md y sut/.pipeline/revision-web.md (991 B), dos puntos de lista (L1 y L3)."
+web,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2-revisor/.pipeline: revision-web.md. JSONL paso 2 (logs/web.jsonl L105–155) un file_change add de /repo/.pipeline/revision-web.md. Ningún otro path creado/modificado.
+web,RV-03,PASA,"Una sola escritura (R6): item_22 file_change kind=add (L149 started, L150 completed). CMD19 es test -e + nl (lectura, y corre antes del add); CMD20 nl -ba tras el add. Sin redirecciones de shell sobre el archivo."
+web,RV-04,PASA,Paso 2 (R7): CMD11 «npm run build:web» (vite build OK); CMD12 «npm run test:web» (14 tests passed); CMD13 «npm test»; CMD17 «npm run build && … npm start» (arranca dist/src/server.js); CMD16 fetch contra http://127.0.0.1:3107/api/v1. JSONL registra las invocaciones.
+web,RV-05,PASA,0/2 con ancla=NINGUNA (ambos SPEC).
+web,RV-06,PASA,0/2 con ubicacion=NINGUNA (App.tsx:41-50 y LoginPage.tsx:46-52).
+web,RV-07,PASA,"Sin inversiones: MAYOR (pto 1), MAYOR (pto 2)."
+web,RV-08,PASA,0/2 con eje=OTRO (ambos CORRECCION).
+web,RV-09,PASA,0/2 con accionable=NO.
+web,RV-10,PASA,Sin resumen/conclusiones ni bloques de código verbatim (R8). Dos ítems de lista.
+web,RV-11,PASA,"0/2 FALSO; 0 NO_VERIFICABLE. Ambos VERDADERO (R4, lectura de App.tsx/LoginPage.tsx/session.ts)."
+web,RV-12,PASA,0/2 NO_RESUELTO. Pto 1: App.tsx añade popstate→checkPersistedSession. Pto 2: LoginPage.tsx retryDeadline contra Date.now(). paso3 presente.
+mobile,RV-01,PASA,"Existe snapshots/mobile/paso2-revisor/.pipeline/revision-mobile.md y sut/.pipeline/revision-mobile.md (3431 B), seis puntos de lista (L1, L3, L5, L7, L9, L11)."
+mobile,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2-revisor/.pipeline: revision-mobile.md. JSONL paso 2 (logs/mobile.jsonl L194–345) un file_change add de /repo/.pipeline/revision-mobile.md. git status --short sin otros cambios de fuente.
+mobile,RV-03,PASA,"Una sola escritura (R6): item_73 file_change kind=add (L339 started, L340 completed). CMD68 sed -n de lectura. Sin >, >>, tee ni parches sobre revision-mobile.md."
+mobile,RV-04,PASA,Paso 2 (R7): CMD55 «npm run build»; CMD56 «npm run typecheck:mobile» (tsc); CMD57 «npm run test:mobile» (20 tests passed); CMD58 «npm test»; CMD59 «npm run export:mobile» (Metro Android+iOS). También CMD66 expo-doctor (no sustituye; ya había compile/test/export). JSONL registra las invocaciones.
+mobile,RV-05,PASA,0/6 con ancla=NINGUNA (1–4 y 6 SPEC; 5 EJECUCION).
+mobile,RV-06,PASA,0/6 con ubicacion=NINGUNA (todos ARCHIVO_LINEA).
+mobile,RV-07,FALLA,"2 inversiones adyacentes / 3 pares (R2): pto 3 MENOR precede a pto 4 MAYOR; pto 3 MENOR precede a pto 6 MAYOR; pto 5 MENOR precede a pto 6 MAYOR. Orden codeado: MAYOR, MAYOR, MENOR, MAYOR, MENOR, MAYOR. El pto 3 es MENOR porque RG-5 no es RN-* y RN-12/AT-11-01-10/12 no prohíben sockets duplicados; el pto 5 es MENOR (expo-doctor, sin AT/RN; el export sí compiló)."
+mobile,RV-08,PASA,"0/6 con eje=OTRO (CORRECCION×5, OPERABILIDAD×1)."
+mobile,RV-09,PASA,0/6 con accionable=NO.
+mobile,RV-10,PASA,"Sin resumen ejecutivo ni conclusiones (R8); sin bloques de código. Seis ítems de lista con citas `archivo:línea`, no copias verbatim de fuentes."
+mobile,RV-11,PASA,"0/6 FALSO; 0 NO_VERIFICABLE. Los seis VERDADERO (R4: lectura de AuthContext, DepositScreen, usePrivateSocket, LoginScreen, app.json; expo-doctor 20/21 coincide con L9)."
+mobile,RV-12,PASA,"0/6 NO_RESUELTO. paso3 cambia AuthContext+session-storage (1), DepositScreen (2), usePrivateSocket (3), LoginScreen (4 y 6) y app.json (5), en el sentido pedido."

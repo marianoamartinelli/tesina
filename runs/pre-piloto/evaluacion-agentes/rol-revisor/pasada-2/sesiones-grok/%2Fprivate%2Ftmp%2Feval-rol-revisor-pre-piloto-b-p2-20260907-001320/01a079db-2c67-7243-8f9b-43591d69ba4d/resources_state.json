@@ -1,0 +1,84 @@
+{
+  "state": {
+    "grok_build.ReportedTaskCompletions": {
+      "reported": []
+    },
+    "grok_build.Todo": {
+      "todos": {
+        "1": {
+          "content": "Leer briefing, rúbrica e insumos (spec, sut, snapshots, logs)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "2": {
+          "content": "Censo Parte A backend + verificar puntos vs spec/snapshots",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "3": {
+          "content": "Criterios RV-01..RV-12 backend",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "4": {
+          "content": "Censo Parte A web + verificar puntos",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "5": {
+          "content": "Criterios RV-01..RV-12 web",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "6": {
+          "content": "Censo Parte A mobile + verificar puntos",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "7": {
+          "content": "Criterios RV-01..RV-12 mobile",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "8": {
+          "content": "Emitir rubrica-completada.md, CSVs y evidencia",
+          "priority": "medium",
+          "status": "completed"
+        }
+      }
+    }
+  },
+  "params": {
+    "grok_build.Bash": {
+      "timeout_secs": null,
+      "max_timeout_secs": 36000.0,
+      "output_byte_limit": null,
+      "cmd_prefix": null,
+      "enabled_background": true,
+      "auto_background_on_timeout": true,
+      "foreground_block_budget_ms": null,
+      "max_block_until_ms": null,
+      "allow_background_operator": true,
+      "surface_bg_completion_reminders": true
+    },
+    "grok_build.ReadFile": {
+      "cursor_rules_on_read": false
+    },
+    "grok_build.SearchReplace": {
+      "skip_read_before_edit": false,
+      "empty_old_string_does_not_override": false,
+      "unicode_normalized_fallback": false,
+      "include_user_edit_hint": true
+    },
+    "grok_build.Grep": {
+      "max_output_bytes": null,
+      "max_chars_per_line": null
+    },
+    "grok_build.UseTool": {
+      "native_tool_correction": true
+    },
+    "grok_build.ListDir": {
+      "max_output_chars": null
+    }
+  }
+}

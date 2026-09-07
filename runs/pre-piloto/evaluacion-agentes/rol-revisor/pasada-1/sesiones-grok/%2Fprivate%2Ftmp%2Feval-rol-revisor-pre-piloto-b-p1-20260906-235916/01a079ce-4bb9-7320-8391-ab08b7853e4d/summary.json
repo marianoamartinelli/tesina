@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a079ce-4bb9-7320-8391-ab08b7853e4d",
+    "cwd": "/private/tmp/eval-rol-revisor-pre-piloto-b-p1-20260906-235916"
+  },
+  "session_summary": "Rol-revisor instrument execution on sut",
+  "created_at": "2026-09-07T02:59:18.159482Z",
+  "updated_at": "2026-09-07T03:12:49.072693Z",
+  "num_messages": 273,
+  "num_chat_messages": 133,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "f0c1fa6e-8c45-4c13-80d4-7246c05fdb3d",
+  "grok_home": "/tmp/eval-rol-revisor-pre-piloto-b-p1-20260906-235916/.grok-home",
+  "last_active_at": "2026-09-07T03:12:49.072693Z",
+  "generated_title": "Rol-revisor instrument execution on sut",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

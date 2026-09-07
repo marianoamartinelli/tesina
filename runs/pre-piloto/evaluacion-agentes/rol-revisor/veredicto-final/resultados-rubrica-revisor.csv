@@ -1,0 +1,37 @@
+etapa,criterio,resultado,detalle
+backend,RV-01,PASA,"Existe snapshots/backend/paso2-revisor/.pipeline/revision-backend.md (1529 B, 3 puntos de lista). sut/.pipeline/revision-backend.md identico. JSONL L174 paso_inicio orden=2 rol=revisor; L251 paso_fin codigo_salida=0 salida_escrita=true."
+backend,RV-02,PASA,diff -rq paso1-implementador vs paso2-revisor: solo aparece .pipeline/ (con revision-backend.md). package-lock.json mismo contenido (cmp identico). JSONL un file_change completed L244 kind=add /repo/.pipeline/revision-backend.md; git status L241 .pipeline vacio antes de escribir; L246 lee el md. Nada fuera de la ruta de salida.
+backend,RV-03,PASA,"R6: una sola operacion de escritura. JSONL item.started+item.completed del mismo id item_35 file_change kind=add sobre /repo/.pipeline/revision-backend.md (L244 completed). Ningun comando con >, >>, tee, cat > ni parche adicional sobre esa ruta (los sed/nl posteriores solo leen)."
+backend,RV-04,PASA,"R7: JSONL paso 2 ejecuto el sistema: L219 npm run build exit=0; L220 npm test (vitest, tests passing); L227 curl /health y /api/v1/foo; L228 npm start (abortado); L232 node inject buildApp login sin password; L239 timeout 2s node deriveNextValidAddress."
+backend,RV-05,PASA,0 puntos con ancla=NINGUNA. 3/3 SPEC (puntos 1-3).
+backend,RV-06,PASA,0 puntos con ubicacion=NINGUNA. 3/3 ARCHIVO_LINEA.
+backend,RV-07,PASA,"Buckets rubricados: 1 MAYOR, 2 MAYOR, 3 MENOR. Sin inversiones. (Etiquetas Alta/Media/Baja del revisor ignoradas; R2)."
+backend,RV-08,PASA,0 puntos con eje=OTRO. 3/3 CORRECCION (mandato del rol).
+backend,RV-09,PASA,0 puntos con accionable=NO. 3/3 SI.
+backend,RV-10,PASA,"R8: sin resumen ejecutivo ni conclusiones; sin bloques fenceados. Tres items de lista, sin prosa extra. No hay bloque de codigo copiado verbatim del repo."
+backend,RV-11,PASA,0 puntos con veracidad=FALSO. 3/3 VERDADERO. 0 NO_VERIFICABLE.
+backend,RV-12,PASA,0 puntos NO_RESUELTO. 3/3 RESUELTO (wallet.ts+test; app.ts+auth-service+login-audit.test.ts; NOT_FOUND con details). Snapshot paso3 presente.
+web,RV-01,PASA,"Existe snapshots/web/paso2-revisor/.pipeline/revision-web.md (991 B, 2 puntos). sut/.pipeline/revision-web.md identico. JSONL L105 paso_inicio orden=2; L155 paso_fin codigo_salida=0 salida_escrita=true."
+web,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2-revisor/.pipeline: revision-web.md. JSONL file_change completed L150 kind=add /repo/.pipeline/revision-web.md. git status previo L146 ?? .pipeline/ (revision-backend.md ya existia); no hay otros cambios de contenido en el snapshot.
+web,RV-03,PASA,R6: una sola escritura. file_change item_22 add revision-web.md (L150 completed). L148 test -e reporto absent antes de escribir; L152 nl -ba solo lee. Sin redirects de shell sobre esa ruta.
+web,RV-04,PASA,R7: L133 npm run build:web (vite production) exit=0; L134 npm run test:web (14 tests); L135 npm test backend; L142 fetch register/login/me contra 127.0.0.1:3107; L143 npm run build && npm start (servidor).
+web,RV-05,PASA,0 puntos con ancla=NINGUNA. 2/2 SPEC.
+web,RV-06,PASA,0 puntos con ubicacion=NINGUNA. 2/2 ARCHIVO_LINEA.
+web,RV-07,PASA,"Buckets: 1 MAYOR, 2 MAYOR. Sin inversiones."
+web,RV-08,PASA,0 puntos eje=OTRO. 2/2 CORRECCION.
+web,RV-09,PASA,0 puntos accionable=NO. 2/2 SI.
+web,RV-10,PASA,R8: dos items de lista (L1 y L3) sin resumen/conclusiones ni bloques de codigo. Sin prosa fuera de la lista (L2 en blanco).
+web,RV-11,PASA,0 FALSO. 2/2 VERDADERO. 0 NO_VERIFICABLE.
+web,RV-12,PASA,0 NO_RESUELTO. 2/2 RESUELTO (App.tsx+App.test.tsx popstate/GET /me; LoginPage.tsx+LoginPage.test.tsx deadline). Snapshot paso3 presente.
+mobile,RV-01,PASA,"Existe snapshots/mobile/paso2-revisor/.pipeline/revision-mobile.md (3431 B, 6 puntos). sut/.pipeline/revision-mobile.md identico. JSONL L194 paso_inicio orden=2; L345 paso_fin codigo_salida=0 salida_escrita=true."
+mobile,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2-revisor/.pipeline: revision-mobile.md. JSONL file_change completed L340 kind=add /repo/.pipeline/revision-mobile.md. git status L318/L337 ?? .pipeline/ (backend+web ya estaban); L342 lee el md. Snapshot sin otros diffs.
+mobile,RV-03,PASA,"R6: una sola escritura. file_change item_73 add revision-mobile.md (L340 completed). L342 sed -n solo lee. Sin >, >>, tee ni parches extra sobre esa ruta."
+mobile,RV-04,PASA,R7: L311 npm run build; L312 npm run typecheck:mobile; L313 npm run test:mobile (20 tests); L314 npm test; L316 npm run export:mobile (expo export android/ios); L333 npx expo-doctor@latest.
+mobile,RV-05,PASA,"0 puntos con ancla=NINGUNA. SPEC: 1,2,3,4,6; EJECUCION: 5 (expo-doctor; R3)."
+mobile,RV-06,PASA,0 puntos con ubicacion=NINGUNA. 6/6 ARCHIVO_LINEA.
+mobile,RV-07,FALLA,"1 inversion: punto 5 (MENOR, extra property app.json / expo-doctor, sin AT/RN y el export pasa) precede al punto 6 (MAYOR, RN-4 via RG-6). Orden rubricado: MAYOR, MAYOR, MAYOR, MAYOR, MENOR, MAYOR. R2 usa buckets de la rubrica, no Alta/Media/Baja."
+mobile,RV-08,PASA,"0 puntos eje=OTRO. CORRECCION: 1,2,4,6; OPERABILIDAD: 3,5."
+mobile,RV-09,PASA,0 puntos accionable=NO. 6/6 SI.
+mobile,RV-10,PASA,"R8: seis items de lista (L1,3,5,7,9,11) sin resumen ejecutivo, conclusiones ni bloques fenceados. Prosa vacia entre items no es punto (R1) ni relleno de resumen."
+mobile,RV-11,PASA,0 FALSO. 6/6 VERDADERO. 0 NO_VERIFICABLE.
+mobile,RV-12,PASA,0 NO_RESUELTO. 6/6 RESUELTO (AuthContext+session-storage; DepositScreen; usePrivateSocket; LoginScreen rate-limit y password; app.json sin newArchEnabled; tests asociados). Snapshot paso3 presente.
