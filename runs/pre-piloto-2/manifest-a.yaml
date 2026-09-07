@@ -70,11 +70,11 @@ repo:
   commit_inicial: "1a3237e07dcb23c720a426b07425efede55b7d2c"
 
 # 5. Cierre de la corrida
-inicio: "PENDIENTE-CORRIDA"
+inicio: "2026-09-06T23:54:00-03:00"
 fin: "PENDIENTE-CORRIDA"
 repo_commit_final: "PENDIENTE-CORRIDA"
 etapas:
-  backend: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
+  backend: {inicio: "2026-09-06T23:54:00-03:00", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
   web: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
   mobile: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
 logs_jsonl: []
