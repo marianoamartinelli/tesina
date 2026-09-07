@@ -378,6 +378,8 @@ def test_heuristica_de_impredecibilidad_del_token(api, usuario):
 
 @pytest.mark.at("AT-01-02-09")
 def test_rate_limiting_de_login_tras_multiples_fallos(api, usuario):
+    from helpers.api import ClienteApi
+    ClienteApi.throttle_auth = False   # este AT debe exceder la ventana (H2-05)
     """HU-01-02 Escenario 9 (error): rate limiting de login.
 
     - Dado un origen desde el que se realizaron 60 intentos fallidos de login
@@ -423,6 +425,11 @@ def test_rate_limiting_de_login_tras_multiples_fallos(api, usuario):
         resp = _login(api, email_unico("noexiste-rl"), "CualquierClave-1")
         assert_error(resp, "RATE_LIMITED")
     finally:
+        ClienteApi.throttle_auth = True
+        # La ventana del SUT quedó llena por este AT y el freno del harness no la
+        # contó: se espera una ventana entera antes de seguir (H2-05).
+        time.sleep(ClienteApi.VENTANA_SEGUNDOS)
+        ClienteApi._ventana_login_fallidos.clear()
         # Higiene entre tests: esperar a que la ventana de 60 s se libere
         if respuesta_429 is not None:
             esperar_rate_limit_liberado(

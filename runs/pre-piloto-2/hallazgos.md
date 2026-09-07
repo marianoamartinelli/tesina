@@ -51,3 +51,21 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
   (0 en las tres etapas de la pre-piloto 1). B: 0 hasta el corte (H2-02), con el mismo
   prompt de sistema.
 - **Estado:** en medición; el conteo final por celda y etapa va al cierre.
+
+## H2-05 — La suite se limitaba a sí misma: el rate limit por origen de spec-v1.2 la frena desde un único origen
+
+- **Componente:** 6.3 (suite contra un SUT real) — defecto del **harness**, no del SUT
+- **Observado:** primera corrida de la suite sobre `pre-piloto-2a`: 24 fallas + 12 errores
+  de fixture, casi todos «registro falló: status 429» o «status esperado 422, llegó 429».
+  El SUT de A implementa exactamente HU-01-01 RN-10 v1.2 (sonda: 429 en la solicitud 61
+  con `retryAfterSeconds: 60`); la suite, desde un solo origen, registra cuentas más
+  rápido que 60 por minuto y, tras el propio AT-01-01-20 (que llena la ventana a
+  propósito), sigue registrando mientras la ventana del SUT está llena. Con la spec v1.1
+  ninguna implementación limitaba y el problema no existía; ADR-024 D4 lo previó para
+  login (sólo cuenta fallos) y no para registro.
+- **Corrección (harness, sin tocar criterios):** `helpers/api.py` frena al propio cliente
+  —ventana deslizante de 55 solicitudes de registro y 55 logins fallidos por 62 s— y los
+  dos ATs de rate limiting lo apagan mientras corren (`ClienteApi.throttle_auth = False`)
+  y esperan una ventana entera antes de devolver el control. Costo: ~2 minutos más por
+  corrida de la suite completa.
+- **Estado:** corregido; verificado con la segunda corrida sobre A (abajo).

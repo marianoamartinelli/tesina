@@ -11,6 +11,10 @@ Envuelve httpx con:
 
 import os
 
+import collections
+import threading
+import time
+
 import httpx
 
 VAR_API_URL = "EXCHANGE_API_URL"
@@ -33,6 +37,32 @@ class ClienteApi:
         autenticado = api.con_token(token)       # con Authorization: Bearer <token>
         resp = autenticado.get("/balances")
     """
+
+    # Control de tasa del propio harness (spec-v1.2, ADR-024): /auth/* limita por
+    # ORIGEN —60 solicitudes de registro / 60 intentos fallidos de login por ventana
+    # deslizante de 60 s— y toda la suite sale de un único origen. Sin este freno la
+    # suite se limita a sí misma y los ATs de registro fallan por 429 sin defecto del
+    # SUT (medido en la pre-piloto-2, hallazgo H2-05). Es una espera del cliente, no
+    # cambia ningún criterio: los ATs de rate limiting lo apagan con `throttle_auth`.
+    throttle_auth: bool = True
+    UMBRAL_VENTANA = 55            # margen sobre los 60 de la spec: el SUT pudo contar
+    VENTANA_SEGUNDOS = 62.0        # solicitudes previas a esta sesión de la suite
+    _ventana_registro: "collections.deque[float]" = collections.deque()
+    _ventana_login_fallidos: "collections.deque[float]" = collections.deque()
+    _lock = threading.Lock()
+
+    @classmethod
+    def _esperar_ventana(cls, ventana) -> None:
+        with cls._lock:
+            ahora = time.monotonic()
+            while ventana and ahora - ventana[0] > cls.VENTANA_SEGUNDOS:
+                ventana.popleft()
+            if len(ventana) >= cls.UMBRAL_VENTANA:
+                espera = ventana[0] + cls.VENTANA_SEGUNDOS - ahora + 0.5
+                if espera > 0:
+                    time.sleep(espera)
+                while ventana and time.monotonic() - ventana[0] > cls.VENTANA_SEGUNDOS:
+                    ventana.popleft()
 
     def __init__(self, base_url: str | None = None, token: str | None = None):
         base = base_url or url_api_configurada()
@@ -75,11 +105,23 @@ class ClienteApi:
     ):
         """POST con cuerpo JSON (`json=`) o cuerpo crudo (`content=`, para probar
         cuerpos que no son JSON válido, AT-09-01-16)."""
+        es_registro = ruta == "/auth/register"
+        es_login = ruta == "/auth/login"
+        if ClienteApi.throttle_auth and es_registro:
+            self._esperar_ventana(ClienteApi._ventana_registro)
+        if ClienteApi.throttle_auth and es_login:
+            self._esperar_ventana(ClienteApi._ventana_login_fallidos)
         if content is not None:
             hdrs = {"Content-Type": "application/json"}
             hdrs.update(headers or {})
-            return self._http.post(ruta, content=content, headers=hdrs)
-        return self._http.post(ruta, json=json, headers=headers)
+            resp = self._http.post(ruta, content=content, headers=hdrs)
+        else:
+            resp = self._http.post(ruta, json=json, headers=headers)
+        if ClienteApi.throttle_auth and es_registro:
+            ClienteApi._ventana_registro.append(time.monotonic())
+        if ClienteApi.throttle_auth and es_login and resp.status_code != 200:
+            ClienteApi._ventana_login_fallidos.append(time.monotonic())
+        return resp
 
     def delete(self, ruta: str, headers: dict | None = None):
         return self._http.delete(ruta, headers=headers)

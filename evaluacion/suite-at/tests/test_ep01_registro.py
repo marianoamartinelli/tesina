@@ -581,6 +581,8 @@ def test_account_id_opaco_y_no_secuencial(api):
 
 @pytest.mark.at("AT-01-01-20")
 def test_anti_flood_de_registro_responde_rate_limited(api):
+    from helpers.api import ClienteApi
+    ClienteApi.throttle_auth = False   # este AT debe exceder la ventana (H2-05)
     """HU-01-01 Escenario 20 (seguridad): Anti-flood de registro.
 
     - Dado un origen desde el que se realizaron 60 solicitudes de registro
@@ -618,6 +620,11 @@ def test_anti_flood_de_registro_responde_rate_limited(api):
         assert isinstance(retry, int) and not isinstance(retry, bool) and retry >= 0
         assert "Retry-After" in respuesta_429.headers, "falta el header Retry-After (RN-10)"
     finally:
+        ClienteApi.throttle_auth = True
+        # La ventana del SUT quedó llena por este AT y el freno del harness no la
+        # contó: se espera una ventana entera antes de seguir (H2-05).
+        time.sleep(ClienteApi.VENTANA_SEGUNDOS)
+        ClienteApi._ventana_registro.clear()
         # Higiene entre tests: dejar el endpoint utilizable (la ventana es de 60 s)
         if respuesta_429 is not None:
             esperar_rate_limit_liberado(
