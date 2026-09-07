@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07c67-ab53-7972-a50d-81b86eec58c5",
+    "cwd": "/private/tmp/eval-rubrica-web-pre-piloto-2a-p2-20260907-120602"
+  },
+  "session_summary": "rubrica-web AT-10-01 pre-piloto",
+  "created_at": "2026-09-07T15:06:04.078526Z",
+  "updated_at": "2026-09-07T15:24:11.688683Z",
+  "num_messages": 604,
+  "num_chat_messages": 340,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "2cf0a161-ab29-4d69-bdab-60de843cf3ec",
+  "grok_home": "/tmp/eval-rubrica-web-pre-piloto-2a-p2-20260907-120602/.grok-home",
+  "last_active_at": "2026-09-07T15:24:11.688683Z",
+  "generated_title": "rubrica-web AT-10-01 pre-piloto",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}
