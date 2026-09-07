@@ -68,4 +68,14 @@ Categorías de causa raíz (del marco metodológico de la propuesta):
   residuos en el repo.
 - **Referencias:** protocolo §4.1/§4.2; ADR-021.
 
+## INT-04 — Smoke check de avance de la etapa web
 
+- **Timestamp:** 2026-09-07 12:18 (-03)
+- **Etapa/componente:** web / procedimiento de avance de etapa
+- **Categoría causa raíz:** no aplica (procedimiento del protocolo §4.1, ADR-020/021)
+- **Disparador:** cierre de la etapa web (3 pasos, exit 0, sin cortes; 56 min; 0 consultas
+  al corpus).
+- **Intervención:** `npm run build` en `web/` dentro del contenedor `tesina/agente-b:piloto-01`.
+- **Resultado:** `tsc -b && vite build` → `✓ built in 382ms`, exit 0. **Criterio de avance
+  cumplido.** Sin residuos.
+- **Referencias:** protocolo §4.1; ADR-020; ADR-021.
