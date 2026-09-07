@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07cb5-ee0d-7522-9ade-b701c45e3091",
+    "cwd": "/private/tmp/eval-rol-revisor-pre-piloto-2b-p1-20260907-133131"
+  },
+  "session_summary": "rol-revisor instrument evaluation pass",
+  "created_at": "2026-09-07T16:31:32.991064Z",
+  "updated_at": "2026-09-07T16:41:30.328312Z",
+  "num_messages": 269,
+  "num_chat_messages": 130,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "77ff8696-da07-4c36-8f43-bbd70fcf13eb",
+  "grok_home": "/tmp/eval-rol-revisor-pre-piloto-2b-p1-20260907-133131/.grok-home",
+  "last_active_at": "2026-09-07T16:41:30.328312Z",
+  "generated_title": "rol-revisor instrument evaluation pass",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

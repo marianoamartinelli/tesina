@@ -1,0 +1,37 @@
+etapa,criterio,resultado,detalle
+backend,RV-01,PASA,Existe snapshots/backend/paso2-revisor/.pipeline/revision-backend.md (1912 bytes) e idéntico en sut/.pipeline/revision-backend.md; 3 puntos de lista (R1); no vacío.
+backend,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2: .pipeline (revision-backend.md). JSONL paso2 L274-L356: único file_change sobre /repo/.pipeline/revision-backend.md.
+backend,RV-03,PASA,"Una operación de escritura (R6): file_change kind=add item_37; item.started L348 + item.completed L349 del mismo ítem. Sin >, >>, tee, cat > ni parche. L351 sed -n lectura."
+backend,RV-04,PASA,"R7: npm test L310 exit=0; npm run build L312 exit=0; npm run rpc:check L314 exit=0; curl /health L317 exit=0; node inject createApplication L334/L339 (1.1e6 chars → 500 INTERNAL_ERROR, audits 0); curl eth_getCode L336 result=0x."
+backend,RV-05,PASA,0/3 ancla=NINGUNA; puntos 1-3 SPEC.
+backend,RV-06,PASA,0/3 ubicacion=NINGUNA; puntos 1-3 ARCHIVO_LINEA.
+backend,RV-07,PASA,"Sin inversiones. Severidad rúbrica R2 (no Alta/Media/Baja): MAYOR, MAYOR, MAYOR."
+backend,RV-08,PASA,"0/3 eje=OTRO; puntos 1-2 CORRECCION, punto 3 OPERABILIDAD."
+backend,RV-09,PASA,0/3 accionable=NO.
+backend,RV-10,PASA,Solo 3 ítems de lista; sin resumen/conclusiones; sin fences; sin bloque verbatim del repo (R8).
+backend,RV-11,PASA,0 FALSO; 0 NO_VERIFICABLE; 3 VERDADERO (puntos 1-3).
+backend,RV-12,PASA,"0 NO_RESUELTO; 3 RESUELTO. Diff paso2→paso3: src/app.ts, src/wallet/crypto.ts, test/app.test.ts, test/wallet-crypto.test.ts, README.md, .env.example."
+web,RV-01,PASA,Existe snapshots/web/paso2-revisor/.pipeline/revision-web.md (608 bytes) e idéntico en sut/.pipeline/revision-web.md; 1 punto; no vacío.
+web,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2/.pipeline: revision-web.md. JSONL paso2 L174-L239: único file_change sobre /repo/.pipeline/revision-web.md.
+web,RV-03,PASA,"Una operación (R6): file_change kind=add item.started L231 + item.completed L232. L230/L234 lectura. Sin >, >>, tee ni parche."
+web,RV-04,PASA,R7: npm test --prefix web && npm run build --prefix web && npm test && npm run build L205 exit=0; curl http://127.0.0.1:5173/login L210; npm run dev --prefix web L211; curl OPTIONS/POST login L217; node inject OPTIONS L225 (204).
+web,RV-05,PASA,0/1 ancla=NINGUNA; punto 1 SPEC.
+web,RV-06,PASA,0/1 ubicacion=NINGUNA; punto 1 ARCHIVO_LINEA src/app.ts:143-144.
+web,RV-07,PASA,Un solo punto MAYOR; sin inversión.
+web,RV-08,PASA,0/1 eje=OTRO; punto 1 CORRECCION (OPTIONS/CORS de la etapa web).
+web,RV-09,PASA,0/1 accionable=NO.
+web,RV-10,PASA,Un ítem de lista; sin resumen/conclusiones; sin fences; sin bloque verbatim (R8).
+web,RV-11,PASA,0 FALSO; 0 NO_VERIFICABLE; 1 VERDADERO.
+web,RV-12,PASA,0 NO_RESUELTO; 1 RESUELTO. Diff paso2→paso3: src/app.ts sendCorsPreflight; test/app.test.ts invalidPreflights.
+mobile,RV-01,PASA,Existe snapshots/mobile/paso2-revisor/.pipeline/revision-mobile.md (1454 bytes) e idéntico en sut/.pipeline/revision-mobile.md; 2 puntos; no vacío.
+mobile,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2/.pipeline: revision-mobile.md. JSONL paso2 L192-L287: único file_change sobre /repo/.pipeline/revision-mobile.md.
+mobile,RV-03,PASA,Una operación (R6): file_change kind=add item.started L279 + item.completed L280. L282 sed -n lectura.
+mobile,RV-04,PASA,R7: npm run typecheck --prefix mobile L256 exit=0; npm run build L257 exit=0; npm test --prefix mobile -- --runInBand L259 exit=0; npm test L260 exit=0; npx expo export --platform all L262 exit=0; loop npm test App.test.tsx L272 exit=0.
+mobile,RV-05,PASA,0/2 ancla=NINGUNA; puntos 1-2 SPEC.
+mobile,RV-06,PASA,0/2 ubicacion=NINGUNA; puntos 1-2 ARCHIVO_LINEA.
+mobile,RV-07,PASA,"Sin inversiones. Rúbrica R2 (no Alta/Baja): MAYOR, MAYOR."
+mobile,RV-08,PASA,0/2 eje=OTRO; ambos CORRECCION.
+mobile,RV-09,PASA,0/2 accionable=NO.
+mobile,RV-10,PASA,Dos ítems de lista; sin resumen/conclusiones; sin fences; sin bloque verbatim (R8).
+mobile,RV-11,PASA,0 FALSO; 0 NO_VERIFICABLE; 2 VERDADERO.
+mobile,RV-12,PASA,"0 NO_RESUELTO; 2 RESUELTO. Diff paso2→paso3: mobile/src/session.ts, api.ts, privateSocket.ts, App.tsx, LoginScreen.tsx y tests; dist-export regenerado."

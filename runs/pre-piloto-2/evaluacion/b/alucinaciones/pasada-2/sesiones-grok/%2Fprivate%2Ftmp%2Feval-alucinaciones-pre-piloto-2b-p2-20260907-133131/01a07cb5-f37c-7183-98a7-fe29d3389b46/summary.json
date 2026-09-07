@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07cb5-f37c-7183-98a7-fe29d3389b46",
+    "cwd": "/private/tmp/eval-alucinaciones-pre-piloto-2b-p2-20260907-133131"
+  },
+  "session_summary": "Alucinaciones pasada 2 evaluación SUT",
+  "created_at": "2026-09-07T16:31:34.356743Z",
+  "updated_at": "2026-09-07T16:41:49.918340Z",
+  "num_messages": 203,
+  "num_chat_messages": 97,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "ed856cf5-5d12-4c82-960c-66fb22d2f816",
+  "grok_home": "/tmp/eval-alucinaciones-pre-piloto-2b-p2-20260907-133131/.grok-home",
+  "last_active_at": "2026-09-07T16:41:49.918340Z",
+  "generated_title": "Alucinaciones pasada 2 evaluación SUT",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}
