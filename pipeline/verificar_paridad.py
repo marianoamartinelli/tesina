@@ -423,8 +423,9 @@ def verificar_contenedor(comandos: dict[str, list[str]],
         chequear(("--add-host", f"{contenedor.HOST_ANFITRION}:host-gateway") in pares,
                  f"{celda}: --add-host {contenedor.HOST_ANFITRION} (ADR-020)")
 
-    # Los montajes sólo pueden diferir en el archivo de credenciales: cualquier
-    # otra diferencia es una asimetría de entorno entre familias.
+    # Los montajes sólo pueden diferir en el archivo de credenciales y en el estado de
+    # sesión del CLI de B (ADR-023): cualquier otra diferencia es una asimetría de
+    # entorno entre familias.
     def destinos(celda: str) -> set[str]:
         familia = celda[0]
         return {m.destino for m in contenedor.montajes(corridas[(celda, "backend")], familia)}
@@ -433,10 +434,23 @@ def verificar_contenedor(comandos: dict[str, list[str]],
         solo_a = destinos(f"a-{sufijo}") - destinos(f"b-{sufijo}")
         solo_b = destinos(f"b-{sufijo}") - destinos(f"a-{sufijo}")
         # A no monta credencial: se autentica por `--env-file` porque en macOS no hay
-        # archivo vigente que montar (ver contenedor.CREDENCIALES). O sea que la única
-        # diferencia admisible de montajes es el auth.json de B.
-        chequear(solo_a == set() and solo_b == {contenedor.CREDENCIALES["b"][1]},
-                 f"{sufijo}: los montajes de A y B sólo difieren en las credenciales")
+        # archivo vigente que montar (ver contenedor.CREDENCIALES). Y A no persiste
+        # estado de sesión porque su stream ya registra a los subagentes; B lo necesita
+        # (ver contenedor.ESTADO_CLI). Son las dos únicas diferencias admisibles.
+        admisibles = {contenedor.CREDENCIALES["b"][1], contenedor.ESTADO_CLI["b"][1]}
+        chequear(solo_a == set() and solo_b == admisibles,
+                 f"{sufijo}: los montajes de A y B sólo difieren en las credenciales "
+                 f"y el estado de sesión de B (ADR-023)")
+
+    # El estado de sesión de B se persiste **bajo los logs de la corrida** y como hermano
+    # de `auth.json` (un montaje anidado en otro montaje falla en docker; ADR-023).
+    for celda in ("b-sin-rag", "b-con-rag"):
+        corrida = corridas[(celda, "backend")]
+        ms = {m.destino: m for m in contenedor.montajes(corrida, "b")}
+        estado = ms[contenedor.ESTADO_CLI["b"][1]]
+        chequear(not estado.ro and Path(estado.origen).parent == corrida.ruta_log.parent
+                 and Path(estado.destino).parent == Path(contenedor.CREDENCIALES["b"][1]).parent,
+                 f"{celda}: el estado de sesión de B va rw bajo los logs, hermano de auth.json")
 
     # El mismo archivo de credenciales por entorno para las 4 celdas: uno por familia
     # sería una asimetría de invocación.

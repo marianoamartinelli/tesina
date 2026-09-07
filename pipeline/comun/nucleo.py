@@ -609,6 +609,7 @@ def ejecutar_paso(corrida: Corrida, paso: Paso, comando: list[str], familia: str
     ruta_stderr = corrida.ruta_log.with_name(
         f"{corrida.ruta_log.stem}-stderr-paso{paso.orden}.txt")
     ruta_stderr.parent.mkdir(parents=True, exist_ok=True)
+    contenedor.preparar_montajes(corrida, familia)   # ADR-023: `<logs>/sesiones-codex` en B
     with ruta_stderr.open("w", encoding="utf-8") as archivo_stderr:
         proceso = subprocess.Popen(
             comando, cwd=str(corrida.ruta_repo),

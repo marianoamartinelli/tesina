@@ -40,6 +40,7 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-020](ADR-020-nodo-onchain-y-smoke-ejecutable.md) | El agente alcanza el nodo on-chain; los criterios de avance de web y mobile son ejecutables | Aceptado |
 | [ADR-021](ADR-021-smoke-y-evaluacion-dentro-del-contenedor.md) | El artefacto se ejecuta donde se construyó: smoke y SUT de H8 en contenedor | Aceptado |
 | [ADR-022](ADR-022-alcance-de-las-metricas-estaticas.md) | Las métricas estáticas no cuentan la spec ni los lockfiles | Aceptado |
+| [ADR-023](ADR-023-estado-de-sesion-del-cli-b-en-los-logs.md) | El estado de sesión del CLI de B (rollouts, único registro de sus subagentes) se persiste en los logs de la corrida | Propuesto |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan

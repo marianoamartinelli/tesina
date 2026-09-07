@@ -17,7 +17,10 @@ Lo que el contenedor monta, y sólo eso:
   instrumentos del experimento y el agente no los ve;
 - las **credenciales** de la familia: por bind-mount read-only en B (ADR-015 Decisión 3)
   y por `--env-file` en A, que en macOS no tiene un archivo de credencial vigente que
-  montar (ver `CREDENCIALES` y `ARCHIVO_ENV`).
+  montar (ver `CREDENCIALES` y `ARCHIVO_ENV`);
+- el **estado de sesión del CLI de B** (`$CODEX_HOME/sessions`), read-write, bajo el
+  directorio de logs de la corrida (ADR-023): es el único registro de los subagentes
+  que `codex exec` lanza, porque su stream `--json` no los emite (ver `ESTADO_CLI`).
 
 `evaluacion/` NO se monta, en ninguna celda: es el holdout, y ese es el motivo por
 el que ADR-015 cierra el ítem 11 de la checklist H6 — la no-exposición pasa a
@@ -98,6 +101,25 @@ CREDENCIALES = {
 # archivo es el mismo para las 4 celdas.
 ARCHIVO_ENV = Path(__file__).resolve().parent.parent / "contenedores" / ".env"
 
+# Estado de sesión del CLI, persistido en los logs de la corrida (ADR-023). Sólo B:
+# `codex exec --json` **no** emite la llamada `spawn_agent` ni ningún evento del
+# subagente —sólo un `collab_tool_call` de `wait` con `receiver_thread_ids: []`—, y el
+# único registro de esa actividad son los rollouts que el CLI escribe en
+# `$CODEX_HOME/sessions/` (un archivo por thread, el del subagente con
+# `session_meta.source.subagent.thread_spawn.parent_thread_id`). Medido el 2026-09-06
+# con CLI 0.146.0 (runs/pre-piloto/hallazgos.md, H-23). En la pre-piloto ese directorio
+# vivía en el contenedor efímero y se perdió con cada paso.
+#
+# A no está acá: su stream (`--forward-subagent-text`) ya trae los mensajes de
+# subagente con `parent_tool_use_id`, que es lo que `nucleo.es_de_subagente` lee.
+#
+# Origen relativo al directorio de logs de la corrida; el destino tiene que ser
+# **hermano** de `auth.json` bajo `CODEX_HOME` (`Dockerfile.b` crea ese directorio
+# del usuario `agente`; un montaje anidado dentro de otro montaje falla en docker).
+ESTADO_CLI = {
+    "b": ("sesiones-codex", "/home/agente/.codex/sessions"),
+}
+
 # Variables de entorno por familia. `CODEX_HOME` apunta al montaje para que el CLI
 # encuentre `auth.json` sin que le pasemos un HOME distinto: ADR-009 Decisión 5
 # preserva las credenciales a propósito, y `--ignore-user-config` ya se encarga de
@@ -147,7 +169,22 @@ def montajes(corrida, familia: str) -> list[Montaje]:
     if familia in CREDENCIALES:
         origen, destino = CREDENCIALES[familia]
         ms.append(Montaje(origen, destino, ro=True))
+    if familia in ESTADO_CLI:
+        subdir, destino = ESTADO_CLI[familia]
+        ms.append(Montaje(corrida.ruta_log.parent / subdir, destino, ro=False))
     return ms
+
+
+def preparar_montajes(corrida, familia: str) -> None:
+    """Crea en el host los orígenes read-write que todavía no existan.
+
+    Docker crea un origen faltante por su cuenta, pero como `root` y sin aviso; acá
+    se crea antes, con el usuario del orquestador, para que el CLI pueda escribir
+    (el motivo es el mismo de H-03). Idempotente; se llama por paso.
+    """
+    for montaje in montajes(corrida, familia):
+        if not montaje.ro:
+            Path(montaje.origen).mkdir(parents=True, exist_ok=True)
 
 
 def envolver(comando_cli: list[str], corrida, familia: str,
