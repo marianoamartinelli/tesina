@@ -28,6 +28,23 @@ Categorías de causa raíz (del marco metodológico de la propuesta):
 - **Intervención:** re-invocar el orquestador para `--etapa backend` sobre el estado
   actual del repo satélite, con sesión fresca y los mismos prompts, cuando el límite se
   libere (05:36 -03, programado). El JSONL nuevo se suma al de la etapa en el manifest.
-- **Resultado:** PENDIENTE — se completa al cerrar la etapa.
+- **Resultado:** la continuación arrancó a las 05:36:00 con sesión fresca sobre el repo:
+  paso 1 completo (exit 0, 05:48), paso 2 completo con `revision-backend.md` (06:02), y
+  el **paso 3 cortado a las 06:05:13** por el mismo límite («try again at 1:36 PM»).
+  Ver INT-02.
 - **Referencias:** protocolo §5.8; ADR-025 D3 (la continuación es el camino estándar);
   hallazgo H2-02.
+
+## INT-02 — Segundo corte por límite de uso; continuación del paso 3 programada
+
+- **Timestamp:** 2026-09-07 06:05:13 (-03)
+- **Etapa/componente:** backend / paso 3 (`implementador`, pase correctivo)
+- **Categoría causa raíz:** no aplica — corte por rate limit del proveedor (§5.8, D2 / (d))
+- **Disparador:** `turn.failed` con «You've hit your usage limit … try again at 1:36 PM» a
+  los 2 min 33 s del paso 3; snapshot tomado; `corte: codigo_salida_no_cero`.
+- **Intervención:** re-invocar el orquestador con `--desde-paso 3` (agregado al núcleo en
+  esta sesión: salta los pasos ya completos y registra `paso_omitido`) a las 13:37 (-03),
+  sobre el estado actual del repo y con `revision-backend.md` ya escrito.
+- **Resultado:** PENDIENTE.
+- **Referencias:** protocolo §5.8; H2-08.
+

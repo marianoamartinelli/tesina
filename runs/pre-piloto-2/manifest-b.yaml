@@ -74,7 +74,7 @@ inicio: "2026-09-06T23:54:03-03:00"
 fin: "PENDIENTE-CORRIDA"
 repo_commit_final: "PENDIENTE-CORRIDA"
 etapas:
-  backend: {inicio: "2026-09-06T23:54:03-03:00", fin: "", tokens: null, costo_usd: null, intervenciones: 1, cortes_por_rate_limit: 1, estado: "en curso", motivo_cierre: "PENDIENTE — corte por límite de uso a las 00:18:38, continuación programada 05:36 (INT-01)"}
+  backend: {inicio: "2026-09-06T23:54:03-03:00", fin: "", tokens: null, costo_usd: null, intervenciones: 2, cortes_por_rate_limit: 2, estado: "en curso", motivo_cierre: "PENDIENTE — cortes por límite de uso a las 00:18 (paso 1) y 06:05 (paso 3); continuación del paso 3 programada 13:37 (INT-02)"}
   web: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
   mobile: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
 logs_jsonl: []

@@ -154,6 +154,10 @@ def construir_parser(descripcion: str) -> argparse.ArgumentParser:
                         help="Ruta al repo satélite donde el agente implementa el exchange")
     parser.add_argument("--etapa", required=True,
                         help="Id de etapa según comun/etapas.yaml (backend|web|mobile)")
+    parser.add_argument("--desde-paso", type=int, default=1, metavar="N",
+                        help="continuación de una etapa interrumpida (protocolo §5.8): "
+                             "se saltan los pasos anteriores a N, ya completos en el repo "
+                             "satélite; los prompts son los mismos y la sesión es fresca")
     parser.add_argument("--dry-run", action="store_true",
                         help="Carga config + prompts + índice RAG y muestra qué ejecutaría, "
                              "sin invocar a ningún CLI")
@@ -641,7 +645,7 @@ def ejecutar_paso(corrida: Corrida, paso: Paso, comando: list[str], familia: str
 
 
 def correr_etapa(corrida: Corrida, cli: str, version: str, familia: str,
-                 construir_comando) -> int:
+                 construir_comando, desde_paso: int = 1) -> int:
     """Bucle de una etapa: los N pasos de la secuencia, en una sesión fresca cada uno.
 
     `construir_comando(corrida, paso)` es lo único que aporta cada orquestador; puede
@@ -650,8 +654,12 @@ def correr_etapa(corrida: Corrida, cli: str, version: str, familia: str,
     """
     registro = RegistroJSONL(corrida.ruta_log)
     try:
-        registro.evento("inicio", **metadata_corrida(corrida, cli, version))
+        registro.evento("inicio", desde_paso=desde_paso, **metadata_corrida(corrida, cli, version))
         for paso in corrida.pasos:
+            if paso.orden < desde_paso:
+                registro.evento("paso_omitido", orden=paso.orden, rol=paso.rol,
+                                motivo="continuacion_de_etapa_interrumpida", desde_paso=desde_paso)
+                continue
             resultado = construir_comando(corrida, paso)
             comando, datos = resultado if isinstance(resultado, tuple) else (resultado, {})
             codigo = ejecutar_paso(corrida, paso, comando, familia, registro, **datos)

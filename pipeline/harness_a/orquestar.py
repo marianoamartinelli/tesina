@@ -173,7 +173,7 @@ def main() -> int:
                       + json.dumps(config_mcp(corrida, paso), ensure_ascii=False))
         return 0
 
-    return correr_etapa(corrida, CLI, version, FAMILIA, preparar_paso)
+    return correr_etapa(corrida, CLI, version, FAMILIA, preparar_paso, desde_paso=args.desde_paso)
 
 
 if __name__ == "__main__":

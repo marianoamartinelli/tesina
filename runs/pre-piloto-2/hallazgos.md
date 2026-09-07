@@ -135,3 +135,22 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
   Build si admite API key (no verificado); (c) tier **SuperGrok Heavy**, con pool mayor
   (tamaño no publicado).
 - **Estado:** bloqueante; la generación de B sigue (no depende de Grok).
+
+## H2-08 — La suscripción de Codex rinde ~30 minutos de trabajo de B por ventana de 5 horas
+
+- **Componente:** consumo de B (5.6) y protocolo §5.8 / ADR-025 D3
+- **Observado:** dos cortes en la misma etapa: 00:18 (24 min de trabajo) y 06:05 (29 min:
+  paso 1 continuado 13 min, revisor 14 min, pase correctivo 2,5 min). Entre ambos, 5 h 17
+  de espera. Cada invocación de B lanzó **3 subagentes** —12 threads hijos en 4
+  invocaciones— y los subagentes consumieron **más entrada que el thread principal**:
+  22,7 M contra 20,1 M de tokens de entrada (rollouts de `sesiones-codex/`, ADR-023). El
+  `turn.completed` del `--json` sólo ve los 20,1 M.
+- **Por qué importa:** con este ritmo, la etapa backend del universo reducido necesita
+  **tres ventanas** (≥ 10 h de pared por ~55 min de trabajo) y una etapa oficial de B, del
+  orden de días. ADR-025 D3 asumió cortes «una o más veces por etapa»; el dato es «una
+  ventana entera por cada media hora». La decisión suscripción/API key de B se reabre
+  con este número; la de A no (A completó sus tres etapas sin un solo corte).
+- **Corrección de procedimiento (hecha):** `--desde-paso N` en el orquestador para
+  continuar desde el paso interrumpido sin repetir los completos (`paso_omitido` en el
+  JSONL), que es lo que §5.8 describe y el núcleo no tenía.
+- **Estado:** medido; decisión del tesista sobre B.

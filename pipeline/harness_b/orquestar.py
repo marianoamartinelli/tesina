@@ -206,7 +206,7 @@ def main() -> int:
 
     # `construir_comando` es lo único que este orquestador aporta al bucle de
     # ejecución, que vive en `comun.nucleo` para las dos familias.
-    return correr_etapa(corrida, CLI, version, FAMILIA, construir_comando)
+    return correr_etapa(corrida, CLI, version, FAMILIA, construir_comando, desde_paso=args.desde_paso)
 
 
 if __name__ == "__main__":
