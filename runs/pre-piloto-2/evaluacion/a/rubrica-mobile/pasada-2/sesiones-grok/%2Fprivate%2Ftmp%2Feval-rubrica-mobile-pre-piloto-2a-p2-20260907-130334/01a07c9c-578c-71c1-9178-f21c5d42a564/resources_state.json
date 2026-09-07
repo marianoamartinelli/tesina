@@ -1,0 +1,82 @@
+{
+  "params": {
+    "grok_build.ListDir": {
+      "max_output_chars": null
+    },
+    "grok_build.UseTool": {
+      "native_tool_correction": true
+    },
+    "grok_build.Bash": {
+      "timeout_secs": null,
+      "max_timeout_secs": 36000.0,
+      "output_byte_limit": null,
+      "cmd_prefix": null,
+      "enabled_background": true,
+      "auto_background_on_timeout": true,
+      "foreground_block_budget_ms": null,
+      "max_block_until_ms": null,
+      "allow_background_operator": true,
+      "surface_bg_completion_reminders": true
+    },
+    "grok_build.ReadFile": {
+      "cursor_rules_on_read": false
+    },
+    "grok_build.SearchReplace": {
+      "skip_read_before_edit": false,
+      "empty_old_string_does_not_override": false,
+      "unicode_normalized_fallback": false,
+      "include_user_edit_hint": true
+    },
+    "grok_build.Grep": {
+      "max_output_bytes": null,
+      "max_chars_per_line": null
+    }
+  },
+  "state": {
+    "grok_build.ReportedTaskCompletions": {
+      "reported": [
+        "call-0cee0111-ebad-4e5a-ad1d-cca18447174d-98",
+        "call-6d2b2979-ad52-49f8-a966-1fa910e4c22e-90",
+        "call-e47e405c-ec86-4959-a7be-7fe67ce12f7f-63",
+        "call-b805d760-627f-4a3a-842b-b57e91cb60c2-55",
+        "call-fd88b5fa-a819-4b8a-ab78-099d7089c337-74",
+        "call-da016c15-094d-4ac8-b642-0f48ddacb518-96",
+        "call-7220861b-0c94-4d69-99e9-461b451cb602-47",
+        "call-e2244edc-c50a-4bb3-af36-3fe94ab6a091-78",
+        "call-d1621a03-7f7d-4c13-9b73-af28376c2f8d-92",
+        "call-a6089186-bda5-4c37-977a-0f11b81b27f2-49",
+        "call-a8c82520-d6bc-4b68-a0db-49d8e4a81343-61",
+        "call-4ac853df-7937-483f-8027-cfcea1dd4380-68",
+        "call-df694733-653a-4314-8655-dbff2d3bfafc-70",
+        "call-e8c4fa65-15c9-4465-9498-d63a5ee61795-80",
+        "call-400d3526-fb4f-480f-ae26-62a8bc454945-82",
+        "call-47d88ed3-42f1-46fd-86a3-dee08ceedf6f-84",
+        "call-feb07c64-b355-48e1-babb-fcadab29b017-44"
+      ]
+    },
+    "grok_build.Todo": {
+      "todos": {
+        "setup": {
+          "content": "Explorar insumos, entorno, spec, rúbrica y datos de prueba",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-01": {
+          "content": "Evaluar AT-11-01-01 a AT-11-01-14 (onboarding)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-06": {
+          "content": "Evaluar AT-11-06-01 y AT-11-06-26",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "output": {
+          "content": "Escribir rubrica-completada.md, CSV y evidencias",
+          "priority": "medium",
+          "status": "completed"
+        }
+      }
+    }
+  }
+}

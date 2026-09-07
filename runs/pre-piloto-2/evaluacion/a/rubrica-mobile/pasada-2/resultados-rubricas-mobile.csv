@@ -1,0 +1,95 @@
+at_id,resultado,detalle,fuera_de_catalogo
+AT-11-01-01,PASA,Login con evaluador.p2@eval.test navega a Depositar. Backend POST /api/v1/auth/login 200 y GET /deposit-address?asset=ETH 200. Token persistido sólo vía SecureStore (saveSession en secure-storage.ts; confirmado por cold start de AT-11-01-02). Password no se escribe en almacén. evidencia/AT-11-01-01-2-after-submit.png y .xml,false
+AT-11-01-02,PASA,"Tras am force-stop host.exp.exponent y CMD_RELANZAR_APP entra a Depositar sin pedir credenciales. Backend: sólo GET /deposit-address?asset=ETH 200, sin POST /auth/login ni GET /me (restauración optimista). evidencia/AT-11-01-02-2-restored.png, AT-11-01-02-backend.log",false
+AT-11-01-03,PASA,"Tras logout (POST /auth/logout 204) muestra login. Cold start (force-stop + relanzar) vuelve a login. Backend: ningún endpoint autenticado tras el logout/reapertura. evidencia/AT-11-01-03-1-coldstart.png, AT-11-01-03-backend.log",false
+AT-11-01-04,PASA,"Credenciales incorrectas: POST /auth/login 401. UI: 'Email o contraseña incorrectos' (no revela si el email existe), permanece en login. Cold start posterior sigue en login (no persistió token). evidencia/AT-11-01-04-1-error.png, AT-11-01-04-2-coldstart.png, AT-11-01-04-backend.log",false
+AT-11-01-05,PASA,"Sesión activa; se revocaron sesiones en SQLite (revoked_at). Tap USDC dispara GET /deposit-address?asset=USDC 401. App borra sesión y redirige a login con 'Tu sesión expiró, ingresá nuevamente'. Cold start posterior permanece en login. evidencia/AT-11-01-05-1-after-401.png, AT-11-01-05-2-coldstart.png, AT-11-01-05-backend.log",false
+AT-11-01-06,PASA,"Logout: POST /auth/logout 204, UI vuelve a login. Cold start (force-stop + relanzar) pide credenciales; backend sin GET autenticados. evidencia/AT-11-01-06-1-logout.png, AT-11-01-06-2-coldstart.png, AT-11-01-06-backend.log",false
+AT-11-01-07,PASA,"Campos vacíos: bloquea con 'Ingresá tu email' e 'Ingresá tu contraseña'. Email 'notanemail': 'El email no tiene un formato válido'. Backend sin POST /auth/login (log vacío). evidencia/AT-11-01-07-1-empty.png, AT-11-01-07-2-invalid-email.png, AT-11-01-07-backend.log",false
+AT-11-01-08,PASA,"Instrumentación (precondición 5): tests propios en copia /tmp/eval-mobile-jest (tests/login/login-security.test.tsx) AT-11-01-08 x3 PASA: SecureStore.setItemAsync recibe el token; AsyncStorage/localStorage 0 invocaciones; escaneo estático de App.tsx, index.ts y src/ sin almacén en claro. Código: único persistidor expo-secure-store (secure-storage.ts); package.json sin AsyncStorage. evidencia/AT-11-01-instrumentacion-jest.log",false
+AT-11-01-09,PASA,"Backend caído (docker stop sut-2a). Login con credenciales válidas: 'No se pudo conectar, reintentá' (distinto de 'Email o contraseña incorrectos'), permanece en login con Ingresar habilitado. No hay token (sigue anónimo). Restablecido con docker start sut-2a; health OK. evidencia/AT-11-01-09-1-offline.png",false
+AT-11-01-10,PASA,"Sesión activa; KEYCODE_HOME y sleep 60 real; am start ExperienceActivity (task brought to front, no restart). Sigue en Depositar con la misma dirección, sin re-login. Backend: sin POST /auth/login al volver. evidencia/AT-11-01-10-0-auth.png, AT-11-01-10-1-resume.png, AT-11-01-10-backend.log",false
+AT-11-01-11,PASA,"Instrumentación: tests AT-11-01-11 x3 PASA (spies console.* sin token ni password). logcat del login AT-11-01-01: EvalPass12 NOT_FOUND. Inspección: ningún console.log/error/warn/info/debug en sut/mobile/src ni App.tsx. evidencia/AT-11-01-instrumentacion-jest.log, AT-11-01-11-logcat-scan.txt",false
+AT-11-01-12,NO_EVALUABLE,(a) el backend no expone WebSocket privado (HU-09-04 no implementado; no hay /api/v1/ws). No se puede provocar handshake/eventos UNAUTHENTICATED al volver a foreground. El cliente tampoco implementa WS (sólo comentarios en SessionProvider). No se penaliza la ausencia del backend WS.,false
+AT-11-01-13,PASA,"Instrumentación: no provocable de forma fiable en emulador (Before First Unlock). Tests propios AT-11-01-13 PASA (secure-storage, session-provider, app-lifecycle, login-security): excepción de SecureStore se trata como sin token, muestra login, no loggea ni muestra el detalle interno, reintenta en foreground. Código: readPersistedSession catch → unavailable sin log. evidencia/AT-11-01-instrumentacion-jest.log",false
+AT-11-01-14,PASA,Instrumentación: no hay pantallas de balances/órdenes/market data en esta celda. Tests AT-11-01-14 PASA: tres peticiones 401 concurrentes → un único borrado y una única navegación al login; 401 posteriores no-op. Código: endSession singleton (closingRef + sessionActiveRef) en SessionProvider.tsx; navegación derivada de un único estado anonymous. evidencia/AT-11-01-instrumentacion-jest.log,false
+AT-11-02-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-15,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-16,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-17,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-18,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-01,PASA,"Pantalla Depositar ETH: dirección 0x5c9CB52Bcf6C2B8B223Ce9B1E7853a2d12E579B5 (0x+40 hex, EIP-55 recomputado OK), leyenda 'Red sepolia (chainId 11155111) · ETH (nativo)', QR visible. zbarimg: ethereum:0x5c9CB52Bcf6C2B8B223Ce9B1E7853a2d12E579B5@11155111. Copiar: botón 'Dirección copiada' y overlay del portapapeles con la misma dirección. evidencia/AT-11-06-01-1-eth.png, AT-11-06-01-3-copied-feedback.png, AT-11-06-01-zbar.txt, AT-11-06-eip55.txt",false
+AT-11-06-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-15,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-16,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-17,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-18,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-19,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-20,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-21,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-22,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-23,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-24,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-25,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-26,PASA,"Pantalla USDC-mock. GET /deposit-address?asset=USDC 200 con tokenAddress=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 (coincide EVAL_USDC_ADDRESS) y address de depósito 0x5c9CB52Bcf6C2B8B223Ce9B1E7853a2d12E579B5 (EIP-55 OK, mostrado en texto). zbarimg del QR: ethereum:0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512@11155111/transfer?address=0x5c9CB52Bcf6C2B8B223Ce9B1E7853a2d12E579B5. evidencia/AT-11-06-26-1-usdc.png, AT-11-06-26-zbar.txt, AT-11-06-eip55.txt",false

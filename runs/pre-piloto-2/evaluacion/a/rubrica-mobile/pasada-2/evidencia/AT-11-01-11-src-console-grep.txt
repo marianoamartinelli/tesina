@@ -1,0 +1,1 @@
+no matches: console.log/debug/info/warn/error in sut/mobile/src and App.tsx
