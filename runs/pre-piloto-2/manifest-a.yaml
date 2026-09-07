@@ -74,12 +74,12 @@ inicio: "2026-09-06T23:54:00-03:00"
 fin: "2026-09-07T02:45:51-03:00"
 repo_commit_final: "1570c971007486e6f710adb7887d446a05ce5178"   # más 20 archivos modificados sin commitear por el agente (INT-03); congelado en sólo lectura
 etapas:
-  backend: {inicio: "2026-09-06T23:54:00-03:00", fin: "2026-09-07T00:58:56-03:00", tokens: "PENDIENTE-CIERRE (turnos: 66 + 198 + 67)", costo_usd: 74.22, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (GET /health con chainId 11155111 verificado contra el nodo, INT-01)", consultas_rag: 16}
-  web: {inicio: "2026-09-07T01:00:07-03:00", fin: "2026-09-07T01:43:08-03:00", tokens: "PENDIENTE-CIERRE (turnos: 75 + 59 + 34)", costo_usd: 38.01, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (build de producción exit 0 en contenedor, INT-02)", consultas_rag: 0}
-  mobile: {inicio: "2026-09-07T01:44:03-03:00", fin: "2026-09-07T02:45:51-03:00", tokens: "PENDIENTE-CIERRE (turnos: 84 + 73 + 75)", costo_usd: 56.44, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (expo export --platform android exit 0 en contenedor, INT-03)", consultas_rag: 9}
+  backend: {inicio: "2026-09-06T23:54:00-03:00", fin: "2026-09-07T00:58:56-03:00", tokens: {entrada: 440, entrada_cacheada: 54058981, cache_escrita: 343636, salida: 80093, turnos: "66 + 198 + 67"}, costo_usd: 74.22, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (GET /health con chainId 11155111 verificado contra el nodo, INT-01)", consultas_rag: 16}
+  web: {inicio: "2026-09-07T01:00:07-03:00", fin: "2026-09-07T01:43:08-03:00", tokens: {entrada: 68, entrada_cacheada: 5554615, cache_escrita: 57725, salida: 24277, turnos: "75 + 59 + 34"}, costo_usd: 38.01, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (build de producción exit 0 en contenedor, INT-02)", consultas_rag: 0}
+  mobile: {inicio: "2026-09-07T01:44:03-03:00", fin: "2026-09-07T02:45:51-03:00", tokens: {entrada: 226, entrada_cacheada: 19991326, cache_escrita: 83294, salida: 37635, turnos: "84 + 73 + 75"}, costo_usd: 56.44, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (expo export --platform android exit 0 en contenedor, INT-03)", consultas_rag: 9}
 logs_jsonl: ["pre-piloto-2a-backend-20260906-235400.jsonl", "pre-piloto-2a-web-20260907-010007.jsonl", "pre-piloto-2a-mobile-20260907-014403.jsonl"]
 costo_total_usd: 168.67   # nativo, un `result` por session_id (H-11): 74.22 + 38.01 + 56.44
-tokens_totales: null
+tokens_totales: {entrada: 734, entrada_cacheada: 79604922, cache_escrita: 484655, salida: 142005}   # un `result` por session_id (H-11)
 intervenciones_total: 3   # los tres son smokes de avance
 
 # 6. Evaluación (ADR-026): la ejecuta el agente tercero
