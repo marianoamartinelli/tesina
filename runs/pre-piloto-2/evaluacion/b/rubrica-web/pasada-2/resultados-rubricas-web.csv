@@ -1,0 +1,80 @@
+at_id,resultado,detalle,fuera_de_catalogo
+AT-10-01-01,PASA,"Playwright. POST http://127.0.0.1:3203/api/v1/auth/login 200 con {email: eval-web@test.local, password: ***}. Navega a http://127.0.0.1:4203/trading. Token 4fHWrUiURFAT9udv6wRXER9eST2n9OWXzsvXTDUI2U8 ausente en URL y en documentElement.outerHTML; persistido en localStorage exchange.session.v1. evidencia/AT-10-01-01-1.png (formulario) y evidencia/AT-10-01-01-2.png (destino /trading; root vacío porque HU-10-02 está fuera de alcance).",false
+AT-10-01-02a,PASA,"Playwright. POST /api/v1/auth/login 401 {error.code: INVALID_CREDENTIALS, message: Las credenciales son inválidas.} payload {email: inexistente-web@test.local, password: cualquiercosa}. UI alerta 'Email o contraseña incorrectos'; #password vacío; permanece en /login con heading 'Ingresá a tu cuenta'. evidencia/AT-10-01-02a-1.png",false
+AT-10-01-02b,PASA,"Playwright. POST /api/v1/auth/login 401 {error.code: INVALID_CREDENTIALS} payload {email: eval-web@test.local, password: password-incorrecta}. Mismo texto exacto que 02a: 'Email o contraseña incorrectos'; #password vacío; permanece en /login. evidencia/AT-10-01-02b-1.png",false
+AT-10-01-03,PASA,"Playwright. Botón Ingresar disabled con ambos vacíos, con solo email y con solo password. form.requestSubmit() en los tres casos: cero requests a /api/*. Permanece en /login. evidencia/AT-10-01-03-1.png",false
+AT-10-01-04,PASA,"Playwright page.route sobre POST /api/v1/auth/login con demora 2500 ms (equivale a throttling). Tras click, click force y requestSubmit: loginRequests=1. Durante la espera el botón muestra 'Ingresando…', disabled=true, aria-busy=true. Al resolver navega a /trading.",false
+AT-10-01-05,PASA,"El cliente no bloquea formato inválido (type=text). Se envió email 'no-es-email'; page.route (equiv. proxy) reescribió el body de POST /api/v1/auth/login de {email, password} a {email: 'no-es-email'} sin password. Backend 422 {error.code: VALIDATION_ERROR, details.issues: [{field: password, message: Campo requerido}]}. UI muestra 'Campo requerido' en el campo password (aria-invalid=true); permanece en /login. evidencia/AT-10-01-05-1.png",false
+AT-10-01-06,PASA,"Script auxiliar en el origen del navegador: 58 POST /api/v1/auth/login 401 y el 59° 429; el submit del formulario recibió 429 {error.code: RATE_LIMITED, details.retryAfterSeconds: 12}. UI: 'Demasiados intentos. Intentá nuevamente en 12 segundos.'; botón Ingresar disabled. Tras transcurrir el lapso, botón enabled y el aviso desaparece. evidencia/AT-10-01-06-1.png (bloqueado) y evidencia/AT-10-01-06-2.png (rehabilitado).",false
+AT-10-01-07,PASA,"Sesión activa en /trading (token persistido). POST /api/v1/auth/logout 204 (revocar sesión). Al navegar a /login: GET http://127.0.0.1:3203/api/v1/me con Authorization Bearer → 401. localStorage sin exchange.session.v1; formulario de login con aviso 'Tu sesión expiró, ingresá nuevamente'. evidencia/AT-10-01-07-1.png",false
+AT-10-01-08,PASA,"Playwright page.route abort('failed') de POST /api/v1/auth/login (equiv. offline) con credenciales válidas {email: eval-web@test.local, password: ***}. UI: 'No se pudo conectar, reintentá'; email conservado; botón Ingresar enabled (reintento); sin stack traces ni detalles internos en el DOM; permanece en /login. evidencia/AT-10-01-08-1.png",false
+AT-10-01-09,PASA,Token Bearer persistido vigente (expiresAt futuro). Navegar a /login ejecuta GET http://127.0.0.1:3203/api/v1/me 200 con Authorization: Bearer <token>. Redirige a /trading sin mostrar el formulario de credenciales (#email ausente). evidencia/AT-10-01-09-1.png,false
+AT-10-01-10,PASA,"Se reemplazó exchange.session.v1 por {token: 'token-invalido-no-expirado-xxxxxxxxxxxxxxxxxxxx', expiresAt: futuro} y se recargó /login. GET /api/v1/me 401 con Authorization Bearer de ese valor. Cliente limpia localStorage (queda vacío) y muestra el formulario de login (heading 'Ingresá a tu cuenta', #email visible). evidencia/AT-10-01-10-1.png",false
+AT-10-02-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-02-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-08a,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-08b,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-08c,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-15,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-16,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-03-17,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-04-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-07a,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-07b,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-05-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-15,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-06-16,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-10-E2E-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,true

@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07cd0-0476-7bf3-8dc5-855665f0e956",
+    "cwd": "/private/tmp/eval-rubrica-web-pre-piloto-2b-p1-20260907-140001"
+  },
+  "session_summary": "Evalúa rúbrica-web pre-piloto HU10",
+  "created_at": "2026-09-07T17:00:02.630644Z",
+  "updated_at": "2026-09-07T17:17:11.151423Z",
+  "num_messages": 494,
+  "num_chat_messages": 287,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "6b45fc50-4a3c-4f43-bfcf-15eeb01f5f15",
+  "grok_home": "/tmp/eval-rubrica-web-pre-piloto-2b-p1-20260907-140001/.grok-home",
+  "last_active_at": "2026-09-07T17:17:11.151423Z",
+  "generated_title": "Evalúa rúbrica-web pre-piloto HU10",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}
