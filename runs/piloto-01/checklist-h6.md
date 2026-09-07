@@ -7,11 +7,16 @@ el harness A) y **piloto-02** (smoke end-to-end del harness B). Ningún ítem se
 resuelve editando `spec/` (congelada, tag `spec-v1.1`) ni ADRs aceptados: los
 cambios van por nueva versión de documento + ADR nuevo donde corresponda.
 
-**Estado al 2026-08-23:** **16 de los 24 ítems de salida cerrados.** La sesión del
-2026-08-23 cerró cinco —7, 11, 15, 20 y 13— y volvió a cerrar el 10, que se había
-reabierto ese mismo día; los tres ADRs que lo sostienen (**ADR-014, ADR-015 y ADR-016**)
-quedaron Aceptados en la sesión. Los **8 abiertos son 1, 2, 6, 16, 19, 22, 23 y 24**, y
-**todos necesitan la corrida misma**.
+**Estado al 2026-09-06:** **18 de los 24 ítems de salida cerrados.** La pre-piloto
+(2026-08-24) y su cierre (2026-09-06) cerraron el 16 y el 23 por mecanismo, y dejaron el
+19 parcialmente medido. Los **6 abiertos son 1, 2, 6, 19, 22 y 24**, y todos necesitan
+`piloto-01`; el 24 se **reabrió** el 2026-09-06 al medir que el `--json` de Codex no
+registra a los subagentes (H-23, ADR-023).
+
+**Estado al 2026-08-23:** 16 de los 24 ítems cerrados. La sesión del 2026-08-23 cerró
+cinco —7, 11, 15, 20 y 13— y volvió a cerrar el 10, que se había reabierto ese mismo día;
+los tres ADRs que lo sostienen (**ADR-014, ADR-015 y ADR-016**) quedaron Aceptados en la
+sesión.
 
 De las puertas de entrada quedan dos abiertas: la **autenticación**, que es hoy el
 **bloqueante duro** —el `claude` del contenedor responde `Not logged in` porque en macOS
@@ -306,13 +311,14 @@ resultado observado.
           asentado acá y en el journal del día.
           Fuente: `evaluacion/protocolo.md` §7.
 
-16. - [ ] **Serialización de eventos exóticos:** revisar en los JSONL de la
-          piloto que la degradación a `str()` de `comun.nucleo.serializar` no
-          pierda información relevante para el meta-análisis.
+16. - [x] **Serialización de eventos exóticos: cerrado por mecanismo el 2026-08-24.**
+          Medido sobre las tres etapas de `pre-piloto-b`: **0 de 1 107** payloads
+          degradados a `str()` por `comun.nucleo.serializar`; el JSONL conserva los
+          eventos verbatim (`runs/pre-piloto/matriz-componentes.md`, componente 5.3).
+          Lo que el JSONL de B **no** trae no es un problema de serialización sino de
+          emisión del CLI: ver ítem 24 y H-23.
           Fuente: `pipeline/comun/nucleo.py` (`serializar`); `pipeline/README.md`
           §"Pendiente para la piloto".
-          Decisión esperada: serialización ratificada o ajustada antes de las
-          oficiales.
 
 ### Ítems abiertos por ADR-009 (2026-08-16)
 
@@ -370,6 +376,17 @@ resultado observado.
           Se suman los nombres exactos de los campos de tokens de `turn.completed`:
           `nucleo.costo_estimado_usd` no está cableada en vivo justamente porque
           adivinar ese esquema sería inventarlo.
+          **Medido en la pre-piloto (2026-08-24) y su cierre (2026-09-06):**
+          (a) campos de `turn.completed.usage` pinneados —`input_tokens`,
+          `cached_input_tokens`, `cache_write_input_tokens`, `output_tokens`,
+          `reasoning_output_tokens`— y el estimador corregido sobre ellos (H-14);
+          (b) `-c developer_instructions` llega al modelo en `codex exec` real: en el
+          paso `revisor` de las tres etapas de B el único `file_change` fue el archivo de
+          revisión y el modelo anunció «ninguna modificará archivos», que es el punto 1
+          del prompt del rol; (c) el rate limit a mitad de etapa **no ocurrió**: A emitió
+          11 `rate_limit_event`, todos `allowed`, y B ninguno — el comportamiento ante el
+          corte sigue sin medir. Queda abierto por (c) y porque el consumo de B no incluye
+          a sus subagentes (H-23).
           Fuente: ADR-009 §Evidencia verificada y §Consecuencias.
 
 20. - [x] **Precio por token de `gpt-5.6-sol`: ratificado el 2026-08-23** por el
@@ -416,8 +433,12 @@ resultado observado.
           Fuente: ADR-010 Decisión 2; `runs/piloto-01/precio-gpt-5-6-sol.md`.
           Decisión esperada: efecto del parámetro medido, y la asimetría de compactación
           A/B cerrada o declarada como limitación antes de H7.
+          **Pre-piloto (2026-08-24):** ninguna compactación observable en el `--json` de B
+          ni en el stream de A (sin `compact_boundary`). Pero el `--json` de B no es un
+          oráculo válido para esto: no emite eventos de sesión. Con ADR-023 los rollouts
+          de B quedan en los logs y la piloto puede leer ahí si compactó.
 
-23. - [ ] **Techo de 1 048 576 caracteres por input en el CLI de Codex** (verificado:
+23. - [x] **Techo de 1 048 576 caracteres por input en el CLI de Codex** (verificado:
           `turn/start` rechaza con `input_too_large` / `max_chars`, independiente de los
           tokens). Los prompts de etapa y de rol están muy por debajo, pero el archivo de
           handoff bajo `.pipeline/` puede crecer: si un `revisor` produce una revisión
@@ -426,6 +447,10 @@ resultado observado.
           **Mitigado parcialmente por el ítem 17:** el prompt transporta la **ruta** del
           archivo de handoff, no su contenido, así que el techo sólo se alcanzaría si el
           rol decide leerlo y citarlo entero.
+          **Cerrado el 2026-09-06 con el dato de la pre-piloto:** 0 errores
+          `input_too_large` en las 9 invocaciones de B; los handoffs más grandes fueron los
+          de A (9 072 bytes, `revision-mobile.md`), dos órdenes de magnitud bajo el techo.
+          Se vigila igual en la piloto, sin acción pendiente.
           Fuente: ADR-010 Decisión 2.
 
 24. - [ ] **Fan-out efectivo de la delegación en cada familia.** ADR-010 D1 instruye
@@ -441,4 +466,12 @@ resultado observado.
           `parent_tool_use_id`. En B ese campo no existe y el derivador devuelve `None`:
           **qué evento del JSONL de `codex exec --json` identifica a un subagente es
           justamente lo que la piloto tiene que pinnear.**
-          Fuente: ADR-010 Decisión 1.
+          **Medido el 2026-09-06 (H-23): ninguno.** `codex exec --json` no emite el
+          `spawn_agent` ni la actividad del subagente; sólo un `collab_tool_call` de
+          `wait` con `receiver_thread_ids: []`, que es lo que la pre-piloto leyó como «B
+          no delegó» (H-22, corregido). El registro está en los rollouts de
+          `$CODEX_HOME/sessions/` (`session_meta.thread_source == "subagent"`,
+          `parent_thread_id`), que la pre-piloto perdió y que **ADR-023** persiste en los
+          logs. El fan-out de B se mide en la piloto sobre esos rollouts; A ya está
+          medido (1 736 de 7 612 eventos).
+          Fuente: ADR-010 Decisión 1; ADR-023.

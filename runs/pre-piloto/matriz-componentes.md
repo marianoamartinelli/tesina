@@ -4,10 +4,13 @@ Qué componente ejercita cada parte de la pre-piloto, con qué evidencia se lo d
 verificado y en qué estado está. Es el instrumento de la corrida: un componente sin
 evidencia registrada acá **no** está verificado, por más que la corrida haya terminado.
 
-**Estado al cierre de la pre-piloto (2026-08-24): 37 de 44 componentes verificados.**
-De los 7 restantes, 3 son rúbricas manuales que completa el tesista, 1 es su arbitraje,
-1 es una decisión suya abierta (el uso del corpus, H-12), 1 es un camino que no llegó a
-ocurrir (corte por exit ≠ 0) y 1 tiene residuo declarado (la tarifa de caché del ítem 20).
+**Estado al 2026-09-06: 38 de 44 componentes verificados.** De los 6 restantes, 1 es la
+rúbrica mobile, que no tiene emulador donde correr (H-25); 1 es el arbitraje del tesista;
+1 es una decisión suya abierta (el uso del corpus, H-12); 1 se **reabrió** (la delegación
+en B, que el `--json` no registra — H-23, ADR-023); 1 es un camino que no llegó a ocurrir
+(corte por exit ≠ 0) y 1 tiene residuo declarado (la tarifa de caché del ítem 20). Las
+rúbricas web y del rol revisor se **ensayaron** sobre B (H-24, H-26): el instrumento
+corre; los veredictos de registro siguen siendo del tesista en H8.
 
 Estados: `[ ]` sin ejercitar · `[~]` ejercitado con defectos abiertos · `[x]` verificado.
 
@@ -44,7 +47,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | 3.1 | `claude-opus-5` con effort `xhigh` | smoke de 1 invocación | `result` con `total_cost_usd`, 7 turnos, exit 0 | [x] 2026-08-23 |
 | 3.2 | `gpt-5.6-sol` con effort `xhigh` | ídem | `turn.completed` con usage, exit 0 | [x] 2026-08-23 |
 | 3.3 | Confinamiento de B | smoke de 1 invocación | bwrap no crea namespaces ⇒ B sin shell (H-04); resuelto por ADR-019: sin sandbox nativo, shell exit 0 | [x] 2026-08-23 |
-| 3.4 | Delegación en subagentes (ADR-010 D1) | 3 etapas × 2 celdas | A: 1 736/7 612 eventos de subagente. B: 24 `collab_tool_call`, **todos sin receptores** — no delegó (H-22, cierra el ítem 24) | [x] mapeo resuelto |
+| 3.4 | Delegación en subagentes (ADR-010 D1) | 3 etapas × 2 celdas; 2 corridas de control en B | A: 1 736/7 612 eventos de subagente. B: los 24 `collab_tool_call` sin receptores **no prueban que no delegó**: el `--json` no emite `spawn_agent` ni al subagente (H-23); el registro son los rollouts, que la pre-piloto perdió. ADR-023 los persiste | [~] reabierto: se mide en la piloto sobre los rollouts |
 | 3.5 | Restricción de recuperación web (ADR-008) | 3 etapas × 2 celdas | A: `web_search_requests: 0`. B: **cero** items `web_search` | [x] 2026-08-24 |
 
 ## 4. RAG por MCP (ADR-009 D2)
@@ -61,7 +64,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
 | 5.1 | Esquema del stream de A | 3 etapas de A | tipos confirmados; **varios `result` por invocación** con el mismo acumulado (H-11) y sus `parent_tool_use_id` en null; subagentes atribuidos en los mensajes | [x] cierra el ítem 19 del lado A |
-| 5.2 | Esquema del JSONL de B | 3 etapas de B | `turn.completed.usage` = `input_tokens`, `cached_input_tokens`, `cache_write_input_tokens`, `output_tokens`, `reasoning_output_tokens`; items `command_execution`, `mcp_tool_call`, `agent_message` | [x] cierra el ítem 19 del lado B |
+| 5.2 | Esquema del JSONL de B | 3 etapas de B | `turn.completed.usage` = `input_tokens`, `cached_input_tokens`, `cache_write_input_tokens`, `output_tokens`, `reasoning_output_tokens`; items `command_execution`, `mcp_tool_call`, `agent_message` ; **no emite `spawn_agent` ni la actividad de subagentes** (H-23) | [x] cierra el ítem 19 del lado B |
 | 5.3 | `serializar` no pierde información | 1 107 payloads de B | **0 degradados a `str()`** (cierra el ítem 16) | [x] 2026-08-24 |
 | 5.4 | stderr por paso a archivo | etapa backend | un archivo por paso, vacíos en el camino feliz | [x] 2026-08-24 |
 | 5.5 | Costo: `total_cost_usd` de A | 3 etapas de A | `costo_por_sesion` agrupa por `session_id` y no suma duplicados: **USD 142,20** en total (H-11 resuelto) | [x] 2026-08-24 |
@@ -90,9 +93,9 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
-| 8.1 | Rúbrica web (épica 10) | ítems de `HU-10-01` | CSV de veredictos | [ ] |
-| 8.2 | Rúbrica mobile (épica 11) | `HU-11-01` + `AT-11-06-01`/`-26` | ídem | [ ] |
-| 8.3 | Rúbrica del rol revisor | la revisión de cada etapa + snapshots | CSV de veredictos | [ ] |
+| 8.1 | Rúbrica web (épica 10) | ítems de `HU-10-01`, ensayo sobre B | `rubricas/epica-10-web-b.md`: 10 PASA / 1 FALLA; tres huecos del instrumento (H-24) | [x] ensayado 2026-09-06 |
+| 8.2 | Rúbrica mobile (épica 11) | `HU-11-01` + `AT-11-06-01`/`-26` | **no ejecutable**: la precondición 2 exige emulador o dispositivo y no hay ninguno (H-25) | [~] decisión del tesista |
+| 8.3 | Rúbrica del rol revisor | las 3 revisiones de B + snapshots + JSONL | `rubricas/rol-revisor-b.md`: censo de 11 puntos, 35 PASA / 1 FALLA; nueve huecos del instrumento (H-26) | [x] ensayado 2026-09-06 |
 | 8.4 | Métricas estáticas | `medir.sh` sobre el backend de B | corre tras instalar el toolchain; contaba la spec y los lockfiles (H-20 ⇒ ADR-022): 32 648 → 5 301 loc | [x] 2026-08-24 |
 
 ## 9. Protocolo

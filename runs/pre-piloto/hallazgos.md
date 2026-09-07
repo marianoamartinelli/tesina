@@ -674,3 +674,137 @@ reproducibles entre pasadas—, no la calidad de lo evaluado.
 - **Fidelidad del registro (componente 5.3):** **0 de 1 107** payloads degradados a
   `str()` por `nucleo.serializar` en B. El JSONL conserva los eventos verbatim, que es lo
   que el ítem 16 de la checklist H6 pedía comprobar.
+
+## H-23 — B sí puede delegar: el `--json` de `codex exec` no registra a los subagentes
+
+- **Componente:** 3.4 (delegación en subagentes) y 5.2 (esquema del JSONL de B) —
+  **corrige H-22** y reabre el ítem 24 de la checklist H6
+- **Medido el 2026-09-06**, dos corridas de control en el contenedor de B (CLI 0.146.0,
+  mismos flags del orquestador, effort `low`, pedido explícito de lanzar un subagente):
+  - `codex features list` con `CODEX_HOME` limpio: **`multi_agent  stable  true`**.
+  - El modelo llamó a `spawn_agent`; el CLI creó un segundo thread con
+    `session_meta.source.subagent.thread_spawn.parent_thread_id` = el thread principal, y
+    ese subagente ejecutó `echo hola-subagente` y devolvió la salida real (rollout del
+    subagente, `function_call` `exec` + `function_call_output`).
+  - El stream `--json` del thread principal registró **un solo `collab_tool_call`, de
+    `wait`, con `receiver_thread_ids: []`** — ni el `spawn_agent` ni nada del subagente.
+    Es la misma forma que los 24 `collab_tool_call` de la pre-piloto que H-22 leyó como
+    «no delegó». En la primera corrida de control el modelo además **reportó** la salida
+    del subagente como si la hubiera recibido, aunque su `wait` volvió vacío: el stream
+    no permite distinguir eso de una delegación real.
+  - `turn.completed.usage` del thread principal (29 932 entrada / 303 salida) **no incluye**
+    al subagente (19 927 / 98 en su propio `token_count`).
+- **Lo que esto cambia:** «B no delegó en ninguna etapa» (H-22) pasa a **«no se sabe»**:
+  el implementador de B anunció «Delego ahora tres auditorías acotadas» en la etapa
+  backend y el registro no puede confirmar ni refutar que lo hizo. Y el consumo de B en
+  `manifest-b.yaml` es una **cota inferior** si hubo subagentes.
+- **Causa de la pérdida:** los rollouts viven en `$CODEX_HOME/sessions/`, que en la
+  pre-piloto estaba adentro del contenedor efímero (`--rm`).
+- **Corrección:** `pipeline` — **ADR-023** (Propuesto): B monta `<logs>/sesiones-codex/`
+  en `/home/agente/.codex/sessions`, hermano del `auth.json` (un montaje anidado en otro
+  falla: `mountpoint … is outside of rootfs`); `verificar_paridad.py` admite esa segunda
+  diferencia declarada y la chequea (145 chequeos). Verificado con una invocación real:
+  el rollout quedó en el host. El fan-out de B se lee sobre los rollouts, no sobre el
+  `--json`.
+- **Estado:** corregido en el pipeline; ADR-023 pendiente de ratificación.
+
+## H-19 (datos) — Tiempo de pared por pasada contra el tiempo declarado
+
+Del JSONL del runner (`inicio` → `fin`) contra la suma de `duracion_min` que el agente
+escribió en cada YAML:
+
+| pasada | pared | declarado | razón |
+|---|---|---|---|
+| B-1 | 16 min 19 s | 176 min | 10,8× |
+| B-2 | 18 min 44 s | 202 min | 10,8× |
+| A-1 | 18 min 24 s | 157 min | 8,5× |
+| A-2 | 12 min 12 s | 128 min | 10,5× |
+
+El campo declarado no mide nada: sobreestima un orden de magnitud y de forma estable.
+Refuerza la opción de declararlo no-métrica y medir esfuerzo por pared, turnos y tokens.
+
+## Proyección de consumo para H7 (orden de magnitud, con su supuesto)
+
+Sobre el consumo nativo de A en la pre-piloto (`effort high`), escalando **linealmente
+por HU** —supuesto declarado: las HU de matching, settlement y retiros son más grandes
+que las de registro y login, así que la escala lineal es una cota más bien baja—:
+
+| etapa | pre-piloto | HU del prompt reducido | HU de la spec | proyección |
+|---|---|---|---|---|
+| backend | USD 56,67 | 9 (6 evaluadas + 3 parciales) | 45 | ≈ USD 283 |
+| web | USD 36,52 | 1 | 6 | ≈ USD 219 |
+| mobile | USD 49,01 | 1,5 | 6 | ≈ USD 196 |
+| **total por celda A** | **USD 142,20** | | | **≈ USD 700** |
+
+Con `xhigh` (no medido) el número sube. Para B la cota 13–262 de la pre-piloto no da
+una proyección útil hasta ratificar la tarifa de caché (ítem 20). Y el tiempo: web
+(50 min) y mobile (65 min) para 1–1,5 HU proyectan **etapas de varias horas**, así que
+la ventana de 5 horas del rate limit (H-05) se cruza en cada etapa y la continuación de
+etapa (protocolo §5.8) deja de ser excepcional.
+
+## H-24 — Ensayo de la rúbrica web (épica 10) sobre B: el instrumento corre; tres huecos
+
+- **Componente:** 8.1 — ensayo del instrumento, no veredicto del tesista; detalle en
+  [`rubricas/epica-10-web-b.md`](rubricas/epica-10-web-b.md)
+- **Procedimiento:** backend y cliente web de B en contenedores con puerto publicado
+  (ADR-021), evaluados desde un navegador automatizado (Playwright); los 11 ítems de
+  `HU-10-01` en el orden de la rúbrica. **10 PASA / 1 FALLA** (AT-10-01-07: al 401 el
+  cliente limpia la sesión y redirige, pero **no muestra el aviso** de sesión expirada por
+  el único camino provocable).
+- **Huecos del instrumento:**
+  1. **Rate limit sin valores fijados.** AT-10-01-06 necesita que el backend limite; la
+     spec deja umbral y ventana «por config» (HU-01-02 RN-9) y el SUT de B los expone
+     como variables opcionales. El evaluador tuvo que **elegir** `LOGIN_RATE_LIMIT_MAX=5`
+     / `WINDOW=60`. Sin un valor pre-registrado, cada celda se evalúa con el que su
+     evaluador elija, o con ninguno (`NO_EVALUABLE` a). El contrato de arranque del
+     entorno (`suite-at/entorno/README.md`) tiene que fijarlo antes de H8; también
+     afecta a `AT-01-02-09` y `AT-01-01-20` de la suite (los 2 `skip` de la pre-piloto).
+  2. **AT-10-01-07 con un cliente sin pantallas de datos.** El único request protegido
+     que el cliente hace es el chequeo de sesión (`GET /me`); la rúbrica supone «otra
+     pantalla» que refresca datos. En la spec entera existe; en un cliente que sólo
+     implementó el login, la fila mide el camino del chequeo de sesión. Se codeó FALLA
+     con nota; el criterio de qué camino cuenta no está escrito.
+  3. **Herramientas.** La rúbrica admite DevTools (throttling, offline) y un proxy
+     interceptor. El ensayo usó `page.route` de Playwright para las tres cosas (demorar,
+     abortar, adulterar el payload de AT-10-01-05). Es equivalente en efecto, pero no está
+     entre las «herramientas permitidas (y ninguna otra)»: declararlo antes de H8, o
+     excluirlo.
+- **Estado:** instrumento ejercitado; los tres huecos son decisión del tesista antes de H8.
+
+## H-25 — La rúbrica mobile no es ejecutable en este entorno: 94 ATs sin evaluador
+
+- **Componente:** 8.2
+- **Observado:** la precondición 2 de `rubricas/epica-11-mobile.md` exige la app corriendo
+  en **emulador Android, simulador iOS o dispositivo físico**. No hay ninguno (H-09 ya lo
+  había medido para el smoke, que ADR-020 resolvió con `expo export`; la rúbrica no tiene
+  ese atajo: sus ítems son de interacción). Los 94 ATs de la épica 11 —el 100 % del
+  instrumento— quedarían `NO_EVALUABLE` (b) en H8, en las 4 celdas.
+- **Opciones:** (a) instalar Android Studio + un AVD en el host del evaluador antes de H8
+  (varios GB; una sola vez); (b) dispositivo físico con Expo Go en la misma red que el
+  backend en contenedor; (c) declarar la épica 11 fuera de la evaluación manual y
+  medirla sólo por métricas estáticas y por la revisión del rol revisor. Cualquiera de
+  las tres es decisión del tesista y va al protocolo antes de H8.
+- **Estado:** abierto — a elevar al tesista.
+
+## H-26 — Ensayo de la rúbrica del rol revisor sobre B: 35/36, con nueve huecos del instrumento
+
+- **Componente:** 8.3 — ensayo, no veredicto; detalle en
+  [`rubricas/rol-revisor-b.md`](rubricas/rol-revisor-b.md)
+- **Resultado:** censo de 11 puntos (3 + 2 + 6), todos `VERDADERO` y `RESUELTO`; Parte B
+  **35 PASA / 1 FALLA / 0 NO_EVALUABLE** — la FALLA es RV-07 en mobile (una inversión de
+  severidad). RV-02 sostenido con `filecmp` sobre los snapshots; RV-03/RV-04 con el JSONL
+  (un solo `file_change` por etapa en el paso 2; builds, tests y arranque del SUT en las
+  tres).
+- **Los tres huecos principales** (los nueve, I-1..I-9, en el archivo):
+  1. La escala `BLOQUEANTE/MAYOR/MENOR` colapsa: casi todo punto cita un AT o una RN y cae
+     en `MAYOR` (10 de 11), y RV-07 termina midiendo un orden que el revisor no usó (él
+     ordenó Alta/Media/Baja de forma consistente).
+  2. `veracidad` mezcla «el hecho sobre el código es cierto» con «la referencia de spec
+     dice eso»; y tres puntos enuncian secuencias de UI que el revisor nunca ejecutó (no
+     hay navegador ni emulador en su sesión) y sólo se verifican por lectura — la rúbrica
+     no distingue ese caso.
+  3. El snapshot excluye `node_modules`, así que la precondición 5 (copia ejecutable) no
+     se cumple; y `RESUELTO` no está definido (¿cambió el código en el sentido pedido, o
+     la spec ahora se cumple?), lo que cambia el sentido de RV-12.
+- **Estado:** instrumento ejercitado; la cláusula de re-pre-registro de la rúbrica
+  (protocolo §9) es el camino para corregirlo antes de H7.
