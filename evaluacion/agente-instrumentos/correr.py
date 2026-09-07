@@ -465,10 +465,16 @@ def main() -> int:
     sesiones = dir_trabajo / ".grok-home" / "sessions"
     if sesiones.is_dir():
         shutil.copytree(sesiones, destino / "sesiones-grok", dirs_exist_ok=True)
-    registro.evento("fin", codigo_salida=codigo, producidos=producidos, destino=str(destino))
+    esperados = [n for n in cfg["salidas"] if n != "evidencia"] + (["arbitraje.md"] if args.arbitraje else [])
+    faltantes = [n for n in esperados if n not in producidos]
+    registro.evento("fin", codigo_salida=codigo, producidos=producidos, faltantes=faltantes,
+                    destino=str(destino))
     registro.cerrar()
-    print(f"{instr} {etiqueta}: exit={codigo}; producidos={producidos}\n  log: {ruta_log}\n  salida: {destino}")
-    return 0 if codigo == 0 else 1
+    print(f"{instr} {etiqueta}: exit={codigo}; producidos={producidos}; faltantes={faltantes}"
+          f"\n  log: {ruta_log}\n  salida: {destino}")
+    # Una sesión que termina sin su salida (p. ej. saldo del proveedor agotado, H2-07) es
+    # una pasada fallida: se repite entera, nunca se completa a mano.
+    return 0 if codigo == 0 and not faltantes else 1
 
 
 if __name__ == "__main__":

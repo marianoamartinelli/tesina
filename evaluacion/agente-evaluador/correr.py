@@ -287,6 +287,8 @@ def main() -> int:
                     resultado=str(destino_yaml) if producido.is_file() else None)
     registro.cerrar()
 
+    if not producido.is_file():
+        print(f"pasada {args.pasada}: SIN SALIDA (exit={codigo}) — se repite entera (H2-07)")
     print(f"pasada {args.pasada}: exit={codigo}")
     print(f"  log:       {ruta_log}")
     print(f"  stderr:    {ruta_stderr}")

@@ -93,3 +93,45 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
   la lista depurada.
 - **Estado:** corregido en el runner; la regla queda declarada para `alucinaciones.md`
   v1.2 si se re-pre-registra.
+
+## H2-07 — El pool semanal de Grok Build se agotó a las 3 h 40 de evaluación: el juez tercero tiene un tope duro
+
+- **Componente:** runtime del evaluador (ADR-026 D1) — **bloquea** el resto de la
+  evaluación de la pre-piloto-2
+- **Observado:** 03:40:58 (-03), en la pasada 2 de alucinaciones de A: `API error (status
+  402 Payment Required): Grok Build usage balance exhausted`. Murieron en el mismo
+  minuto la pasada 2 del white-box de A y el arbitraje del rol revisor de A; el smoke
+  headless mínimo devuelve el mismo 402. Sesiones completas antes del corte, desde las
+  23:59:
+
+  | sesión | pared | entrada | caché leída | salida |
+  |---|---|---|---|---|
+  | rol revisor B, pasada 1 | 13,5 min | 226 281 | 2 044 032 | 44 836 |
+  | rol revisor B, pasada 2 | 14,9 min | 295 658 | 2 292 352 | 49 812 |
+  | rol revisor B, arbitraje | 8,4 min | 250 640 | 1 073 536 | 28 111 |
+  | rol revisor A, pasada 1 | 15,4 min | 202 593 | 3 489 920 | 50 840 |
+  | rol revisor A, pasada 2 | 21,7 min | 399 123 | 5 074 432 | 69 250 |
+  | white-box A, pasada 1 | 12,2 min | 176 623 | 3 025 536 | 42 845 |
+  | alucinaciones A, pasada 1 | 10,0 min | 173 630 | 2 019 328 | 32 517 |
+  | **8 completas + 3 cortadas** | **~1 h 40** | **≈ 1,74 M** | **≈ 19,4 M** | **≈ 330 k** |
+
+  Faltaban, sólo para A: white-box p2 + arbitraje, alucinaciones p2 + arbitraje, rúbrica
+  web (2 + 1) y rúbrica mobile (2 + 1): unas **10 sesiones** más. Para B, las 15.
+- **Lo que dice el proveedor:** el CLI no informa el tamaño del pool ni la fecha de
+  reposición; según terceros consultados el 2026-09-07 (xAI no lo publica), SuperGrok
+  usa un **pool semanal de cómputo compartido** entre Chat, Imagine, Build y API, con
+  ventana **deslizante de 7 días** (cada unidad vuelve 7 días después de gastarse).
+- **Por qué importa:** ADR-026 supuso un juez «bajo suscripción» sin tope operativo. El
+  tope existe, es semanal y una celda del universo reducido lo agota a mitad de su
+  evaluación; una celda oficial (56 white-box + 173 filas de rúbrica + alucinaciones
+  sobre 57 HU) necesita del orden de 5–10× más. Con la suscripción actual la evaluación
+  de H8 **no cabe en la ventana de ≤ 2 semanas** del protocolo §7.
+- **Corrección del runner (hecha):** una pasada sin salida se declara fallida (exit 1,
+  `faltantes` en el evento `fin`) y se repite entera; no se completa a mano.
+- **Decisión del tesista (pendiente), tres caminos:** (a) esperar la reposición del pool
+  y espaciar la evaluación (la ventana de §7 se excede y queda declarada); (b) créditos
+  de la **API de xAI** (`XAI_API_KEY`, pago por token: grok-4.6 a USD 2–4 / 6–12 por M)
+  con el runtime alternativo de ADR-026 D1 —Codex CLI con proveedor custom— o con Grok
+  Build si admite API key (no verificado); (c) tier **SuperGrok Heavy**, con pool mayor
+  (tamaño no publicado).
+- **Estado:** bloqueante; la generación de B sigue (no depende de Grok).
