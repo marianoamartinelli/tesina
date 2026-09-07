@@ -1,6 +1,14 @@
-# Protocolo experimental pre-registrado — v1.5
+# Protocolo experimental pre-registrado — v1.6
 
-- **Estado:** esta versión reemplaza a la **v1.1**, congelada por
+- **v1.6 (2026-09-06, [ADR-025](../decisiones/ADR-025-protocolo-v1-6-cierre-de-la-ventana-h6.md)):**
+  cierra la ventana H6 con lo que la corrida pre-piloto midió. Cambios: §1 el factor RAG
+  pasa a ser «disponible e instruido»; §2.1 y §3 pinnean `spec-v1.2`
+  ([ADR-024](../decisiones/ADR-024-reapertura-controlada-spec-v1.2-rate-limiting.md));
+  §5.8 la continuación por rate limit es el camino estándar; §6 las 4 oficiales corren
+  bajo suscripción; §8 la reapertura de `spec-v1.2`; §9 rúbrica web v1.1 y emulador
+  Android como precondición de la rúbrica mobile; §10 `duracion_min` declarada
+  no-métrica. Todo lo demás se conserva verbatim de la v1.5.
+- **Estado (v1.2):** esta versión reemplaza a la **v1.1**, congelada por
   [ADR-012](../decisiones/ADR-012-protocolo-experimental-v1-1.md) (2026-08-17), que a su
   vez había reemplazado a la v1.0 de
   [ADR-004](../decisiones/ADR-004-protocolo-experimental-preregistrado.md) (2026-07-05).
@@ -23,7 +31,12 @@
 ## 1. Diseño experimental (referencia)
 
 Factorial 2×2 — factor **modelo** (A: **Claude Code CLI**, `claude -p`; B: **Codex CLI**,
-`codex exec`) × factor **RAG** (sin / con corpus de BIPs y EIPs). El factor "modelo" es
+`codex exec`) × factor **RAG** (sin / con corpus de BIPs y EIPs). Desde v1.6 el factor RAG
+es **RAG disponible e instruido**: el prompt de sistema, byte-idéntico en las 4 celdas,
+instruye consultar la herramienta de estándares *si está disponible* (ADR-025 Decisión 1),
+porque en la pre-piloto ninguna familia la usó por iniciativa propia con la épica 06 en el
+alcance (`runs/pre-piloto/hallazgos.md`, H-12). En las celdas sin RAG la instrucción no
+tiene a qué referirse y es inerte. El factor "modelo" es
 la comparación producto-contra-producto entre los dos agentes de coding que cada
 proveedor publica como su oferta principal
 ([ADR-009](../decisiones/ADR-009-harnesses-como-cli-y-orquestador-de-roles.md)
@@ -45,9 +58,10 @@ adherencia a estándares on-chain.
 Idénticos en las 4 corridas oficiales, pinneados en el manifest de cada corrida
 **antes** de iniciarla:
 
-1. **La spec:** el commit del tag `spec-v1.1`
-   ([ADR-006](../decisiones/ADR-006-reapertura-controlada-spec-v1.1.md)). Es el único
-   contenido del repo satélite al arrancar.
+1. **La spec:** el commit del tag `spec-v1.2`
+   ([ADR-024](../decisiones/ADR-024-reapertura-controlada-spec-v1.2-rate-limiting.md), que
+   re-congela la `spec-v1.1` de ADR-006 con el rate limiting de `/auth/*` fijado). Es el
+   único contenido del repo satélite al arrancar.
 2. **El corpus RAG** (sólo celdas con RAG): mismo commit de `corpus/` para ambas, servido
    por un único servidor MCP stdio compartido por las dos familias (ADR-009 Decisión 2).
 3. **El pipeline:** mismas etapas y mismo orden; mismos prompts de sistema, de etapa y de
@@ -72,7 +86,7 @@ Idénticos en las 4 corridas oficiales, pinneados en el manifest de cada corrida
 ## 3. Secuencia de una corrida (idéntica ×5)
 
 1. **Crear el repo satélite limpio** (`tesina-run-<id>`) que contiene únicamente la
-   spec pinneada a `spec-v1.1`. Registrar el hash del commit inicial.
+   spec pinneada a `spec-v1.2`. Registrar el hash del commit inicial.
 2. **Completar y commitear el manifest** (secciones 1–4 de
    `runs/plantillas/manifest.template.yaml`) antes de que el agente ejecute nada.
 3. **Ejecutar el pipeline** con la configuración de la celda, en el orden de
@@ -298,14 +312,19 @@ disparador **D2** e intervención de tipo **(d)**, y se registra como cualquier 
   de contexto acumulado que ningún mecanismo iguala entre los dos CLI. El handoff del
   pipeline ya es el estado del repo satélite más los archivos bajo `.pipeline/`
   (ADR-009 Decisión 4), que sobreviven al corte.
-- **Causa esperable del corte: el rate limit** de la suscripción (§6). Los cortes por
-  tope de turnos que preveía el diseño anterior (`error_max_turns` en A,
-  `MaxTurnsExceeded` en B) **dejaron de existir**: ningún CLI expone un tope de turnos y
-  el experimento corre sin presupuesto de turnos (ADR-009 §Consecuencias).
-- **PENDIENTE-PILOTO:** el comportamiento efectivo de cada CLI ante un rate limit a mitad
-  de etapa —si pausa y retoma, o si corta— **no está verificado** (checklist H6, ítem 19).
-  La regla aplica igual en ambos casos: si el CLI pausa y retoma solo, no hubo corte y no
-  hay intervención que registrar.
+- **Causa esperable del corte: el rate limit** de la suscripción (§6). Desde v1.6 es el
+  **camino estándar**, no la excepción: la pre-piloto proyecta etapas de varias horas y la
+  ventana de 5 horas de A no tiene overage (`runs/pre-piloto/hallazgos.md`, H-05), así que
+  una etapa oficial puede cortarse una o más veces. Cada corte se registra como
+  intervención (d) / D2 con el paso y la hora, y el manifest §5 lleva el **conteo de cortes
+  por etapa** (ADR-025 Decisión 3). Los cortes por tope de turnos que preveía el diseño
+  anterior (`error_max_turns` en A, `MaxTurnsExceeded` en B) **dejaron de existir**: ningún
+  CLI expone un tope de turnos y el experimento corre sin presupuesto de turnos (ADR-009
+  §Consecuencias).
+- **Comportamiento del CLI ante el rate limit:** no ocurrió en la pre-piloto (A emitió 11
+  `rate_limit_event`, todos `status: allowed`; B ninguno) y sigue sin medir (checklist H6,
+  ítem 19). La regla aplica igual en ambos casos: si el CLI pausa y retoma solo, no hubo
+  corte y no hay intervención que registrar.
 - Estas continuaciones cuentan para el estancamiento y el abandono de etapa (§5.7) como
   cualquier otra intervención.
 
@@ -339,9 +358,12 @@ Lo que se registra por invocación y por etapa, en el JSONL de la corrida (ADR-0
   mobile 15 % de `pipeline/comun/etapas.yaml` queda como **referencia descriptiva** para
   el análisis —qué fracción del esfuerzo total se fue en cada etapa, comparable entre
   celdas—, no como umbral operativo: ya no gatea el abandono de etapa.
-- **Suscripción contra API key** para las 4 corridas oficiales sigue abierta y ya no
-  bloquea: se decide con el consumo que mida la piloto y se registra en el journal
-  (checklist H6, ítem 7).
+- **Suscripción** para las 4 corridas oficiales, decidido por el tesista el 2026-09-06 con
+  el consumo de la pre-piloto (USD 142 de equivalente API por celda A sobre el universo
+  reducido; ≈ USD 700 proyectados por celda completa a `effort high`, ADR-025 Decisión 3).
+  El costo nativo se sigue registrando como equivalente en API y el modo de auth va al
+  manifest. Consecuencia asumida: el rate limit de 5 horas corta etapas y la continuación
+  de §5.8 es el camino estándar.
 - **Riesgo asumido:** una celda puede consumir un múltiplo de lo previsto sin que nada la
   detenga. Se acepta explícitamente; cortar destruiría la comparabilidad de la celda
   cortada, que para el experimento es peor que el costo.
@@ -370,9 +392,11 @@ imposible de implementar como está escrita, una contradicción real):
    4 celdas** (a las ya corridas sólo si el defecto invalida su medición — peor caso que
    se evita con la piloto).
 3. La spec taggeada **no se edita** durante la ventana de corridas; las correcciones se
-   acumulan para un eventual `spec-v1.2` posterior al experimento. La reapertura
-   controlada que produjo `spec-v1.1` (ADR-006) ocurrió **antes** de la piloto y con la
-   spec todavía no vista por ningún agente; esa condición ya no se repite.
+   acumulan para un eventual `spec-v1.3` posterior al experimento. Las reaperturas
+   controladas que produjeron `spec-v1.1` (ADR-006) y `spec-v1.2` (ADR-024) ocurrieron
+   **antes** de la primera corrida oficial; la segunda, con la spec ya vista por los dos
+   agentes de la pre-piloto, descartables por diseño (ADR-018) — queda declarada en
+   `analisis/amenazas-validez.md`. Esa condición ya no se repite.
 
 ## 9. Aislamiento y no-contaminación
 
@@ -399,6 +423,14 @@ imposible de implementar como está escrita, una contradicción real):
   consecuencia del set de roles de ADR-009 Decisión 4. `rol-revisor.md` lleva una
   cláusula de re-pre-registro acotada a la piloto: si ahí cambia el set de roles o el
   prompt del rol, la rúbrica se corrige y se vuelve a pre-registrar **antes** de H7.
+  **v1.6:** `epica-10-web.md` fue re-pre-registrada como **v1.1** el 2026-09-06, dentro de
+  la ventana H6 y tras el ensayo sobre la pre-piloto (ADR-024 D7, ADR-025 D5), sin tocar
+  ningún criterio de veredicto. La instrucción de RAG de ADR-025 D1 vive en el prompt de
+  **sistema**, no en el del rol `revisor`: la cláusula de `rol-revisor.md` no se dispara.
+- **Precondición de la rúbrica mobile:** el entorno de evaluación provee un **emulador
+  Android** (AVD `tesina-eval`, Android 15 / API 35, `arm64-v8a`, en la máquina del
+  evaluador), idéntico para las 4 celdas; el backend de la celda corre en su contenedor
+  con puerto publicado y el emulador lo alcanza por `10.0.2.2` (ADR-025 Decisión 4).
 - Los criterios de las **métricas estáticas** también están pre-registrados, incluido su
   alcance (§10.3).
 
@@ -411,7 +443,7 @@ imposible de implementar como está escrita, una contradicción real):
 | Intervenciones (INT-NN)                | `runs/<id>/intervenciones.md`       | En el momento             |
 | Cierre (timestamps, costo, tokens)     | `runs/<id>/manifest.yaml` §5        | Al cerrar la corrida      |
 | Suite black-box (465 ATs)              | `runs/<id>/resultados-at.csv`       | En H8                     |
-| Agente evaluador white-box (56 ATs)    | `runs/<id>/no-automatizables/pasada-1.yaml`, `pasada-2.yaml`, `veredicto-final.yaml` | En H8 |
+| Agente evaluador white-box (56 ATs)    | `runs/<id>/no-automatizables/pasada-1.yaml`, `pasada-2.yaml`, `veredicto-final.yaml`. El campo `duracion_min` que el agente declara **no es métrica** (lo escribe sin reloj; en la pre-piloto sobreestimó el tiempo de pared 8,5×–10,8×, H-19): el esfuerzo por pasada se mide con el tiempo de pared del runner, los turnos y los tokens de su JSONL, y el tope de 15 min por AT del briefing se lee como instrucción de comportamiento (ADR-025 Decisión 2) | En H8 |
 | Rúbricas de épicas 10–11 completadas   | `runs/<id>/rubricas/` + `runs/<id>/resultados-rubricas.csv` | En H8    |
 | Rúbrica del rol `revisor` completada   | `runs/<id>/rubricas/rol-revisor.md` + `runs/<id>/resultados-rubrica-revisor.csv` + `runs/<id>/censo-revision.csv` | En H8 |
 | Métricas estáticas                     | `runs/<id>/metricas-estaticas.csv`  | En H8                     |

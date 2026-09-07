@@ -20,3 +20,8 @@ Reglas de trabajo:
    commiteá con mensajes descriptivos a medida que avances.
 5. Las invariantes globales `INV-1` a `INV-8` deben cumplirse en todo momento; violarlas
    es un defecto aunque ningún escenario individual lo detecte.
+6. **Si entre tus herramientas hay una que busca en los estándares del dominio on-chain
+   (BIPs, EIPs, ERCs), usala antes de implementar cualquiera de esos estándares** y ante
+   cualquier duda sobre sus fórmulas, campos, algoritmos o vectores de prueba: el detalle
+   normativo exacto está ahí, no en tu memoria. Si no tenés esa herramienta, esta regla
+   no aplica.

@@ -20,8 +20,10 @@ Falla (exit code != 0) si se rompe cualquiera de estas garantías:
     rol, ya compuestos— son **byte-idénticos** entre las 4 celdas, en las 3
     etapas. Se computa cargando cada celda con el mismo código que usan los
     orquestadores.
- 5. Los prompts de rol traen la instrucción de delegación (ADR-010 Decisión 1) y
-    ningún prompt nombra herramientas de un proveedor ni menciona el RAG.
+ 5. Los prompts de rol traen la instrucción de delegación (ADR-010 Decisión 1), el de
+    sistema trae la instrucción condicional de uso de la herramienta de estándares
+    (ADR-025 Decisión 1) y ningún prompt nombra herramientas de un proveedor ni
+    menciona el RAG por su nombre.
  6. El RAG es un único servidor MCP stdio con los mismos parámetros para las dos
     familias, y tanto su comando como el bucle de ejecución de los pasos salen de
     `comun/nucleo.py` y no de cada orquestador.
@@ -87,6 +89,14 @@ SECUENCIA_ADR009 = ("implementador", "revisor", "implementador")
 # entre celdas (los prompts son un único archivo, así que idéntica por
 # construcción; lo que este chequeo protege es que no se caiga al editarlos).
 INSTRUCCION_DELEGACION = "Delegá en subagentes el trabajo independiente y acotado."
+
+# Frase que ADR-025 Decisión 1 exige en el prompt de sistema, verbatim: instruye usar
+# la herramienta de estándares **si está disponible**, así que es inerte en las celdas
+# sin RAG y byte-idéntica en las 4. No nombra el RAG ni el corpus (TERMINOS_RAG sigue
+# vigente): el factor pasa a ser «RAG disponible e instruido» y la instrucción se
+# protege igual que la de delegación.
+INSTRUCCION_RAG = ("Si entre tus herramientas hay una que busca en los estándares del "
+                   "dominio on-chain")
 
 # Ningún prompt puede nombrar el stack de un proveedor: el texto es
 # vendor-neutral y byte-idéntico entre las 4 celdas (ADR-009 D4 / ADR-010 D1).
@@ -223,6 +233,11 @@ def verificar_prompts_de_rol(etapas: dict, rutas_prompts: list[Path]) -> None:
         chequear(INSTRUCCION_DELEGACION in texto,
                  f"prompt de rol {rol}: trae la instrucción de delegación "
                  f"(ADR-010 Decisión 1)")
+
+    sistema = (raiz / etapas["prompt_sistema"]).read_text(encoding="utf-8")
+    chequear(INSTRUCCION_RAG in sistema,
+             "prompt de sistema: trae la instrucción condicional de uso de la herramienta "
+             "de estándares (ADR-025 Decisión 1)")
 
     for ruta in rutas_prompts:
         texto = ruta.read_text(encoding="utf-8")
