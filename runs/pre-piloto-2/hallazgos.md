@@ -188,3 +188,22 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
 - **Por qué importa para H7:** con ADR-025 D3 las continuaciones son el camino estándar,
   así que toda celda oficial de B va a tener etapas en varios JSONL.
 - **Estado:** corregido.
+
+## H2-11 — La primera pasada mobile de B fue inválida por un error del operador: cada implementación nombra su variable de URL
+
+- **Componente:** procedimiento de arranque del entorno mobile (ADR-025 D4), sobre `pre-piloto-2b`
+- **Observado:** la app de B-2 lee `EXPO_PUBLIC_API_URL` (origen sin ruta); la de A-2 y la de
+  B-1 leen `EXPO_PUBLIC_API_BASE_URL` (con `/api/v1`). El operador escribió la variable de
+  A y la app quedó apuntando a su default `localhost:3000`: el agente evaluador registró
+  «No se pudo conectar…» en los tres intentos de login y emitió **7 PASA / 2 FALLA /
+  7 NO_EVALUABLE (b)** con la causa correctamente identificada («cliente contra
+  localhost:3000»). Además la app de B-2 usa Expo SDK **54** y el emulador tenía Expo Go
+  **57** (instalado para A): hubo que reinstalar Expo Go 54 y abrir la app por deep link,
+  porque `expo start --android` no arranca en modo no interactivo con versiones distintas.
+- **Corrección:** la pasada inválida queda en `rubrica-mobile/pasada-1-invalida-entorno/`;
+  se relanzó con la variable correcta y Metro reconstruido (`--clear`), tras verificar un
+  login desde el emulador. El **contrato de arranque** del entorno (`suite-at/entorno/README.md`)
+  debe exigir que el operador tome de la documentación del SUT el nombre de la variable
+  de URL del cliente mobile y la versión de Expo Go, y verificar un login desde el emulador
+  antes de lanzar la rúbrica — en H8 con 4 celdas de 2 familias, este error se repite.
+- **Estado:** corregido en la corrida; procedimiento a fijar antes de H8.

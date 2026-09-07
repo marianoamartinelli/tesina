@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07cf8-9321-7330-ae72-a23a8344aaad",
+    "cwd": "/private/tmp/eval-rubrica-mobile-pre-piloto-2b-p1-20260907-144419"
+  },
+  "session_summary": "Ejecutar rúbrica-mobile pre-piloto AT-11",
+  "created_at": "2026-09-07T17:44:20.595815Z",
+  "updated_at": "2026-09-07T18:14:12.166604Z",
+  "num_messages": 442,
+  "num_chat_messages": 223,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "0d65b69d-53bb-48a6-92d2-7b9fb6214aab",
+  "grok_home": "/tmp/eval-rubrica-mobile-pre-piloto-2b-p1-20260907-144419/.grok-home",
+  "last_active_at": "2026-09-07T18:14:12.166604Z",
+  "generated_title": "Ejecutar rúbrica-mobile pre-piloto AT-11",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

@@ -1,0 +1,81 @@
+{
+  "state": {
+    "grok_build.ReportedTaskCompletions": {
+      "reported": [
+        "call-6e21aad8-98b0-4b31-af11-ae44cd72ff11-69",
+        "call-bd5afd78-3f92-46b0-abc6-a4d8f8222ab7-60",
+        "call-a66a9be1-5804-4d28-bf95-907ae0134a6d-99",
+        "call-fd307218-0c6d-4353-bc28-a9e62e25b6b6-96",
+        "call-c8093396-463a-41a9-830d-97ed756a449b-64",
+        "call-3451ff94-f0c6-4f14-9cbd-a4cde847efb9-75",
+        "call-58ea900e-ec25-4d1f-822d-5d037df5e171-101",
+        "call-9e487342-ce3c-4bb1-bfac-6ae99c86c189-73",
+        "call-514a965d-d3e9-47a6-ba60-9dd9dfe46001-71",
+        "call-60ec80b0-ec3c-49a0-8f57-0a144a459061-77",
+        "call-585d95a9-8138-48d3-b8a4-37ca8e030a2b-84"
+      ]
+    },
+    "grok_build.Todo": {
+      "todos": {
+        "setup": {
+          "content": "Leer rúbrica, spec, entorno y estado de la app",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "testdata": {
+          "content": "Crear datos de prueba (precondición 3) y registrarlos",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-01": {
+          "content": "Evaluar AT-11-01-01 a AT-11-01-14",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-06": {
+          "content": "Evaluar AT-11-06-01 y AT-11-06-26",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "output": {
+          "content": "Escribir rubrica-completada.md, CSV y evidencia",
+          "priority": "medium",
+          "status": "completed"
+        }
+      }
+    }
+  },
+  "params": {
+    "grok_build.Bash": {
+      "timeout_secs": null,
+      "max_timeout_secs": 36000.0,
+      "output_byte_limit": null,
+      "cmd_prefix": null,
+      "enabled_background": true,
+      "auto_background_on_timeout": true,
+      "foreground_block_budget_ms": null,
+      "max_block_until_ms": null,
+      "allow_background_operator": true,
+      "surface_bg_completion_reminders": true
+    },
+    "grok_build.UseTool": {
+      "native_tool_correction": true
+    },
+    "grok_build.ListDir": {
+      "max_output_chars": null
+    },
+    "grok_build.ReadFile": {
+      "cursor_rules_on_read": false
+    },
+    "grok_build.SearchReplace": {
+      "skip_read_before_edit": false,
+      "empty_old_string_does_not_override": false,
+      "unicode_normalized_fallback": false,
+      "include_user_edit_hint": true
+    },
+    "grok_build.Grep": {
+      "max_output_bytes": null,
+      "max_chars_per_line": null
+    }
+  }
+}

@@ -1,0 +1,18 @@
+(node:26506) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:26518) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1mApp.test.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1mLoginScreen.test.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1mDepositScreen.test.tsx[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1mprivateSocket.test.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1mapi.test.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1msession.test.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1mqr.test.ts[22m
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2msrc/[22m[1msessionStore.test.ts[22m
+
+[1mTest Suites: [22m[1m[32m8 passed[39m[22m, 8 total
+[1mTests:       [22m[1m[32m36 passed[39m[22m, 36 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        1.378 s, estimated 3 s
+[2mRan all test suites[22m[2m.[22m
