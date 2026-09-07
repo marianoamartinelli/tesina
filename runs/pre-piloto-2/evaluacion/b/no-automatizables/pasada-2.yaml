@@ -1,0 +1,983 @@
+metadatos:
+  celda: "celda-en-evaluacion"
+  fecha: "2026-09-07"
+  pasada: 2
+  modelo_evaluador: "grok-4.6"
+  briefing_version: "v1.1"
+  rubrica_version: "v1.2"
+
+resultados:
+  - at_id: AT-01-02-13
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/auth/service.ts:94-171"
+        detalle: "login normaliza email, escribe auth_audit SUCCESS (reason null) o FAILURE/INVALID_CREDENTIALS; writeAudit persiste timestamp ISO, email, result, reason, origin."
+      - tipo: archivo
+        ref: "src/database.ts:38-45"
+        detalle: "Tabla interna auth_audit (timestamp, email, result SUCCESS|FAILURE, reason, origin); no hay ruta que la exponga."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES no incluye /audit ni /login-attempts."
+      - tipo: comando
+        ref: "curl POST /api/v1/auth/login ok+fail contra instancia :3415; SELECT timestamp,email,result,reason FROM auth_audit"
+        detalle: "SUCCESS timestamp=2026-09-07T16:52:21.403Z email=audit.user@example.com (normalizado desde Audit.User@Example.COM); FAILURE reason=INVALID_CREDENTIALS. GET /api/v1/auth/audit|/api/v1/audit|/api/v1/logs -> 404 NOT_FOUND."
+    justificacion: >-
+      El log interno registra ambos intentos con timestamp UTC, email normalizado, result SUCCESS/FAILURE
+      y reason=INVALID_CREDENTIALS en el fallido. Ningún endpoint de usuario expone el log.
+    duracion_min: 8
+
+  - at_id: AT-01-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-01-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-04-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-03-02-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-03-05-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-03-07-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-03-07-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-04-05-14
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-05-01-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-05-01-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-05-01-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-05-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-05-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-05-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-06-01-01
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:116-128"
+        detalle: "generateProvisioningMnemonic pide 32 bytes a node:crypto.randomBytes (CSPRNG) y Mnemonic.entropyToPhrase (wordlist en, 24 palabras)."
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:69-87"
+        detalle: "deriveBip39Seed: NFKD, PBKDF2-HMAC-SHA512, salt mnemonic+passphrase, 2048 iter, dkLen 64; passphrase default ''."
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:143-196"
+        detalle: "AES-256-GCM, nonce CSPRNG 12 B por cifrado, tag 16 B, envelope nonce||ciphertext||tag; clave vía WALLET_ENCRYPTION_KEY."
+      - tipo: archivo
+        ref: "src/config.ts:24-76"
+        detalle: "Credencial leída del entorno (64 hex o base64 de 32 B), no embebida; wallet_secret solo guarda encrypted_seed."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039.mediawiki §From mnemonic to seed"
+        detalle: "PBKDF2 HMAC-SHA512, 2048 iter, 64 bytes, salt 'mnemonic'+passphrase NFKD."
+    justificacion: >-
+      La generación usa CSPRNG de 256 bits (24 palabras), PBKDF2-HMAC-SHA512/2048/64 con passphrase vacía
+      por defecto y persiste el seed con AES-256-GCM y credencial externa.
+    duracion_min: 7
+
+  - at_id: AT-06-01-02
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:79-87"
+        detalle: "Función interna deriveBip39Seed invocada por el driver en $COPIA_TMP/tmp-drivers/kat-bip39.ts."
+      - tipo: comando
+        ref: "tsx tmp-drivers/kat-bip39.ts kat-06-01-02"
+        detalle: "seed=c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04"
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039.mediawiki §From mnemonic to seed"
+        detalle: "Parámetros del KDF del vector canónico TREZOR."
+      - tipo: comando
+        ref: "tsx --test test/wallet-crypto.test.ts"
+        detalle: "F6: 'reproduce el known-answer test PBKDF2-HMAC-SHA512' PASA con el mismo hex de HU-06-01."
+    justificacion: >-
+      La seed derivada con MNEMONIC_BIP39_CANONICO y passphrase TREZOR coincide byte a byte con el vector
+      de HU-06-01 Escenario 2.
+    duracion_min: 5
+
+  - at_id: AT-06-01-03
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "tsx tmp-drivers/kat-bip39.ts kat-06-01-03  # proceso A"
+        detalle: "408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840"
+      - tipo: comando
+        ref: "tsx tmp-drivers/kat-bip39.ts kat-06-01-03  # proceso B"
+        detalle: "misma hex; igualdad exacta entre invocaciones separadas con MNEMONIC_24_VALIDO y passphrase vacía."
+    justificacion: >-
+      Dos procesos distintos derivan byte a byte la misma seed para el mismo (mnemonic, passphrase); no
+      hay aleatoriedad en RN-3.
+    duracion_min: 4
+
+  - at_id: AT-06-01-04
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "start-sut.sh i1 3411; register+GET /deposit-address?asset=ETH; kill -9; rm storage; start-sut.sh i2 3416; mismo flujo"
+        detalle: "I1 address=0xf3c66103af03D5606E0E1438FCa6Fbd578BE28bF; I2 address=0xaAe464e646C4A7ca79A029BC2C62Ab931A96A1b3 (índice 0 de seeds independientes)."
+    justificacion: >-
+      Dos provisionings con almacenamiento limpio y sin mnemonic importado producen direcciones distintas
+      en el índice 0; no hay entropía fija.
+    duracion_min: 8
+
+  - at_id: AT-06-01-05
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "tsx tmp-drivers/mnemonic-24-independent.ts (SHA-256(0x00×32) + wordlist corpus)"
+        detalle: "phrase=abandon×23+art; sha256=66687aad...; last_word=art. MNEMONIC_24_CHECKSUM_INVALIDO=abandon×24."
+      - tipo: archivo
+        ref: "README.md:171; .env.example:12-13; src/config.ts:75; src/wallet/service.ts:65-67"
+        detalle: "Mecanismo hallado: variable de entorno WALLET_MNEMONIC (solo primer provisioning); se valida con validateProvisioningMnemonic."
+      - tipo: comando
+        ref: "WALLET_MNEMONIC='abandon'×24 tsx src/server.ts (instancia limpia :3405)"
+        detalle: "exit=1; stderr='VALIDATION_ERROR: el backend no pudo iniciar'; sin material secreto; SELECT COUNT(*) FROM wallet_secret = 0."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0039.mediawiki §Generating the mnemonic"
+        detalle: "Checksum = primeros ENT/32 bits de SHA-256(entropía); abandon×24 rompe el checksum de 0x00×32."
+    justificacion: >-
+      El import de 24 palabras con checksum inválido aborta con exit≠0 y VALIDATION_ERROR en stderr, sin
+      persistir seed ni filtrar secretos.
+    duracion_min: 10
+
+  - at_id: AT-06-01-09
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:94-100"
+        detalle: "validateProvisioningMnemonic rechaza longitud ≠ 24 antes de wordlist/checksum."
+      - tipo: comando
+        ref: "WALLET_MNEMONIC=MNEMONIC_BIP39_CANONICO (12 palabras) tsx src/server.ts"
+        detalle: "exit=1; stderr VALIDATION_ERROR; wallet_secret_count=0."
+    justificacion: >-
+      Un mnemonic de 12 palabras (checksum válido para 128 bits) se rechaza por longitud con
+      VALIDATION_ERROR y no se adopta como seed.
+    duracion_min: 4
+
+  - at_id: AT-06-01-10
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "grep -cx xyzzy corpus/documentos/bip-0039-wordlist-english.txt"
+        detalle: "0 (palabra ausente del wordlist inglés de 2048)."
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:102-106"
+        detalle: "Pertenencia al wordlist inglés (ethers wordlists.en) antes del checksum."
+      - tipo: comando
+        ref: "WALLET_MNEMONIC='abandon'×23+'xyzzy' tsx src/server.ts"
+        detalle: "exit=1; stderr VALIDATION_ERROR; wallet_secret_count=0."
+    justificacion: >-
+      El mnemonic de 24 tokens con una palabra fuera del wordlist BIP-39 inglés se rechaza con
+      VALIDATION_ERROR y no persiste seed.
+    duracion_min: 4
+
+  - at_id: AT-06-01-11
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "instancia i11 provisionada; kill; re-arranque sin WALLET_ENCRYPTION_KEY y con clave distinta de 32 B"
+        detalle: "ambos: exit=1, stderr='INTERNAL_ERROR: el backend no pudo iniciar', sin secretos; blob encrypted_seed n=92 intacto (hex idéntico) y wallet_secret_count=1 (no regeneró)."
+      - tipo: archivo
+        ref: "src/wallet/service.ts:80-85; src/wallet/crypto.ts:168-196; src/server.ts:9-14"
+        detalle: "decryptSeed verifica tag GCM; fallo → AppError INTERNAL_ERROR; server aborta exit 1 sin INSERT de seed nuevo."
+    justificacion: >-
+      Credencial ausente o incorrecta aborta el arranque con INTERNAL_ERROR, sin operar sin seed ni
+      regenerarlo; el blob cifrado permanece intacto.
+    duracion_min: 8
+
+  - at_id: AT-06-01-12
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/service.ts:70-74"
+        detalle: "INSERT de encrypted_seed dentro de immediateTransaction (única unidad de escritura del provisioning)."
+      - tipo: archivo
+        ref: "src/database.ts:10-11,69-79"
+        detalle: "PRAGMA journal_mode=WAL; synchronous=FULL; BEGIN IMMEDIATE / COMMIT / ROLLBACK."
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:168-196; src/wallet/service.ts:80-85"
+        detalle: "Carga: longitud exacta 12+64+16 y tag GCM; blob truncado/ilegible no se adopta (INTERNAL_ERROR, RN-11)."
+    justificacion: >-
+      La persistencia del seed es una transacción SQLite atómica y la carga solo acepta un envelope que
+      descifra; no hay escritura directa no atómica ni adopción de blobs parciales.
+    duracion_min: 5
+
+  - at_id: AT-06-01-13
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/service.ts:166-176"
+        detalle: "verifyStartupIntegrity deriva el address_index más bajo del mapeo y aborta INTERNAL_ERROR si no coincide address/path."
+      - tipo: comando
+        ref: "UPDATE deposit_addresses SET address=...E3 (antes ...E2) WHERE address_index=0; re-arranque misma clave"
+        detalle: "exit=1; stderr INTERNAL_ERROR; GET /health inalcanzable; seed hex inalterado; addr_count=3 y dirección corrupta persistida (no regeneró ni reasignó)."
+    justificacion: >-
+      Con mapeo no vacío, el arranque verifica seed↔dirección del índice mínimo y se detiene ante mismatch
+      sin regenerar el seed ni servir operaciones.
+    duracion_min: 8
+
+  - at_id: AT-06-02-01
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "tsx tmp-drivers/kat-bip32.ts 0  # deriveBip39Seed(MNEMONIC_HARDHAT)+deriveEthereumKey(seed,0)"
+        detalle: "address=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 path=m/44'/60'/0'/0/0"
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0032.mediawiki §Private parent key → private child key"
+        detalle: "CKDpriv / master key HMAC-SHA512('Bitcoin seed')."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0044.mediawiki §Path levels"
+        detalle: "m / purpose' / coin_type' / account' / change / address_index."
+      - tipo: corpus
+        ref: "corpus/documentos/erc-55.md §Specification"
+        detalle: "Checksum EIP-55 mixed-case."
+    justificacion: >-
+      La cadena BIP-39→BIP-32/44 del SUT reproduce exactamente la dirección Hardhat del índice 0, incluido
+      el checksum EIP-55.
+    duracion_min: 5
+
+  - at_id: AT-06-02-02
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "tsx tmp-drivers/kat-bip32.ts 1; 2; 3"
+        detalle: "1=0x70997970C51812dc3A010C7d01b50e0d17dc79C8; 2=0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC; 3=0x90F79bf6EB2c4f870365E785982E1f101E93b906; las cuatro (0..3) son distintas."
+    justificacion: >-
+      Los índices 1..3 coinciden carácter a carácter con la tabla de HU-06-02 y son distintos entre sí y
+      del índice 0.
+    duracion_min: 4
+
+  - at_id: AT-06-02-04
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:17-18,209-241"
+        detalle: "HARDENED_OFFSET=0x80000000; path numérico [44+H, 60+H, 0+H, 0, i]; ethereumDerivationPath = m/44'/60'/0'/0/${i}."
+      - tipo: comando
+        ref: "tsx tmp-drivers/kat-bip32.ts path-indices"
+        detalle: "purpose=2147483692 coinType=2147483708 account=2147483648 change=0 offset=2147483648"
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0032.mediawiki §The key tree"
+        detalle: "El apóstrofe marca derivación hardened."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0044.mediawiki §Path levels"
+        detalle: "purpose', coin_type' y account' hardened; change y address_index no hardened."
+    justificacion: >-
+      El path es exactamente m/44'/60'/0'/0/index con purpose/coin_type/account hardened (offset 2^31) y
+      change/address_index no hardened.
+    duracion_min: 4
+
+  - at_id: AT-06-02-05
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "tsx tmp-drivers/kat-bip32.ts 0  # dos procesos"
+        detalle: "ambas salidas address=0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 publicKey=0x038318535b54105d4a7aae60c08fc45f9687181b4fdfc625bd1a753fa7397fed75"
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:214-268"
+        detalle: "deriveEthereumKey es función pura de (seed, index, hmac); no usa RNG, reloj ni estado mutable."
+    justificacion: >-
+      La misma (seed, path) produce idéntica clave pública y dirección en procesos distintos; el camino de
+      derivación no depende de estado mutable.
+    duracion_min: 4
+
+  - at_id: AT-06-02-08
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:57,248-315"
+        detalle: "deriveValidChild: si I_L ≥ n (SECP256K1_ORDER) o k_hijo=0 continúa al siguiente i; devuelve effectiveIndex, registrado en addressIndex y derivationPath."
+      - tipo: comando
+        ref: "tsx --test test/wallet-crypto.test.ts"
+        detalle: "F6: 10 tests 'reintenta {purpose,coin type,account,change,address index} ante I_L >= n / k_hijo == 0' PASAN; el índice efectivo queda en el path."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0032.mediawiki §Private parent key → private child key"
+        detalle: "In case parse256(IL) ≥ n or ki = 0 … proceed with the next value for i."
+    justificacion: >-
+      La condición BIP-32 de clave inválida se detecta y se avanza de forma determinista al siguiente
+      índice, registrando el índice efectivamente usado.
+    duracion_min: 6
+
+  - at_id: AT-06-02-09
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/crypto.ts:17-19,199-224"
+        detalle: "MAX_ADDRESS_INDEX=2^31-1; validateAddressIndex rechaza no-enteros, <0 y >MAX con WalletCryptoError VALIDATION_ERROR issues.field=address_index; se invoca al inicio de deriveEthereumKey, antes del HMAC."
+      - tipo: archivo
+        ref: "src/database.ts:53"
+        detalle: "CHECK (address_index >= 0 AND address_index <= 2147483647)."
+      - tipo: comando
+        ref: "tsx --test test/wallet-crypto.test.ts  # 'acepta el último índice normal y rechaza índices hardened'"
+        detalle: "2147483647 se acepta y deriva; 2147483648 lanza VALIDATION_ERROR con issues[0].field=address_index."
+    justificacion: >-
+      El borde no-hardened es exacto (2^31-1 pasa, 2^31 se rechaza con VALIDATION_ERROR y issues de
+      address_index) antes de derivar.
+    duracion_min: 5
+
+  - at_id: AT-06-03-03
+    veredicto: PASA
+    evidencia:
+      - tipo: comando
+        ref: "POST /auth/register alice luego bob en instancia limpia :3413; SELECT deposit_addresses ORDER BY address_index"
+        detalle: "A index=0 address=0xA3223a35C58981BD042fB7E3DF94d72053bE82E2 path=m/44'/60'/0'/0/0; B index=1 address=0xd0C58B7E06ffb5374880cC363158b7B762A73040 path=m/44'/60'/0'/0/1; direcciones distintas EIP-55."
+    justificacion: >-
+      En estado limpio las altas secuenciales reciben address_index 0 y 1, contiguos, con direcciones
+      distintas.
+    duracion_min: 6
+
+  - at_id: AT-06-03-07
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:171; src/config.ts:75"
+        detalle: "Mecanismo de import (búsqueda de AT-06-01-05): WALLET_MNEMONIC."
+      - tipo: comando
+        ref: "WALLET_MNEMONIC=MNEMONIC_24_VALIDO start-sut :3414; tres POST /auth/register + GET /deposit-address"
+        detalle: "i=0 0xF278cF59F82eDcf871d630F28EcC8056f25C1cdb; i=1 0xf785bD075874b8423D3583728a981399f31e95aA; i=2 0x60Af1c6A5D03F9f1B1b74931499bC99E72fF8DA9."
+      - tipo: comando
+        ref: "docker run --entrypoint anvil ghcr.io/foundry-rs/foundry:stable --accounts 10 --mnemonic 'abandon … art'"
+        detalle: "Anvil imprime las mismas tres direcciones para m/44'/60'/0'/0/0..2 y el mnemonic de 24 palabras; igualdad EIP-55 carácter a carácter."
+      - tipo: corpus
+        ref: "corpus/documentos/bip-0044.mediawiki §Path levels"
+        detalle: "Path Ethereum m/44'/60'/0'/0/i."
+    justificacion: >-
+      Las direcciones asignadas con MNEMONIC_24_VALIDO coinciden exactamente con la derivación de
+      referencia de Anvil para los mismos índices.
+    duracion_min: 8
+
+  - at_id: AT-06-03-08
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/service.ts:93-110"
+        detalle: "assignWithinTransaction: si no hay fila, SELECT accounts; si falta lanza AppError ACCOUNT_NOT_FOUND con details.accountId antes de MAX(address_index) y antes de derive."
+      - tipo: archivo
+        ref: "src/errors.ts:11,21"
+        detalle: "ACCOUNT_NOT_FOUND mapea a HTTP 404."
+      - tipo: comando
+        ref: "tsx --test test/app.test.ts  # getOrAssign('cuenta-inexistente')"
+        detalle: "lanza ACCOUNT_NOT_FOUND con details.accountId y allAssigned().length permanece 1."
+    justificacion: >-
+      El asignador rechaza cuentas inexistentes con ACCOUNT_NOT_FOUND y details.accountId, sin reservar
+      índice ni derivar.
+    duracion_min: 4
+
+  - at_id: AT-06-03-09
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/auth/service.ts:71-81"
+        detalle: "El alta inserta la cuenta y llama wallet.assignWithinTransaction en la misma transacción (eager)."
+      - tipo: comando
+        ref: "POST /auth/register carol@example.com SIN GET /deposit-address; SELECT deposit_addresses"
+        detalle: "Fila inmediata: account_id=e98608dd-... address_index=2 address=0xf1581B1a1FcFea4dB80fbc98C79805F96013cc6b derivation_path=m/44'/60'/0'/0/2 network=sepolia chain_id=11155111."
+    justificacion: >-
+      Tras el alta, sin consulta del usuario, el registro persistido contiene los seis campos requeridos
+      (accountId, addressIndex, address EIP-55, path, sepolia, 11155111).
+    duracion_min: 5
+
+  - at_id: AT-06-03-10
+    veredicto: PASA
+    evidencia:
+      - tipo: archivo
+        ref: "src/wallet/service.ts:119-164"
+        detalle: "Tras el INSERT de deposit_addresses se escribe domain_events type=DepositAddressAssigned con accountId, addressIndex, address, chainId; allAssigned() es la consulta interna del conjunto (comentario: contrato para un monitor futuro, no endpoint HTTP)."
+      - tipo: comando
+        ref: "SELECT type, payload FROM domain_events en instancia :3413 tras altas eager"
+        detalle: "Eventos con los cuatro campos y chainId=11155111, emitidos al persistir (p. ej. addressIndex 0 y 1). GET /internal/deposit-addresses -> 404 (el ejemplo HTTP no está expuesto; el conjunto vive en tabla + allAssigned)."
+      - tipo: comando
+        ref: "grep -rni 'monitor\\|indexer\\|eth_getLogs\\|internal/deposit' src --include='*.ts'"
+        detalle: "No hay monitor de la épica 07; único hallazgo: comentario 'future monitor' en allAssigned. La asignación es eager (AT-06-03-09) así que no hay ventana ligada a GET /deposit-address."
+    justificacion: >-
+      Existen el evento DepositAddressAssigned con los cuatro campos y la consulta interna allAssigned(),
+      alimentados desde la asignación eager; no hay ventana por consulta del usuario. El monitor de
+      depósitos de la épica 07 no está implementado en esta etapa y no introduce un descubrimiento tardío.
+    duracion_min: 6
+
+  - at_id: AT-07-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-07-04-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-07-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-07-04-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09a
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09b
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09c
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-09-04-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-09-05-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - tipo: archivo
+        ref: "README.md:1-11"
+        detalle: "Corrida pre-piloto etapa 3: backend con auth, wallet HD y deposit-address; sin trading, órdenes, balances, seguimiento de depósitos ni retiros."
+      - tipo: archivo
+        ref: "src/app.ts:31-38"
+        detalle: "KNOWN_ROUTES solo /health, /api/v1/auth/register|login|logout, /api/v1/me y /api/v1/deposit-address; el resto de /api/v1 responde NOT_FOUND."
+      - tipo: comando
+        ref: "ls src && grep -rni 'ORDER_LOCK\\|orderbook\\|TRADE_FILL\\|DEPOSIT_NOT_CONFIRMED\\|BROADCAST\\|ledger' src --include='*.ts'"
+        detalle: "src/ = app.ts auth/ config.ts database.ts errors.ts rate-limit.ts rpc*.ts server.ts wallet/ websocket.ts. El grep de módulos de épicas 02-05/07-08 solo halla un comentario en websocket.ts:115 (canales fuera de alcance)."
+    justificacion: >-
+      Épica/función fuera del subconjunto pre-piloto: no hay implementación evaluable y no se aplicó el
+      procedimiento de la rúbrica.
+    duracion_min: 0
