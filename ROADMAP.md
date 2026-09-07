@@ -75,9 +75,13 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   (`pre-piloto-a` / `pre-piloto-b`, descartables) sobre un universo reducido de la spec.
   **Corrida completa el 2026-08-24:** las 6 etapas con sus 6 smokes, sin intervenciones de
   las categorías 1–8, más la evaluación (black-box, white-box con dos pasadas por celda y
-  métricas estáticas). Dejó **26 hallazgos** (22 el 2026-08-24, 4 más en el cierre del
+  métricas estáticas). Dejó **27 hallazgos** (22 el 2026-08-24, 5 más en el cierre del
   2026-09-06: los subagentes de B no estaban en el registro, ADR-023) y **ocho ADRs
   (018–025)**, `protocolo.md` en **v1.6**, `spec-v1.2` y la paridad en **146 chequeos**.
+  **ADR-026 (2026-09-06)** pasa la evaluación a agentes (juez tercero Grok Build, dos
+  pasadas + arbitraje; protocolo **v1.7**). **Pre-piloto-2 completa el 2026-09-07**
+  (`runs/pre-piloto-2/`): las dos celdas generadas y evaluadas de punta a punta por
+  agentes, 11 hallazgos más, checklist H6 en **20 de 24** (abiertos 1, 2, 19 y 22).
   El 2026-09-06 el tesista tomó las decisiones que quedaban (H-12, consumo, H-19,
   `skip = 0`, ADR-023, H-25, arbitraje) y se aprovisionó el emulador Android para la
   rúbrica mobile. Estado por componente y defectos en

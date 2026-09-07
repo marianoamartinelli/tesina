@@ -11,7 +11,7 @@ centralizado y simplificado.
 ## Estado del proyecto
 
 Hitos **H0–H5 completos**: spec congelada en el tag `spec-v1.2` (57 HUs, 693 AT-ids),
-protocolo experimental pre-registrado (ADR-004, hoy v1.6), corpus RAG de 9 documentos con
+protocolo experimental pre-registrado (ADR-004, hoy v1.7), corpus RAG de 9 documentos con
 manifest + SHA-256, pipeline de agentes con paridad A/B verificable (ADR-009, que
 reemplaza a ADR-005) y harness de evaluación: suite black-box más agente evaluador
 white-box (ADR-007) para los ATs no automatizables (521 AT-ids backend + 78 web /
@@ -42,7 +42,7 @@ Es la primera vez en el proyecto que los CLI de agente ejecutan etapas, que la s
 ATs corre contra un sistema real, que el agente evaluador white-box se ejecuta y que se
 miden las métricas estáticas.
 
-Resultado: **26 hallazgos** ([`runs/pre-piloto/hallazgos.md`](runs/pre-piloto/hallazgos.md))
+Resultado: **27 hallazgos** ([`runs/pre-piloto/hallazgos.md`](runs/pre-piloto/hallazgos.md))
 y **cinco ADRs** (018–022), con `protocolo.md` de v1.2 a **v1.5** y la paridad de 117 a
 **143 chequeos**. Los que habrían roto la piloto: el sandbox nativo de Codex dejaba al
 agente B **sin shell** dentro del contenedor sin cortar la corrida (ADR-019); el build de
@@ -67,8 +67,28 @@ rol revisor se ensayaron sobre B (10/11 y 35/36) y dejaron los huecos del instru
 decisiones pendientes (**ADR-024**: `spec-v1.2` con el rate limiting de `/auth/*` fijado;
 **ADR-025**: protocolo **v1.6** con RAG disponible e instruido, `duracion_min` no-métrica,
 suscripción con continuación estándar y emulador Android para la rúbrica mobile) y
-ratificó ADR-023. Paridad en **146 chequeos**. Queda abierta la re-pre-registración de la
-rúbrica del rol revisor (H-26). Lo siguiente es `piloto-01`.
+ratificó ADR-023. Paridad en **146 chequeos**. La misma noche, **ADR-026**: la evaluación
+pasa a estar gestionada íntegramente por agentes —todo paso con juicio lo ejecuta un
+**agente tercero** (Grok Build, `grok-4.6`) en dos pasadas independientes más un
+arbitraje por agente; el tesista opera y no emite veredictos— y el protocolo queda en
+**v1.7**.
+
+**Pre-piloto-2 (2026-09-06/07) — completa** ([`runs/pre-piloto-2/`](runs/pre-piloto-2/README.md)).
+Segunda corrida descartable sobre el mismo universo reducido, lanzada en modo autónomo con
+todo lo decidido el 2026-09-06. Las dos familias generaron sus tres etapas (B con dos
+cortes por el límite de uso de Codex y continuación con `--desde-paso`) y **la evaluación
+corrió entera por agentes en las dos celdas**: 5 instrumentos × 2 pasadas + arbitraje,
+rúbrica mobile sobre el emulador por primera vez. Con la instrucción de ADR-025 D1 las dos
+familias **sí consultaron el corpus** (25 y 17 consultas; en la primera pre-piloto, 0).
+Black-box 53/3 y 52/4, white-box 22/22 en ambas; A escribió 11 468 loc contra 5 825 de B.
+El juez concordó consigo mismo en 8 de los 10 circuitos; las discrepancias
+reales las resolvió el arbitraje con evidencia. **11 hallazgos** más
+([`runs/pre-piloto-2/hallazgos.md`](runs/pre-piloto-2/hallazgos.md)): los rollouts de B
+muestran 3 subagentes por invocación que consumen más que el thread principal; los topes
+que ADR-016 dio por inexistentes aparecieron en Codex (~30 min por ventana de 5 h) y en
+Grok (pool semanal); la suite se frenaba sola con el rate limit de `spec-v1.2`. Checklist
+H6 en **20 de 24**. Queda abierta la re-pre-registración de la rúbrica del rol revisor
+(H-26) y la decisión de correr `piloto-01` como estaba previsto o pasar a H7.
 
 ## Mapa del repositorio
 
@@ -93,7 +113,7 @@ de claude.ai:
 
 | | Artifact | Descripción |
 |---|---|---|
-| 🎓 | [Avance para directores](https://claude.ai/code/artifact/5bf48c1c-62a2-4d99-94fa-b8eb30b4aa4f) | Presentación visual del estado del proyecto para la dirección: diseño 2×2, hitos, vara de evaluación y decisiones abiertas. |
+| 🎓 | [Avance para directores](https://claude.ai/code/artifact/080ad423-0e1c-4238-abf0-f77769208a9b) | Estado del proyecto para la dirección (2026-09-07): diseño 2×2, método, lo que midieron las dos pre-pilotos y las decisiones abiertas. Reemplaza al artifact de julio, que ya no es accesible desde esta cuenta. |
 | 🧭 | [Roadmap y protocolo (hub)](https://claude.ai/code/artifact/064ea0c6-f229-4a71-b998-3d9bef9d719b) | Página central: enlaza el roadmap de hitos y el protocolo experimental. |
 | 🧊 | [H1 — Spec freeze](https://claude.ai/code/artifact/13d3543f-2fa3-4144-991e-fbf625daf04e) | Snapshot del freeze de la especificación (`spec-v1.1`): alcance, convenciones y auditoría. |
 | 📋 | [H2 — Protocolo](https://claude.ai/code/artifact/9950ffe5-3009-441c-8ce2-e6370e091e19) | Protocolo experimental pre-registrado: criterios de intervención, orden de construcción, presupuestos. |

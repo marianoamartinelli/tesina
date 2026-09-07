@@ -6,7 +6,8 @@
   primera y con todo lo decidido el 2026-09-06: `spec-v1.2`, RAG instruido, rollouts de B,
   evaluación gestionada por agentes (ADR-026), emulador.
 - **Contexto:** sesión con Claude Code de la noche entera, sin el tesista. Registro en
-  `runs/pre-piloto-2/` (manifests, intervenciones, hallazgos H2-01..08, evaluación de A).
+  `runs/pre-piloto-2/` (manifests, intervenciones, hallazgos H2-01..11, evaluación de las
+  dos celdas).
 
 ## Qué se hizo
 
@@ -45,6 +46,42 @@ estáticas: 5 901 + 1 533 + 4 034 loc.
 p2, arbitraje del revisor, alucinaciones p2— y las tiró. Faltan ~10 sesiones de A y las 15
 de B (H2-07). El runner declara fallida toda pasada sin salida y la repite entera.
 
+## Cierre de la corrida (tarde del 2026-09-07)
+
+El tesista extendió las dos suscripciones a la mañana («reanudemos») y la sesión siguió
+sola hasta cerrar las dos celdas.
+
+**B terminó de generar.** El paso 3 de backend se repuso con `--desde-paso 3` (INT-03) y
+web y mobile corrieron sin cortes (INT-04, INT-05); repo congelado en `f4770bf`. B hizo
+**17 consultas al corpus** (15 + 0 + 2) y dejó **44 rollouts** (11 threads principales +
+33 de subagente): 3 subagentes por invocación, profundidad 1. A, medido con el mismo
+criterio, abrió 31 en 9 invocaciones. El ítem 24 de la checklist queda cerrado con eso;
+la checklist pasa a **20 de 24** (abiertos 1, 2, 19 y 22).
+
+**La evaluación se completó en las dos celdas, toda por Grok Build:** 2 pasadas + arbitraje
+por instrumento, 5 instrumentos, 10 circuitos. Tabla completa en `runs/pre-piloto-2/hallazgos.md`
+§Resultados. Lo que importa de ahí: las dos implementaciones dan el mismo white-box (22/22)
+y casi el mismo black-box (53/3 y 52/4; las 3 fallas comunes son endpoints fuera del
+universo, la cuarta de B es un canal lateral de tiempo en el login, `AT-01-02-11`); A
+escribe **11 468** loc contra **5 825** de B (2,0×; en la pre-piloto 1 fue 2,3×); el
+juez concuerda consigo mismo en 8 de los 10 circuitos con 0 discrepancias, y las
+discrepancias reales (3 del censo del revisor de A, 5 candidatos de alucinaciones de A)
+las resolvió el arbitraje citando evidencia y regla. La rúbrica mobile corrió por primera
+vez sobre el emulador: 15 PASA / 1 NO_EVALUABLE en A (reconexión del WebSocket privado, fuera del backend reducido) y 16/16 en B, sin discrepancias entre pasadas en ninguna de las dos.
+
+**Tres hallazgos más (H2-09..11):** la sensibilidad del agente de alucinaciones varía
+entre pasadas sobre candidatos idénticos (0 y 5), y es la doble pasada la que lo absorbe;
+el runner del rol revisor perdía los pasos de una etapa continuada (corregido: concatena
+los JSONL y funde snapshots); y la primera pasada mobile de B fue inválida porque el
+operador puso la variable de URL de A (`EXPO_PUBLIC_API_BASE_URL` contra
+`EXPO_PUBLIC_API_URL`) y Expo Go 57 contra un SDK 54 — el contrato de arranque del entorno
+mobile tiene que exigir leer esos dos datos del SUT y verificar un login antes de lanzar.
+
+**Manifests §5 y §6 completos** (tokens por pasada de cada sesión de Grok), tablas
+regeneradas desde los archivos primarios por script, y el artifact «Avance para
+directores» rehecho por un subagente con contexto limpio sobre el formato del PDF de
+julio.
+
 ## Decisiones tomadas
 
 - `--desde-paso N` en el orquestador: la continuación de §5.8 repone sólo el paso
@@ -54,13 +91,15 @@ de B (H2-07). El runner declara fallida toda pasada sin salida y la repite enter
 
 ## Pendientes (del tesista)
 
-1. **Cupo del juez tercero (H2-07):** esperar la reposición semanal de Grok, comprar
-   créditos de API de xAI (runtime alternativo de ADR-026 D1, sin implementar) o subir de
-   tier. Sin eso, la evaluación por agentes no termina ni para el universo reducido.
-2. **B bajo suscripción (H2-08):** ~30 minutos de trabajo por ventana de 5 horas.
-   Reabre suscripción/API key **sólo para B**.
-3. Cerrar la pre-piloto-2 cuando haya cupo: white-box p2 + arbitraje, alucinaciones p2 +
-   arbitraje, rúbricas web y mobile de A; las tres etapas restantes y la evaluación de B.
+1. **Re-pre-registrar la rúbrica del rol revisor** (H-26): la pre-piloto-2 vuelve a
+   mostrar el hueco de RV-07 (las 3 FALLA de A por orden de severidad) y suma RV-05/RV-08.
+2. **Contrato de arranque del entorno mobile** (H2-11) en `suite-at/entorno/README.md`.
+3. **Ítems 19c (A ante el rate limit) y 22 (compactación de B)** de la checklist: sólo
+   los mide una etapa más larga que el universo reducido.
+4. **Decidir si `piloto-01` se corre como estaba previsto** (spec entera, `xhigh`, una
+   sola celda) o si las dos pre-pilotos ya cubren lo que H6 pedía y se pasa a H7. Con los
+   topes medidos (B ~30 min por ventana de 5 h; Grok por pool semanal), una corrida
+   completa se va a repartir en muchas ventanas.
 
 ## Observaciones de método
 
@@ -71,3 +110,9 @@ de B (H2-07). El runner declara fallida toda pasada sin salida y la repite enter
   `--json` de Codex escondía la mitad del consumo y toda la delegación; los rollouts, no.
 - El circuito de dos pasadas más arbitraje funciona: cuatro instrumentos corrieron con
   salidas válidas, evidencia por fila y arbitrajes que citan la regla que decide.
+- **Dos errores del operador en un día, los dos por dar por sabido algo que cada SUT
+  define a su manera** (la variable de URL del cliente mobile; la versión de Expo Go). En
+  H8 hay cuatro SUT de dos familias: lo que no está en un contrato escrito se va a volver
+  a equivocar.
+- Toda tabla de resultados se regenera por script desde los CSV/JSONL primarios; ninguna
+  cifra de hoy se tipeó a mano.

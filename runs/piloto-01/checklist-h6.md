@@ -7,11 +7,15 @@ el harness A) y **piloto-02** (smoke end-to-end del harness B). Ningún ítem se
 resuelve editando `spec/` (congelada, tag `spec-v1.1`) ni ADRs aceptados: los
 cambios van por nueva versión de documento + ADR nuevo donde corresponda.
 
-**Estado al 2026-09-06 (noche):** **19 de los 24 ítems de salida cerrados** (el 6 se retiró por ADR-026). La pre-piloto
+**Estado al 2026-09-07:** **20 de los 24 ítems de salida cerrados** (el 6 se retiró por
+ADR-026). La pre-piloto-2 (`runs/pre-piloto-2/`) cerró el 24 con los rollouts de B
+persistidos por ADR-023 y midió el corte de B por límite de uso (19c, parcial). Los **4
+abiertos son 1, 2, 19 y 22**; los cuatro necesitan `piloto-01`.
+
+**Estado al 2026-09-06 (noche):** 19 de los 24 ítems cerrados. La pre-piloto
 (2026-08-24) y su cierre (2026-09-06) cerraron el 16 y el 23 por mecanismo, y dejaron el
-19 parcialmente medido. Los **5 abiertos son 1, 2, 19, 22 y 24**, y todos necesitan
-`piloto-01`; el 24 se **reabrió** el 2026-09-06 al medir que el `--json` de Codex no
-registra a los subagentes (H-23, ADR-023).
+19 parcialmente medido; el 24 se **reabrió** el 2026-09-06 al medir que el `--json` de
+Codex no registra a los subagentes (H-23, ADR-023).
 
 **Estado al 2026-08-23:** 16 de los 24 ítems cerrados. La sesión del 2026-08-23 cerró
 cinco —7, 11, 15, 20 y 13— y volvió a cerrar el 10, que se había reabierto ese mismo día;
@@ -387,6 +391,13 @@ resultado observado.
           11 `rate_limit_event`, todos `allowed`, y B ninguno — el comportamiento ante el
           corte sigue sin medir. Queda abierto por (c) y porque el consumo de B no incluye
           a sus subagentes (H-23).
+          **Pre-piloto-2 (2026-09-07):** (c) medido para B: ante el límite de uso de la
+          suscripción, `codex exec` emite `error` + `turn.failed` («You've hit your usage
+          limit … try again at …») y sale con 1; el orquestador toma el snapshot del paso
+          y registra `corte: codigo_salida_no_cero`; la continuación con `--desde-paso`
+          repone sólo el paso cortado (H2-02, H2-08, INT-01/02 de B). Para A sigue sin
+          ocurrir. El consumo de los subagentes de B sale de los rollouts (H2-01,
+          manifest §5 `tokens_subagentes`). Queda abierto sólo por (c) en A.
           Fuente: ADR-009 §Evidencia verificada y §Consecuencias.
 
 20. - [x] **Precio por token de `gpt-5.6-sol`: ratificado el 2026-08-23** por el
@@ -437,6 +448,12 @@ resultado observado.
           ni en el stream de A (sin `compact_boundary`). Pero el `--json` de B no es un
           oráculo válido para esto: no emite eventos de sesión. Con ADR-023 los rollouts
           de B quedan en los logs y la piloto puede leer ahí si compactó.
+          **Pre-piloto-2 (2026-09-07), sobre los 44 rollouts de B:** el override se
+          aplica —cada `token_count` reporta `model_context_window: 828400`, no
+          272 000— y ningún thread superó los 169 980 tokens de contexto en un turno, o
+          sea que la compactación no se ejercitó (umbral por default ≈ 258 400). Sigue
+          abierto: hace falta una etapa con historia más larga que la del universo
+          reducido.
 
 23. - [x] **Techo de 1 048 576 caracteres por input en el CLI de Codex** (verificado:
           `turn/start` rechaza con `input_too_large` / `max_chars`, independiente de los
@@ -453,7 +470,7 @@ resultado observado.
           Se vigila igual en la piloto, sin acción pendiente.
           Fuente: ADR-010 Decisión 2.
 
-24. - [ ] **Fan-out efectivo de la delegación en cada familia.** ADR-010 D1 instruye
+24. - [x] **Fan-out efectivo de la delegación en cada familia.** ADR-010 D1 instruye
           delegación con texto byte-idéntico, pero la instrucción cae sobre un modelo que
           ya delega por default (A) y sobre otro cuyo `<multi_agent_mode>` la mantiene
           apagada hasta que se la piden (B). Medir cuántos subagentes abre cada familia y
@@ -474,4 +491,12 @@ resultado observado.
           `parent_thread_id`), que la pre-piloto perdió y que **ADR-023** persiste en los
           logs. El fan-out de B se mide en la piloto sobre esos rollouts; A ya está
           medido (1 736 de 7 612 eventos).
-          Fuente: ADR-010 Decisión 1; ADR-023.
+          **Cerrado en la pre-piloto-2 (2026-09-07):** con los rollouts persistidos, el
+          fan-out de las dos familias es comparable y de profundidad 1 en ambas: **A, 31
+          subagentes en 9 invocaciones** (`parent_tool_use_id` distintos por paso: 10 en
+          backend, 9 en web, 12 en mobile); **B, 33 en 11 invocaciones** (3 por
+          invocación, `thread_source: subagent`, ningún subagente con padre subagente).
+          No hay desproporción que declarar ni tope que fijar. Lo que sí cambia es el
+          consumo: los subagentes de B suman más entrada que su thread principal
+          (`runs/pre-piloto-2/manifest-b.yaml` §5) y no están en el `--json`.
+          Fuente: ADR-010 Decisión 1; ADR-023; `runs/pre-piloto-2/hallazgos.md` H2-01.
