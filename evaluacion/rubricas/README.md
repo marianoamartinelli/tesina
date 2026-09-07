@@ -30,6 +30,15 @@ de H7.
 
 ## Archivado por corrida (H8)
 
+**Desde ADR-026 (2026-09-06) los tres instrumentos los ejecuta el agente evaluador tercero**
+con `evaluacion/agente-instrumentos/correr.py` (briefings `briefing-rubrica-web.md`,
+`briefing-rubrica-mobile.md`, `briefing-rol-revisor.md`), en dos pasadas independientes
+más un arbitraje (`briefing-arbitraje.md`). El runner arma la copia por corrida, archiva
+cada pasada en `runs/<id>/rubricas/<web|mobile|rol-revisor>/pasada-<n>/` (rúbrica
+completada + CSV con los esquemas de abajo + `evidencia/` + JSONL y sesiones del agente) y
+el arbitraje en `veredicto-final/` + `arbitraje.md`. Los pasos 1–3 de abajo describen lo
+que el agente produce; ya no los ejecuta un humano.
+
 Por cada corrida evaluada:
 
 1. **Copiar** los tres instrumentos intactos a `runs/<id>/rubricas/epica-10-web.md`,

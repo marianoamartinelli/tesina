@@ -1,5 +1,11 @@
-# Protocolo experimental pre-registrado — v1.6
+# Protocolo experimental pre-registrado — v1.7
 
+- **v1.7 (2026-09-06, [ADR-026](../decisiones/ADR-026-evaluacion-gestionada-por-agentes.md)):**
+  la evaluación es gestionada íntegramente por agentes. Todo paso con juicio —white-box,
+  rúbricas web/mobile/rol revisor, alucinaciones— lo ejecuta un **agente tercero** (Grok
+  Build, `grok-4.6`) en dos pasadas independientes más un arbitraje por agente; el tesista
+  opera y no emite veredictos. Cambian §2.5, §3 paso 4, §9 y §10; el espejo de ADR-007 §3.5
+  se retira. Todo lo demás se conserva verbatim de la v1.6.
 - **v1.6 (2026-09-06, [ADR-025](../decisiones/ADR-025-protocolo-v1-6-cierre-de-la-ventana-h6.md)):**
   cierra la ventana H6 con lo que la corrida pre-piloto midió. Cambios: §1 el factor RAG
   pasa a ser «disponible e instruido»; §2.1 y §3 pinnean `spec-v1.2`
@@ -77,7 +83,11 @@ Idénticos en las 4 corridas oficiales, pinneados en el manifest de cada corrida
    los defaults de los CLI no coinciden). El manifest registra además la **versión exacta
    de cada CLI** (ADR-009 Decisión 5) y, en las celdas B, `model_context_window`
    (ADR-010 Decisión 2).
-5. **El evaluador humano:** el tesista, en todas las corridas.
+5. **El evaluador:** el **agente tercero** de ADR-026 —Grok Build `grok-4.6`, `effort
+   xhigh`, mismo runner, mismos briefings (por hash) y misma versión de CLI en las 4
+   celdas—. El tesista es el **operador**: levanta entornos, corre los runners en el
+   orden de §10.2 y archiva; no emite ni revisa veredictos. (Hasta v1.6: «el evaluador
+   humano: el tesista».)
 6. **Este protocolo:** criterios de intervención, medición y registro.
 7. **La ventana temporal:** las 4 corridas oficiales se ejecutan en una ventana corta
    (objetivo: ≤ 2 semanas entre la primera y la última) para minimizar la deriva de los
@@ -111,10 +121,16 @@ Idénticos en las 4 corridas oficiales, pinneados en el manifest de cada corrida
       ([ADR-007](../decisiones/ADR-007-agente-evaluador-white-box.md); modelos y runtime
       re-pinneados por ADR-010 Decisión 3): dos pasadas independientes, cada una validada
       mecánicamente con `agente-evaluador/validar-resultados.py` **antes** del arbitraje.
-      El humano arbitra las discrepancias con la evidencia de ambas y firma
-      `veredicto-final.yaml`, que se valida con el mismo script (`--final`).
-   4. Completar las **rúbricas manuales** sobre copias por corrida y exportarlas a CSV
-      (§10, incluida la regla de orden dentro de una celda).
+      Las discrepancias las arbitra una **tercera sesión del agente**
+      (`agente-instrumentos/correr.py --instrumento white-box --arbitraje`, briefing
+      `briefing-arbitraje.md`), que emite `veredicto-final.yaml`; se valida con el mismo
+      script (`--final`). Ningún humano firma veredictos (ADR-026).
+   4. Correr las **rúbricas** web, mobile y del rol revisor con el agente tercero
+      (`agente-instrumentos/correr.py`, dos pasadas + arbitraje cada una) sobre copias por
+      corrida, y las **alucinaciones de dominio** del mismo modo (§10, incluida la regla de
+      orden dentro de una celda). Precondiciones del entorno: SUT y cliente web en
+      contenedores con puerto publicado, emulador `tesina-eval` levantado con la app en
+      Expo Go, `SUITE_CMD_REINICIO_SUT` exportado.
    5. Medir las **métricas estáticas** (`metricas-estaticas/medir.sh`) sobre el repo
       satélite congelado.
    6. Volcar el resumen a `runs/<id>/metricas.md` y escribir la entrada de journal de la
@@ -427,6 +443,13 @@ imposible de implementar como está escrita, una contradicción real):
   la ventana H6 y tras el ensayo sobre la pre-piloto (ADR-024 D7, ADR-025 D5), sin tocar
   ningún criterio de veredicto. La instrucción de RAG de ADR-025 D1 vive en el prompt de
   **sistema**, no en el del rol `revisor`: la cláusula de `rol-revisor.md` no se dispara.
+  **v1.7 (ADR-026):** los instrumentos con juicio los **ejecuta el agente tercero**, en dos
+  pasadas independientes más un arbitraje por agente; los briefings de ejecución de
+  `evaluacion/agente-instrumentos/` (rúbrica web, rúbrica mobile, rol revisor,
+  alucinaciones, arbitraje; v1.0, 2026-09-06) forman parte del instrumento pre-registrado
+  y no redefinen ningún criterio. Los instrumentos cambian sólo la frase que nombraba al
+  tesista como ejecutor: `epica-10-web.md` v1.2, `epica-11-mobile.md` v1.1,
+  `rol-revisor.md` v1.1, `alucinaciones.md` v1.1.
 - **Precondición de la rúbrica mobile:** el entorno de evaluación provee un **emulador
   Android** (AVD `tesina-eval`, Android 15 / API 35, `arm64-v8a`, en la máquina del
   evaluador), idéntico para las 4 celdas; el backend de la celda corre en su contenedor
@@ -444,10 +467,10 @@ imposible de implementar como está escrita, una contradicción real):
 | Cierre (timestamps, costo, tokens)     | `runs/<id>/manifest.yaml` §5        | Al cerrar la corrida      |
 | Suite black-box (465 ATs)              | `runs/<id>/resultados-at.csv`       | En H8                     |
 | Agente evaluador white-box (56 ATs)    | `runs/<id>/no-automatizables/pasada-1.yaml`, `pasada-2.yaml`, `veredicto-final.yaml`. El campo `duracion_min` que el agente declara **no es métrica** (lo escribe sin reloj; en la pre-piloto sobreestimó el tiempo de pared 8,5×–10,8×, H-19): el esfuerzo por pasada se mide con el tiempo de pared del runner, los turnos y los tokens de su JSONL, y el tope de 15 min por AT del briefing se lee como instrucción de comportamiento (ADR-025 Decisión 2) | En H8 |
-| Rúbricas de épicas 10–11 completadas   | `runs/<id>/rubricas/` + `runs/<id>/resultados-rubricas.csv` | En H8    |
-| Rúbrica del rol `revisor` completada   | `runs/<id>/rubricas/rol-revisor.md` + `runs/<id>/resultados-rubrica-revisor.csv` + `runs/<id>/censo-revision.csv` | En H8 |
+| Rúbricas de épicas 10–11 completadas   | `runs/<id>/rubricas/<web\|mobile>/pasada-1/`, `pasada-2/`, `veredicto-final/` (rúbrica completada + `resultados-rubricas-<web\|mobile>.csv` + `evidencia/`) y `arbitraje.md`; JSONL y sesiones del agente al lado (ADR-026) | En H8    |
+| Rúbrica del rol `revisor` completada   | `runs/<id>/rubricas/rol-revisor/pasada-1/`, `pasada-2/`, `veredicto-final/` (rúbrica completada + `resultados-rubrica-revisor.csv` + `censo-revision.csv`) y `arbitraje.md` | En H8 |
 | Métricas estáticas                     | `runs/<id>/metricas-estaticas.csv`  | En H8                     |
-| Alucinaciones de dominio               | `runs/<id>/alucinaciones.md`        | En H8                     |
+| Alucinaciones de dominio               | `runs/<id>/alucinaciones/pasada-1/`, `pasada-2/`, `veredicto-final/` (`alucinaciones.md` + `.csv`), `candidatos.txt` y `arbitraje.md` (ADR-026; reemplaza a la segunda pasada humana de `alucinaciones.md` §5) | En H8                     |
 | Resumen de métricas de evaluación      | `runs/<id>/metricas.md`             | En H8                     |
 | Narrativa y observaciones              | `journal/AAAA-MM-DD-<id>.md`        | Al cierre de cada sesión  |
 | Decisiones estructurales sobrevenidas  | ADR nuevo                           | Cuando ocurran            |
@@ -473,9 +496,11 @@ consolidación sea mecánica.
 ### 10.2 Orden de completado dentro de una celda (H8)
 
 El censo y los veredictos de `rol-revisor.md` de una celda se completan **antes** de que
-el evaluador abra `runs/<id>/resultados-at.csv` de esa misma celda. Correr la suite es
-mecánico; leerla no: conocer qué ATs fallaron antes de codear la revisión contaminaría el
-codeo. El cruce entre el campo `referencias` del censo y `resultados-at.csv` se hace
+se abra `runs/<id>/resultados-at.csv` de esa misma celda. Correr la suite es mecánico;
+leerla no: conocer qué ATs fallaron antes de codear la revisión contaminaría el codeo.
+Desde v1.7 el que codea es el agente tercero, que **nunca** ve `resultados-at.csv`
+(el runner no lo copia a su directorio de trabajo); la regla de orden se conserva para el
+operador. El cruce entre el campo `referencias` del censo y `resultados-at.csv` se hace
 después, ya con el censo cerrado.
 
 ### 10.3 Alcance de las métricas estáticas: exclusión de `.pipeline/`

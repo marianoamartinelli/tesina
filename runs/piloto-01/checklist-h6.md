@@ -7,9 +7,9 @@ el harness A) y **piloto-02** (smoke end-to-end del harness B). Ningún ítem se
 resuelve editando `spec/` (congelada, tag `spec-v1.1`) ni ADRs aceptados: los
 cambios van por nueva versión de documento + ADR nuevo donde corresponda.
 
-**Estado al 2026-09-06:** **18 de los 24 ítems de salida cerrados.** La pre-piloto
+**Estado al 2026-09-06 (noche):** **19 de los 24 ítems de salida cerrados** (el 6 se retiró por ADR-026). La pre-piloto
 (2026-08-24) y su cierre (2026-09-06) cerraron el 16 y el 23 por mecanismo, y dejaron el
-19 parcialmente medido. Los **6 abiertos son 1, 2, 6, 19, 22 y 24**, y todos necesitan
+19 parcialmente medido. Los **5 abiertos son 1, 2, 19, 22 y 24**, y todos necesitan
 `piloto-01`; el 24 se **reabrió** el 2026-09-06 al medir que el `--json` de Codex no
 registra a los subagentes (H-23, ADR-023).
 
@@ -176,12 +176,12 @@ resultado observado.
          Fuente: `journal/2026-07-06-agente-evaluador-white-box.md` §Pendientes,
          punto 2; `decisiones/ADR-013-mecanismo-importar-mnemonic.md`.
 
-6. - [ ] **Chequeo espejo con `gpt-5.6-sol`** (re-pinneado por ADR-010 D3) — muestra de
-         10 ATs por celda,
-         pre-registrado como opcional condicionado a presupuesto): decidir su
-         ejecución u omisión según el costo observado en la piloto y registrar la
-         decisión en el journal.
-         Fuente: ADR-007 §3 ítem 5.
+6. - [x] **Chequeo espejo con `gpt-5.6-sol`: retirado por ADR-026 (2026-09-06).** El
+         juez pasa a ser un tercer proveedor (Grok Build, `grok-4.6`) para todos los
+         instrumentos con juicio, así que el espejo del otro proveedor generador deja de
+         tener objeto: la medida de confiabilidad es la concordancia entre las dos pasadas
+         del agente tercero y el arbitraje registrado.
+         Fuente: ADR-007 §3 ítem 5; ADR-026 D4.
          Decisión esperada: ejecución u omisión, registrada en journal.
 
 7. - [x] **Presupuestos: no hay.** **Cerrado por ADR-016** (Aceptado el 2026-08-23),

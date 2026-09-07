@@ -98,7 +98,7 @@ el evento `inicio` del JSONL, como la generación.
   instrumentos que nombraban al tesista como ejecutor cambian esa frase, y sólo esa:
   `alucinaciones.md` v1.1, `epica-10-web.md` v1.2, `epica-11-mobile.md` v1.1,
   `rol-revisor.md` v1.1. Ningún criterio de veredicto cambia.
-- Implementación: `evaluacion/comun/runtime_evaluador.py` (la invocación de `grok -p` y el
+- Implementación: `evaluacion/runtime_evaluador.py` (la invocación de `grok -p` y el
   `GROK_HOME` aislado, una sola vez), `evaluacion/agente-instrumentos/correr.py` (rúbricas,
   alucinaciones y arbitraje) y `evaluacion/agente-evaluador/correr.py` con `--runtime grok`
   (default) conservando `claude` para reproducir la pre-piloto.

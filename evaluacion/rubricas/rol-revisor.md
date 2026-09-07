@@ -1,4 +1,4 @@
-# Rúbrica manual — Rol `revisor` del pipeline — v1.0
+# Rúbrica manual — Rol `revisor` del pipeline — v1.1
 
 - **Objeto evaluado:** los archivos `.pipeline/revision-<etapa>.md` que produce el rol
   `revisor` ([ADR-009](../../decisiones/ADR-009-harnesses-como-cli-y-orquestador-de-roles.md)
@@ -52,8 +52,9 @@
 
 ## Procedimiento general
 
-- Se completa **en H8**, por el **mismo evaluador** (el tesista), recorriendo las celdas
-  en el **orden sorteado** (protocolo §7; checklist H6, ítem 15) y, dentro de cada celda,
+- Se completa **en H8**, por el **agente evaluador tercero** (ADR-026; v1.1 — hasta v1.0,
+  el tesista), en **dos pasadas independientes más un arbitraje por agente**, recorriendo
+  las celdas en el **orden sorteado** (protocolo §7; checklist H6, ítem 15) y, dentro de cada celda,
   las etapas en el orden `backend` → `web` → `mobile` y los puntos en el orden en que
   aparecen en el documento.
 - **Orden obligatorio dentro de una celda:** primero el censo (Parte A) y los veredictos

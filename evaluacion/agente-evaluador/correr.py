@@ -53,6 +53,9 @@ sys.path.insert(0, str(RAIZ / "pipeline"))
 
 from comun.nucleo import RegistroJSONL, sha256_archivo  # noqa: E402
 
+sys.path.insert(0, str(RAIZ / "evaluacion"))
+import runtime_evaluador as rt  # noqa: E402  (evaluacion/runtime_evaluador.py; ADR-026)
+
 AQUI = Path(__file__).resolve().parent
 CLI = "claude"
 FAMILIA = "evaluador"
@@ -177,6 +180,9 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true",
                         help="prepara el directorio de trabajo y muestra la invocación, "
                              "sin llamar al CLI")
+    parser.add_argument("--runtime", choices=("grok", "claude"), default="grok",
+                        help="grok = agente tercero (ADR-026, default); claude = el juez de "
+                             "ADR-010 D3, conservado para reproducir la pre-piloto")
     args = parser.parse_args()
 
     if not args.sut.is_dir():
@@ -185,7 +191,17 @@ def main() -> int:
     briefing = (AQUI / "briefing.md").read_text(encoding="utf-8")
     dir_trabajo = preparar_directorio(args.sut, args.celda, args.pasada)
     mensaje = prompt_usuario(dir_trabajo, args.ats)
-    comando = construir_comando(dir_trabajo, briefing)
+    if args.runtime == "grok":
+        ruta_prompt = dir_trabajo / ".prompt-usuario.md"
+        ruta_prompt.write_text(mensaje, encoding="utf-8")
+        rt.preparar_grok_home(dir_trabajo)
+        env_proceso = rt.entorno(dir_trabajo)
+        comando = rt.construir_comando(briefing, ruta_prompt, subagentes=False)
+        modelo, effort, adr = rt.MODELO, rt.EFFORT, "ADR-007 (framework) / ADR-026 (runtime y modelo)"
+    else:
+        env_proceso = None
+        comando = construir_comando(dir_trabajo, briefing)
+        modelo, effort, adr = MODELO, EFFORT, "ADR-007 (framework) / ADR-010 D3 (modelo y runtime)"
 
     args.salida.mkdir(parents=True, exist_ok=True)
     ruta_log = args.salida / f"pasada-{args.pasada}.jsonl"
@@ -193,9 +209,11 @@ def main() -> int:
 
     metadata = {
         "instrumento": "agente-evaluador-white-box",
-        "adr": "ADR-007 (framework) / ADR-010 D3 (modelo y runtime)",
-        "modelo": MODELO,
-        "effort": EFFORT,
+        "adr": adr,
+        "runtime": args.runtime,
+        "cli": rt.version_cli() if args.runtime == "grok" else CLI,
+        "modelo": modelo,
+        "effort": effort,
         "pasada": args.pasada,
         "sut": str(args.sut.resolve()),
         "dir_trabajo": str(dir_trabajo),
@@ -218,7 +236,7 @@ def main() -> int:
         print(f"\n  directorio de trabajo: {dir_trabajo}")
         for entrada in sorted(dir_trabajo.iterdir()):
             print(f"    {entrada.name}{'/' if entrada.is_dir() else ''}")
-        print(f"\n  comando: {' '.join(c if len(c) <= 60 else c[:57] + '…' for c in comando)}")
+        print(f"\n  comando: {' '.join(c if len(c) <= 60 else c[:57] + '…' for c in rt.comando_legible(comando))}")
         print(f"\n  mensaje ({len(mensaje)} chars):\n{mensaje}")
         registro.cerrar()
         ruta_log.unlink(missing_ok=True)
@@ -228,24 +246,37 @@ def main() -> int:
 
     registro.evento("inicio", **metadata)
     ruta_stderr = ruta_log.with_suffix(".stderr.txt")
-    with ruta_stderr.open("w", encoding="utf-8") as archivo_stderr:
-        proceso = subprocess.Popen(
-            comando, cwd=str(dir_trabajo),
-            stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=archivo_stderr,
-            text=True, encoding="utf-8", bufsize=1,
-        )
-        assert proceso.stdin is not None and proceso.stdout is not None
-        try:
-            proceso.stdin.write(mensaje)
-            proceso.stdin.close()
-            for linea in proceso.stdout:
-                registro.evento_cli(FAMILIA, linea)
-            codigo = proceso.wait()
-        except BaseException:
-            proceso.terminate()
-            proceso.wait()
-            registro.evento("abortado")
-            raise
+    if args.runtime == "grok":
+        codigo = rt.ejecutar(comando, dir_trabajo, env_proceso, registro, ruta_stderr)
+        sesiones = dir_trabajo / ".grok-home" / "sessions"
+        if sesiones.is_dir():
+            shutil.copytree(sesiones, args.salida / f"pasada-{args.pasada}-sesiones-grok",
+                            dirs_exist_ok=True)
+    with (ruta_stderr.open("a", encoding="utf-8") if args.runtime == "grok"
+          else ruta_stderr.open("w", encoding="utf-8")) as archivo_stderr:
+        if args.runtime == "grok":
+            proceso = None
+        else:
+            proceso = subprocess.Popen(
+                comando, cwd=str(dir_trabajo),
+                stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=archivo_stderr,
+                text=True, encoding="utf-8", bufsize=1,
+            )
+        if proceso is None:
+            pass
+        else:
+            assert proceso.stdin is not None and proceso.stdout is not None
+            try:
+                proceso.stdin.write(mensaje)
+                proceso.stdin.close()
+                for linea in proceso.stdout:
+                    registro.evento_cli(FAMILIA, linea)
+                codigo = proceso.wait()
+            except BaseException:
+                proceso.terminate()
+                proceso.wait()
+                registro.evento("abortado")
+                raise
 
     producido = dir_trabajo / NOMBRE_SALIDA
     destino_yaml = args.salida / f"pasada-{args.pasada}.yaml"

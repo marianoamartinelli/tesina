@@ -90,3 +90,14 @@ costo_total_usd: null
 tokens_totales: null
 intervenciones_total: null # detalle en intervenciones.md
 notas: ""
+
+# 6. Evaluación (ADR-026): la ejecuta el agente tercero, idéntico en las 4 celdas
+evaluador:
+  cli: "grok (Grok Build)"
+  version: ""              # grok --version
+  modelo: "grok-4.6"
+  effort: "xhigh"
+  auth: "suscripción (auth.json copiado en sólo lectura a un GROK_HOME aislado por invocación)"
+  mcp_playwright: "@playwright/mcp@0.0.80"
+  briefings_sha256: {}     # los escribe el runner en el evento `inicio` de cada JSONL
+  instrumentos: {}         # por instrumento: pasadas, discrepancias, arbitraje, tokens, turnos

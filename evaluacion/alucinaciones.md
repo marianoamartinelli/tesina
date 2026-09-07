@@ -1,8 +1,12 @@
-# Detección y conteo de alucinaciones de dominio — procedimiento pre-registrado v1.0
+# Detección y conteo de alucinaciones de dominio — procedimiento pre-registrado v1.1
 
 - **Estado:** pre-registrado en H5, antes de la primera corrida. Sólo la corrida piloto
   (H6) puede motivar ajustes, con nueva versión de este documento antes de la primera
-  corrida oficial (misma regla que `protocolo.md`).
+  corrida oficial (misma regla que `protocolo.md`). **v1.1 (2026-09-06, ADR-026):** la
+  clasificación de §3.3 y la doble pasada de §5 las ejecuta el **agente evaluador tercero**
+  (`evaluacion/agente-instrumentos/briefing-alucinaciones.md`), no el tesista; la lista de
+  candidatos de §3.2 la produce el runner. Categorías, unidad de conteo y métricas no
+  cambian.
 - **Variable dependiente:** "alucinaciones de dominio" del diseño 2×2 (protocolo §1). Se
   mide **idéntico** en las 4 implementaciones oficiales (y en la piloto, como ensayo),
   sobre el repo satélite congelado y las trazas de la corrida.
@@ -116,7 +120,7 @@ genera **una sola vez** por corrida; se archiva junto a la tabla (§3.4).
 
 ### 3.3 Verificación de cada candidato
 
-Cada mención se revisa **manualmente contra el corpus congelado** `corpus/documentos/`
+Cada mención la revisa el agente evaluador (v1.1) **contra el corpus congelado** `corpus/documentos/`
 (BIP-32/39/44 + wordlist, EIP-155, ERC-20/55/681, JSON-RPC) como referencia normativa:
 
 1. ¿La afirmación refiere a un estándar? Si no (uso trivial/correcto de un término), se
@@ -164,14 +168,15 @@ candidatos. Columnas fijas:
 
 1. **Pasada 1** (H8, al cierre de la corrida): extracción de candidatos (§3.2, única) +
    clasificación completa (§3.3–3.4).
-2. **Pasada 2**: el **mismo evaluador** (el tesista), **≥ 7 días** después de la pasada 1,
-   re-clasifica **en ciego** la misma lista de candidatos (sin mirar los veredictos ni
-   categorías de la pasada 1; se trabaja sobre una copia de la tabla con las columnas
-   `categoria`/`veredicto`/`justificacion` vacías).
-3. **Discrepancias:** se registran en una tabla al pie de `runs/<id>/alucinaciones.md`
-   (`id`, veredicto/categoría de pasada 1, de pasada 2, resolución final, regla de este
-   documento que la decide). La **resolución final** —releyendo la referencia normativa—
-   es la que entra al análisis.
+2. **Pasada 2**: una **segunda sesión independiente del agente** (v1.1; hasta v1.0, el
+   mismo evaluador humano ≥ 7 días después), que re-clasifica **en ciego** la misma lista
+   de candidatos, sin acceso a la pasada 1.
+3. **Discrepancias:** las detecta el runner (misma clave `candidato`, distinto veredicto o
+   categoría) y las resuelve una **tercera sesión del agente** con
+   `briefing-arbitraje.md`, releyendo la referencia normativa; su `arbitraje.md` registra
+   `candidato`, veredicto/categoría de cada pasada, resolución final y regla de este
+   documento que la decide. La **resolución final** (`veredicto-final/`) es la que entra
+   al análisis.
 4. **Métrica de estabilidad reportada:** tasa de acuerdo intra-evaluador
    (`candidatos con mismo veredicto y categoría / total de candidatos`), por celda y
    global. Se discute en el capítulo de metodología como cota de confiabilidad de la

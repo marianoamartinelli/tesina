@@ -1,4 +1,4 @@
-# Rúbrica manual — Épica 10: Cliente Web (React) — v1.1
+# Rúbrica manual — Épica 10: Cliente Web (React) — v1.2
 
 - **Cobertura:** 78 AT (HU-10-01: 11 · HU-10-02: 11 · HU-10-03: 19 · HU-10-04: 10 ·
   HU-10-05: 11 · HU-10-06: 16) + 1 escenario de integración (`AT-10-E2E-01`, del README de
@@ -47,9 +47,10 @@
 
 ## Procedimiento general
 
-- La rúbrica se completa **una sola vez por corrida, en H8** (evaluación al cierre), por el
-  **mismo evaluador** (el tesista) en las 4 corridas oficiales y la piloto, recorriendo las
-  filas **en el orden de este documento** (HU-10-01 → HU-10-06, AT ascendente; el E2E al
+- La rúbrica se completa **en H8** (evaluación al cierre) por el **agente evaluador
+  tercero** (ADR-026; v1.2 — hasta v1.1, el tesista), en **dos pasadas independientes más
+  un arbitraje por agente**, idéntico en las 4 corridas oficiales y la piloto, recorriendo
+  las filas **en el orden de este documento** (HU-10-01 → HU-10-06, AT ascendente; el E2E al
   final). No se re-evalúa ni se corrige la implementación después.
 - Cada fila se resuelve con **exactamente un** veredicto:
   - **PASA** — todo lo listado en la celda "Verificación" se observó.

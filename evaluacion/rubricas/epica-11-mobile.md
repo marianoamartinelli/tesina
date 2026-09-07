@@ -1,4 +1,4 @@
-# Rúbrica manual — Épica 11: Cliente Mobile (React Native / Expo) — v1.0
+# Rúbrica manual — Épica 11: Cliente Mobile (React Native / Expo) — v1.1
 
 - **Cobertura:** 94 AT (HU-11-01: 14 · HU-11-02: 10 · HU-11-03: 18 · HU-11-04: 14 ·
   HU-11-05: 12 · HU-11-06: 26).
@@ -40,9 +40,10 @@
 
 ## Procedimiento general
 
-- Se completa **una sola vez por corrida, en H8**, por el **mismo evaluador** (el tesista)
-  en las 4 corridas oficiales y la piloto, recorriendo las filas **en el orden de este
-  documento** (HU-11-01 → HU-11-06, AT ascendente).
+- Se completa **en H8** por el **agente evaluador tercero** (ADR-026; v1.1 — hasta v1.0,
+  el tesista), en **dos pasadas independientes más un arbitraje por agente**, idéntico en
+  las 4 corridas oficiales y la piloto, sobre el emulador Android del entorno de evaluación
+  (ADR-025 D4), recorriendo las filas **en el orden de este documento** (HU-11-01 → HU-11-06, AT ascendente).
 - Veredictos por fila (exactamente uno): **PASA** (todo lo listado se observó), **FALLA**
   (la condición se provocó y algo no se cumple), **NO_EVALUABLE** con causa: **(a)** el
   comportamiento del backend del que depende el AT no existe o falla — ya lo captura la
