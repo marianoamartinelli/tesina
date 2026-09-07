@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07c30-80db-7a43-8210-9b9628798f56",
+    "cwd": "/private/tmp/eval-rol-revisor-pre-piloto-2a-arb-20260907-110547"
+  },
+  "session_summary": "Arbitraje discrepancias rol-revisor celda",
+  "created_at": "2026-09-07T14:05:48.731631Z",
+  "updated_at": "2026-09-07T14:13:17.681091Z",
+  "num_messages": 239,
+  "num_chat_messages": 112,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "8b8fcfb4-7ef9-49e7-96f6-1cc91fa0c398",
+  "grok_home": "/tmp/eval-rol-revisor-pre-piloto-2a-arb-20260907-110547/.grok-home",
+  "last_active_at": "2026-09-07T14:13:17.681091Z",
+  "generated_title": "Arbitraje discrepancias rol-revisor celda",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

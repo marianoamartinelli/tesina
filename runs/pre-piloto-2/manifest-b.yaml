@@ -74,7 +74,7 @@ inicio: "2026-09-06T23:54:03-03:00"
 fin: "PENDIENTE-CORRIDA"
 repo_commit_final: "PENDIENTE-CORRIDA"
 etapas:
-  backend: {inicio: "2026-09-06T23:54:03-03:00", fin: "", tokens: null, costo_usd: null, intervenciones: 2, cortes_por_rate_limit: 2, estado: "en curso", motivo_cierre: "PENDIENTE — cortes por límite de uso a las 00:18 (paso 1) y 06:05 (paso 3); continuación del paso 3 programada 13:37 (INT-02)"}
+  backend: {inicio: "2026-09-06T23:54:03-03:00", tokens: null, costo_usd: null, fin: "2026-09-07T11:18:03-03:00", tokens: "PENDIENTE-CIERRE (turn.completed de 3 invocaciones + 16 rollouts de subagente)", costo_usd: null, intervenciones: 3, cortes_por_rate_limit: 2, estado: "completa", motivo_cierre: "criterio de avance cumplido (GET /health ok, INT-03) tras dos cortes por límite de uso (INT-01, INT-02)", consultas_rag: 15}
   web: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
   mobile: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
 logs_jsonl: []

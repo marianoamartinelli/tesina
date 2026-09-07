@@ -45,6 +45,27 @@ Categorías de causa raíz (del marco metodológico de la propuesta):
 - **Intervención:** re-invocar el orquestador con `--desde-paso 3` (agregado al núcleo en
   esta sesión: salta los pasos ya completos y registra `paso_omitido`) a las 13:37 (-03),
   sobre el estado actual del repo y con `revision-backend.md` ya escrito.
-- **Resultado:** PENDIENTE.
+- **Resultado:** el tesista extendió la suscripción de Codex a las 11:00 y la continuación
+  se lanzó a las 11:05:15 en vez de esperar a las 13:37: pasos 1 y 2 registrados como
+  `paso_omitido`, paso 3 completo a las 11:18:03 (exit 0, evento `fin`). Etapa backend
+  **completa** en tres invocaciones del orquestador.
 - **Referencias:** protocolo §5.8; H2-08.
+
+## INT-03 — Smoke check de avance de la etapa backend
+
+- **Timestamp:** 2026-09-07 11:22 (-03)
+- **Etapa/componente:** backend / procedimiento de avance de etapa
+- **Categoría causa raíz:** no aplica (procedimiento del protocolo §4.2, ADR-021)
+- **Disparador:** cierre de la etapa backend (paso 3 exit 0, `fin`); 15 consultas al corpus
+  en la etapa; 20 rollouts en `sesiones-codex/`.
+- **Intervención:** contenedor `tesina/agente-b:piloto-01` con el repo montado, variables por
+  entorno (`WALLET_ENCRYPTION_KEY` aleatoria, `USDC_TOKEN_ADDRESS`, `RPC_URL`,
+  `DATABASE_PATH` en `/tmp`), `npm start`, puerto 3202. Un primer intento con los nombres
+  de variables del SUT de la pre-piloto 1 (`USDC_MOCK_ADDRESS`, `SEPOLIA_RPC_URL`) abortó
+  con `INTERNAL_ERROR: el backend no pudo iniciar`: cada implementación nombra sus
+  variables (contrato de arranque, `entorno/README.md`).
+- **Resultado:** `GET /health` → `{"status":"ok"}`. **Criterio de avance cumplido.** Sin
+  residuos en el repo.
+- **Referencias:** protocolo §4.1/§4.2; ADR-021.
+
 

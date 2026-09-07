@@ -87,7 +87,8 @@ def entorno(dir_trabajo: Path, extra: dict[str, str] | None = None) -> dict[str,
     }
     for clave in ("EXCHANGE_API_URL", "EXCHANGE_WS_URL", "WEB_URL", "EVAL_RPC_URL",
                   "EVAL_USDC_ADDRESS", "EVAL_USDC_DEPLOY_BLOCK", "SUITE_CMD_REINICIO_SUT",
-                  "ANDROID_HOME", "ANDROID_SDK_ROOT", "JAVA_HOME"):
+                  "ANDROID_HOME", "ANDROID_SDK_ROOT", "JAVA_HOME",
+                  "ANDROID_SERIAL", "API_URL_EMULADOR", "CMD_RELANZAR_APP", "CMD_LOG_BACKEND"):
         if os.environ.get(clave):
             env[clave] = os.environ[clave]
     env.update(extra or {})
