@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07a78-2d2f-7551-b4b8-0640411002f5",
+    "cwd": "/private/tmp/eval-rol-revisor-pre-piloto-2a-p2-20260907-030449"
+  },
+  "session_summary": "Revisor rol-revisor pasada 2 celda sut",
+  "created_at": "2026-09-07T06:04:51.455217Z",
+  "updated_at": "2026-09-07T06:26:32.525051Z",
+  "num_messages": 440,
+  "num_chat_messages": 213,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "cd421cac-1f8e-4b1c-9e20-35b04921b62b",
+  "grok_home": "/tmp/eval-rol-revisor-pre-piloto-2a-p2-20260907-030449/.grok-home",
+  "last_active_at": "2026-09-07T06:26:32.525051Z",
+  "generated_title": "Revisor rol-revisor pasada 2 celda sut",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

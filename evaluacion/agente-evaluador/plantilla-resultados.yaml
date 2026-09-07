@@ -1,5 +1,5 @@
-# Plantilla de resultados del agente evaluador white-box — v1.2
-# (ADR-007; conteo por ADR-011; modelo por ADR-010 D3; rubrica_version por ADR-013)
+# Plantilla de resultados del agente evaluador white-box — v1.3
+# (ADR-007; conteo por ADR-011; modelo por ADR-026; rubrica_version por ADR-013)
 #
 # Formato de salida OBLIGATORIO de cada pasada: un único YAML con este esquema,
 # exactamente 56 items, en el orden de la rúbrica (ascendente por at_id).
@@ -12,7 +12,7 @@ metadatos:
   celda: "celda-en-evaluacion"   # ANONIMIZADA: el agente no sabe (ni intenta saber) qué celda es
   fecha:                          # AAAA-MM-DD de la pasada
   pasada:                         # 1 | 2 (dos sesiones frescas independientes por celda)
-  modelo_evaluador: "claude-opus-5"     # ADR-007 §1, re-pinneado por ADR-010 Decisión 3
+  modelo_evaluador: "grok-4.6"          # ADR-026 (agente tercero); hasta v1.2 de esta plantilla, claude-opus-5 (ADR-010 D3)
   briefing_version: "v1.1"        # versión de evaluacion/agente-evaluador/briefing.md usada
   rubrica_version: "v1.2"         # versión de evaluacion/agente-evaluador/rubrica-white-box.md usada
 

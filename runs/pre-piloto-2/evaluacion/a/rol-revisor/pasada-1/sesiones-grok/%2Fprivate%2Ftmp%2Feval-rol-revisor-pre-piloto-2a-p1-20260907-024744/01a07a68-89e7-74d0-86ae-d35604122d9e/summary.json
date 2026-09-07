@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07a68-89e7-74d0-86ae-d35604122d9e",
+    "cwd": "/private/tmp/eval-rol-revisor-pre-piloto-2a-p1-20260907-024744"
+  },
+  "session_summary": "Revisor rubric evaluation of sut cell",
+  "created_at": "2026-09-07T05:47:46.620887Z",
+  "updated_at": "2026-09-07T06:03:08.170293Z",
+  "num_messages": 419,
+  "num_chat_messages": 188,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "5fff9cd8-832b-4cb2-81d4-84ccc4e5a7f5",
+  "grok_home": "/tmp/eval-rol-revisor-pre-piloto-2a-p1-20260907-024744/.grok-home",
+  "last_active_at": "2026-09-07T06:03:08.170293Z",
+  "generated_title": "Revisor rubric evaluation of sut cell",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

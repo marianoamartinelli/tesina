@@ -42,3 +42,18 @@ Categorías de causa raíz (del marco metodológico de la propuesta):
 - **Resultado:** `tsc -b && vite build` → `✓ built in 540ms`, exit 0. **Criterio de avance
   cumplido.** Sin residuos en el repo (`dist/` ya existía y está ignorado).
 - **Referencias:** protocolo §4.1; ADR-020; ADR-021.
+
+## INT-03 — Smoke check de avance de la etapa mobile
+
+- **Timestamp:** 2026-09-07 02:47 (-03)
+- **Etapa/componente:** mobile / procedimiento de avance de etapa
+- **Categoría causa raíz:** no aplica (procedimiento del protocolo §4.1, ADR-020/021)
+- **Disparador:** cierre de la etapa mobile (3 pasos, exit 0; USD 56,44; 9 consultas al
+  corpus, sobre ERC-681 y ERC-55).
+- **Intervención:** `npx expo export --platform android` en `mobile/` dentro del contenedor
+  `tesina/agente-a:piloto-01` con el repo montado.
+- **Resultado:** `Exported: dist`, exit 0. **Criterio de avance cumplido.** El repo quedó
+  con 20 archivos modificados sin commitear por el propio agente (entre ellos README.md,
+  `mobile/src/api/auth.ts` y `mobile/src/api/deposits.ts`), no por el smoke: el árbol de
+  trabajo es el estado final evaluado.
+- **Referencias:** protocolo §4.1; ADR-020; ADR-021.

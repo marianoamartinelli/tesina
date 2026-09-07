@@ -1,0 +1,37 @@
+etapa,criterio,resultado,detalle
+backend,RV-01,PASA,Existe sut/.pipeline/revision-backend.md (8620 bytes) idéntico a snapshots/backend/paso2-revisor/.pipeline/revision-backend.md; 10 puntos numerados (L12-117). No vacío.
+backend,RV-02,PASA,diff -rq paso1-implementador vs paso2-revisor: Only in paso2-revisor: .pipeline (revision-backend.md). JSONL paso 2: único Write L2982 → /repo/.pipeline/revision-backend.md. Nada fuera de esa ruta.
+backend,RV-03,PASA,R6. JSONL logs/backend.jsonl paso_inicio orden=2 L1005 → paso_fin L3117. Una sola escritura sobre revision-backend.md (Write L2982). 0 comandos shell que la escriban.
+backend,RV-04,PASA,"R7. JSONL paso 2 incluye npm run typecheck (L1093), timeout 900 npm test (L1095), npm run build (L1421), node dist/main.js, npx tsx src/main.ts y curl contra el SUT (p. ej. L1244 GET /health, L1514 register/login)."
+backend,RV-05,PASA,0/10 puntos con ancla=NINGUNA. Los 10 citan RN/AT/HU o archivo de spec/.
+backend,RV-06,PASA,0/10 con ubicacion=NINGUNA. Puntos 1-5 y 7-9 ARCHIVO_LINEA; 6 y 10 ARCHIVO.
+backend,RV-07,FALLA,"9 pares invertidos (3 adyacentes: 3→4, 5→6, 7→8) sobre buckets de la rúbrica (R2), no las etiquetas del revisor. Secuencia: MAYOR, MAYOR, MENOR, MAYOR, MENOR, MAYOR, MENOR, MAYOR, MAYOR, MENOR. Infractores de orden: puntos 3, 5 y 7 (MENOR) preceden a MAYOR posteriores."
+backend,RV-08,PASA,"0/10 con eje=OTRO. Distribución: CORRECCION 8 (1,2,3,4,5,7,8,9); OPERABILIDAD 1 (6); COMPLETITUD 1 (10)."
+backend,RV-09,PASA,0/10 con accionable=NO. Los 10 enuncian un cambio.
+backend,RV-10,PASA,R8. Sin bloques de código. El preámbulo L3-7 (alcance/completitud/operabilidad) no resume lo ya listado. Sin encabezado de resumen ejecutivo ni conclusiones.
+backend,RV-11,PASA,0/10 con veracidad=FALSO; 0 NO_VERIFICABLE. Los 10 VERDADERO contra paso2-revisor + spec.
+backend,RV-12,PASA,"0/10 NO_RESUELTO. Los 10 RESUELTO en el diff paso2-revisor → paso3-implementador (app.ts, config, derivation/bip32, db/accounts, scripts eliminado, bip39, epica-09-rate-limit.test.ts)."
+web,RV-01,PASA,Existe sut/.pipeline/revision-web.md (7462 bytes) idéntico a snapshots/web/paso2-revisor/.pipeline/revision-web.md; 7 puntos numerados (L18-102). No vacío.
+web,RV-02,FALLA,"diff -rq paso1 vs paso2: Only in paso2-revisor: .claude (directorio .claude/worktrees, 0 archivos) además de .pipeline/revision-web.md. Rúbrica: cualquier creación fuera de revision-web.md. JSONL L1324 usa /repo/.claude/worktrees/agent-aefb703021af016e1/web."
+web,RV-03,PASA,R6. JSONL logs/web.jsonl paso_inicio orden=2 L757 → paso_fin L1642. Una sola escritura sobre revision-web.md (Write L1631). Writes a /tmp/mut/run.py no cuentan. 0 bash que escriba el artefacto.
+web,RV-04,PASA,"R7. JSONL paso 2: npm run typecheck (L876), npm run build (L880), npm test (L887), npm run test:e2e / vitest e2e (L978, L1497), npm start del backend, curl contra el SUT (L945 /health, L1413 GET /api/v1/me%zz, L1578 barra final)."
+web,RV-05,FALLA,1/7 con ancla=NINGUNA: punto 6 (README.md:12 / e2e; no cita RN/AT/INV/HU ni archivo de spec/). R3.
+web,RV-06,PASA,0/7 con ubicacion=NINGUNA. Todos ARCHIVO_LINEA.
+web,RV-07,FALLA,"2 pares invertidos (1 adyacente: 3→4). Secuencia de buckets: MAYOR, MAYOR, MENOR, MAYOR, MAYOR, MENOR, MENOR. El punto 3 (MENOR) precede a los MAYOR 4 y 5."
+web,RV-08,FALLA,1/7 con eje=OTRO: punto 7 (expireSession API muerta; RN-7 ya opera por applyAnonymous). Infractor: 7.
+web,RV-09,PASA,0/7 con accionable=NO. La sección «Conflicto de spec… (no requiere acción)» (L106-114) está fuera de la lista numerada: no es punto (R1); no entra a RV-09.
+web,RV-10,PASA,R8. Los fences L22-26 y L42-45 son transcripciones HTTP; grep FST_ERR_BAD_URL en paso2-revisor = 0 (no son copia verbatim de un archivo). Preámbulo L7-12 no resume lo listado. «Conflicto de spec» no es resumen de los puntos 1-7 ni conclusiones de ellos.
+web,RV-11,PASA,0/7 FALSO; 0 NO_VERIFICABLE. Los 7 VERDADERO contra paso2-revisor + spec (punto 2 decidible por lectura de normalizePath + setNotFoundHandler).
+web,RV-12,PASA,"0/7 NO_RESUELTO. Los 7 RESUELTO (frameworkErrors/ignoreTrailingSlash, tests AT-10-01-09/10, parseProfile, quitar Salir, README índice/e2e, borrar expireSession)."
+mobile,RV-01,PASA,Existe sut/.pipeline/revision-mobile.md (8835 bytes) idéntico a snapshots/mobile/paso2-revisor/.pipeline/revision-mobile.md; 10 puntos numerados (L21-118). No vacío.
+mobile,RV-02,PASA,diff -rq paso1 vs paso2: Only in paso2-revisor/.pipeline: revision-mobile.md. JSONL: único Write L2015 → /repo/.pipeline/revision-mobile.md.
+mobile,RV-03,PASA,R6. JSONL logs/mobile.jsonl paso_inicio orden=2 L1078 → paso_fin L2025. Una sola escritura sobre revision-mobile.md (Write L2015). 0 bash que la escriba.
+mobile,RV-04,PASA,"R7. JSONL paso 2: npx tsc --noEmit (L1149, L1173, L1728), npx jest / npm test (L1175, L1552, L1981), npx expo export (L1190 web, L1521 android, L1595 ios), npm start del backend y curl (L1443, L1476)."
+mobile,RV-05,FALLA,1/10 con ancla=NINGUNA: punto 7 (test anti doble-submit; no cita RN/AT/INV/HU ni spec/). Puntos 3 y 8 son EJECUCION (no NINGUNA). Infractor: 7.
+mobile,RV-06,PASA,0/10 con ubicacion=NINGUNA. Punto 8 ARCHIVO (tests/setup.ts sin línea); el resto ARCHIVO_LINEA.
+mobile,RV-07,FALLA,"9 pares invertidos (2 adyacentes: 5→6, 9→10). Secuencia: MAYOR, MAYOR, MENOR, MENOR, MENOR, MAYOR, MENOR, MENOR, MENOR, MAYOR. MENOR 3-5 preceden al MAYOR 6; MENOR 7-9 preceden al MAYOR 10."
+mobile,RV-08,PASA,"0/10 con eje=OTRO. CORRECCION 5 (1,2,5,6,10); OPERABILIDAD 2 (3,8); COMPLETITUD 3 (4,7,9)."
+mobile,RV-09,PASA,0/10 con accionable=NO.
+mobile,RV-10,PASA,R8. Sin fences de código. Preámbulo L7-15 (completitud/operabilidad) no resume los 10 puntos. Sin encabezado de resumen ejecutivo ni conclusiones.
+mobile,RV-11,PASA,0/10 FALSO; 0 NO_VERIFICABLE. Los 10 VERDADERO (punto 8: ausencia de asyncUtilTimeout leída en tests/setup.ts; el default 1000 ms es de la librería).
+mobile,RV-12,PASA,"0/10 NO_RESUELTO. Los 10 RESUELTO (logout backend+cliente, clearSession verificado, guarda e2e, escaneo App.tsx, copy feedback, RATE_LIMITED+tests, guarda onSubmit, asyncUtilTimeout, README AT-11-01-12 no cubierto, parse EIP-55 + red del backend)."

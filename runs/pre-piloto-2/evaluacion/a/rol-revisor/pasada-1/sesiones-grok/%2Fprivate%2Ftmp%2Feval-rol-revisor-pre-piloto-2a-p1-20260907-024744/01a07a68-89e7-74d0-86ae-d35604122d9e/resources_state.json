@@ -1,0 +1,84 @@
+{
+  "state": {
+    "grok_build.ReportedTaskCompletions": {
+      "reported": []
+    },
+    "grok_build.Todo": {
+      "todos": {
+        "setup": {
+          "content": "Leer rúbrica, briefing, layout de celda (sut, spec, snapshots, logs)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "backend-censo": {
+          "content": "Censo de puntos backend (Parte A)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "backend-rv": {
+          "content": "Criterios RV-01..RV-12 backend (Parte B)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "web-censo": {
+          "content": "Censo de puntos web (Parte A)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "web-rv": {
+          "content": "Criterios RV-01..RV-12 web (Parte B)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "mobile-censo": {
+          "content": "Censo de puntos mobile (Parte A)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "mobile-rv": {
+          "content": "Criterios RV-01..RV-12 mobile (Parte B)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "output": {
+          "content": "Escribir rubrica-completada.md, resultados CSV y censo CSV",
+          "priority": "medium",
+          "status": "completed"
+        }
+      }
+    }
+  },
+  "params": {
+    "grok_build.SearchReplace": {
+      "skip_read_before_edit": false,
+      "empty_old_string_does_not_override": false,
+      "unicode_normalized_fallback": false,
+      "include_user_edit_hint": true
+    },
+    "grok_build.UseTool": {
+      "native_tool_correction": true
+    },
+    "grok_build.ReadFile": {
+      "cursor_rules_on_read": false
+    },
+    "grok_build.Bash": {
+      "timeout_secs": null,
+      "max_timeout_secs": 36000.0,
+      "output_byte_limit": null,
+      "cmd_prefix": null,
+      "enabled_background": true,
+      "auto_background_on_timeout": true,
+      "foreground_block_budget_ms": null,
+      "max_block_until_ms": null,
+      "allow_background_operator": true,
+      "surface_bg_completion_reminders": true
+    },
+    "grok_build.Grep": {
+      "max_output_bytes": null,
+      "max_chars_per_line": null
+    },
+    "grok_build.ListDir": {
+      "max_output_chars": null
+    }
+  }
+}

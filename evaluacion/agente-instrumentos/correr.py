@@ -171,7 +171,10 @@ def es_texto(ruta: Path) -> bool:
 def extraer_candidatos(destino: Path) -> int:
     """`candidatos.txt`: la batería de §3.2 sobre `sut/` y `trazas/`, un bloque por hit."""
     patron = re.compile("|".join(f"(?:{b})" for b in BATERIA), re.IGNORECASE)
-    excluidos = set(EXCLUIDOS_SUT) | {"vendor", ".pipeline"}
+    # `spec/` dentro del repo satélite es la spec congelada, no una afirmación del agente
+    # (mismo criterio que ADR-022 para las métricas): en la pre-piloto-2a el 38 % de los
+    # candidatos salía de ahí (H2-06). `.pipeline/` sí entra: lo escribió el agente.
+    excluidos = set(EXCLUIDOS_SUT) | {"vendor", "spec"}
     lockfiles = ("package-lock.json", "yarn.lock", "pnpm-lock.yaml", "poetry.lock")
     bloques = []
     for raiz in ("sut", "trazas"):
@@ -288,6 +291,17 @@ def discrepancias(instr: str, p1: Path, p2: Path) -> list[str]:
                 if any(x[c] != y[c] for c in campos):
                     claves.append(f"{etapa},{x['punto']}")
     return claves
+
+
+def total_items(instr: str, pasada: Path) -> int:
+    cfg = INSTRUMENTOS[instr]
+    if instr == "white-box":
+        import yaml  # noqa: PLC0415
+        return len(yaml.safe_load((pasada / "resultados.yaml").read_text(encoding="utf-8"))["resultados"])
+    n = len(leer_csv(pasada / cfg["csv"]))
+    if instr == "rol-revisor":
+        n += len(leer_csv(pasada / "censo-revision.csv"))
+    return n
 
 
 # ----------------------------------------------------------------------------- prompt
@@ -414,7 +428,25 @@ def main() -> int:
         return 0
 
     registro.evento("inicio", **metadata)
-    codigo = rt.ejecutar(comando, dir_trabajo, env, registro, ruta_log.with_suffix(".stderr.txt"))
+    if args.arbitraje and detalle.get("discrepancias", 0) == 0:
+        # Sin discrepancias no hay nada que arbitrar: el veredicto de registro es la
+        # pasada 1 verbatim (briefing-arbitraje.md §6) y no se gasta una sesión.
+        final = dir_trabajo / "final"
+        for nombre in cfg["salidas"]:
+            origen = dir_trabajo / "pasada-1" / nombre
+            if origen.is_dir():
+                shutil.copytree(origen, final / nombre)
+            elif origen.is_file():
+                shutil.copy2(origen, final / nombre)
+        (dir_trabajo / "arbitraje.md").write_text(
+            f"celda: celda-en-evaluacion\ninstrumento: {instr}\nfecha: {time.strftime('%Y-%m-%d')}\n"
+            f"discrepantes: 0 de {total_items(instr, dir_trabajo / 'pasada-1')}\n\n"
+            "Sin discrepancias entre las pasadas: el veredicto de registro es la pasada 1 "
+            "verbatim; no se invocó al árbitro (runner, ADR-026 D2).\n", encoding="utf-8")
+        registro.evento("arbitraje_trivial", discrepancias=0)
+        codigo = 0
+    else:
+        codigo = rt.ejecutar(comando, dir_trabajo, env, registro, ruta_log.with_suffix(".stderr.txt"))
 
     destino = args.salida / ("veredicto-final" if args.arbitraje else etiqueta)
     if destino.exists():

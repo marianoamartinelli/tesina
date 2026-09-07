@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07a8a-a837-7212-b914-b36d3f593f6f",
+    "cwd": "/private/tmp/eval-alucinaciones-pre-piloto-2a-p1-20260907-032459"
+  },
+  "session_summary": "Ejecutar instrumento alucinaciones sobre celda",
+  "created_at": "2026-09-07T06:25:02.598143Z",
+  "updated_at": "2026-09-07T06:35:03.982064Z",
+  "num_messages": 274,
+  "num_chat_messages": 125,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "6b08b532-71f0-4049-ae95-48b57ad096a6",
+  "grok_home": "/tmp/eval-alucinaciones-pre-piloto-2a-p1-20260907-032459/.grok-home",
+  "last_active_at": "2026-09-07T06:35:03.982064Z",
+  "generated_title": "Ejecutar instrumento alucinaciones sobre celda",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

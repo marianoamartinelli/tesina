@@ -1,0 +1,586 @@
+# Resultados white-box — corrida pre-piloto (subconjunto de ATs)
+metadatos:
+  celda: "celda-en-evaluacion"
+  fecha: 2026-09-07
+  pasada: 1
+  modelo_evaluador: "claude-opus-5"
+  briefing_version: "v1.1"
+  rubrica_version: "v1.2"
+
+resultados:
+  - at_id: AT-01-02-13
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/shared/audit-log.ts:12-39", detalle: "AuditLog.record inserta timestamp UTC (nowIso), event, email, result SUCCESS|FAILURE y reason en auth_audit_log" }
+      - { tipo: archivo, ref: "backend/src/accounts/accounts-service.ts:171-207", detalle: "login: email=normalizeEmail(raw); FAILURE reason=INVALID_CREDENTIALS; SUCCESS sin reason; ambos caminos llaman audit.record" }
+      - { tipo: archivo, ref: "backend/src/shared/time.ts:1-3", detalle: "nowIso() = new Date().toISOString() (UTC con sufijo Z)" }
+      - { tipo: archivo, ref: "backend/src/http/app.ts:61-69", detalle: "KNOWN_ROUTES no incluye ninguna ruta de auditoría; GET /api/v1/audit y /api/v1/auth/audit no existen" }
+      - { tipo: comando, ref: "curl POST /api/v1/auth/login (Alice@example.com ok + password incorrecta) + sqlite3 auth_audit_log", detalle: "LOGIN alice@example.com SUCCESS; LOGIN alice@example.com FAILURE INVALID_CREDENTIALS; timestamps 2026-09-07T06:17:24.354Z / .407Z; GET /api/v1/audit y /api/v1/auth/audit → 404 NOT_FOUND" }
+    justificacion: >-
+      Todo intento de login queda en auth_audit_log con timestamp UTC, email normalizado,
+      result SUCCESS/FAILURE y reason=INVALID_CREDENTIALS en el fallido. Ninguna ruta de
+      usuario expone el log (404 NOT_FOUND).
+    duracion_min: 8
+
+  - at_id: AT-01-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:28-42", detalle: "Corrida pre-piloto: este AT queda fuera del subconjunto evaluado (sólo AT-01-02-13 de la épica 01)." }
+    justificacion: >-
+      AT fuera del subconjunto pre-piloto; no se aplicó el procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-01-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:28-42", detalle: "Corrida pre-piloto: este AT queda fuera del subconjunto evaluado (sólo AT-01-02-13 de la épica 01)." }
+    justificacion: >-
+      AT fuera del subconjunto pre-piloto; no se aplicó el procedimiento de la rúbrica.
+    duracion_min: 0
+
+  - at_id: AT-02-03-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 (balances y ledger) fuera de alcance: no hay endpoints, entidades ni servicios, ni stubs." }
+      - { tipo: comando, ref: "grep -Rni 'ledger\\|ORDER_LOCK\\|TRADE_FILL' backend/src", detalle: "Sin módulo de ledger; TRADE_FILL/ORDER_LOCK no aparecen en src (sólo códigos del catálogo en errors.ts)." }
+    justificacion: >-
+      Épica 02 no implementada en esta corrida; no hay ledger ni asientos DEPOSIT.
+    duracion_min: 0
+
+  - at_id: AT-02-03-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 fuera de alcance." }
+      - { tipo: comando, ref: "grep -Rni 'ORDER_LOCK\\|placeOrder\\|POST /orders' backend/src", detalle: "Sin reserva de órdenes ni asiento ORDER_LOCK." }
+    justificacion: >-
+      Épica 02 no implementada; no existe el asiento ORDER_LOCK ni alta de órdenes.
+    duracion_min: 0
+
+  - at_id: AT-02-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 fuera de alcance." }
+    justificacion: >-
+      Épica 02 no implementada; no hay asiento ORDER_RELEASE ni cancelación de órdenes.
+    duracion_min: 0
+
+  - at_id: AT-02-03-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épicas 02 y 05 fuera de alcance." }
+    justificacion: >-
+      Épicas 02/05 no implementadas; no hay asiento TRADE_FILL ni settlement.
+    duracion_min: 0
+
+  - at_id: AT-02-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 fuera de alcance; no existe GET /balances ni ledger." }
+    justificacion: >-
+      Épica 02 no implementada; no hay postings ni balances reconstruibles.
+    duracion_min: 0
+
+  - at_id: AT-02-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 fuera de alcance." }
+    justificacion: >-
+      Épica 02 no implementada; no existe mecanismo REVERSAL ni ledger append-only.
+    duracion_min: 0
+
+  - at_id: AT-02-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épicas 02 y 07 fuera de alcance." }
+    justificacion: >-
+      Épicas 02/07 no implementadas; no hay acreditación de depósitos ni DEPOSIT_ALREADY_CREDITED.
+    duracion_min: 0
+
+  - at_id: AT-02-03-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 fuera de alcance." }
+    justificacion: >-
+      Épica 02 no implementada; no hay motor contable ni validación de asientos balanceados.
+    duracion_min: 0
+
+  - at_id: AT-02-03-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 fuera de alcance." }
+    justificacion: >-
+      Épica 02 no implementada; no hay persistencia atómica de asientos/postings.
+    duracion_min: 0
+
+  - at_id: AT-02-03-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épicas 02 y 05 fuera de alcance." }
+    justificacion: >-
+      Épicas 02/05 no implementadas; no hay TRADE_FILL ni ORDER_RELEASE de surplus.
+    duracion_min: 0
+
+  - at_id: AT-02-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épicas 02 y 05 fuera de alcance." }
+    justificacion: >-
+      Épicas 02/05 no implementadas; no hay transacción de settlement.
+    duracion_min: 0
+
+  - at_id: AT-02-04-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 02 fuera de alcance." }
+    justificacion: >-
+      Épica 02 no implementada; no hay operaciones de balance que recuperar.
+    duracion_min: 0
+
+  - at_id: AT-03-02-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 03 (matching) fuera de alcance: no hay orderbook ni servicios." }
+      - { tipo: comando, ref: "grep -Rni 'orderbook\\|order_book' backend/src", detalle: "Sin estructura de libro ni inserción por orderId." }
+    justificacion: >-
+      Épica 03 no implementada; no existe orderbook ni garantía de unicidad de orderId.
+    duracion_min: 0
+
+  - at_id: AT-03-05-08
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 03 fuera de alcance." }
+      - { tipo: archivo, ref: "backend/src/shared/errors.ts:33", detalle: "SELF_TRADE_BLOCKED figura sólo como código del catálogo, sin camino de matching." }
+    justificacion: >-
+      Épica 03 no implementada; no hay rechazo SELF_TRADE_BLOCKED ni eventos de motor.
+    duracion_min: 0
+
+  - at_id: AT-03-07-04
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 03 fuera de alcance." }
+    justificacion: >-
+      Épica 03 no implementada; no hay persistencia ni recuperación de fills del libro.
+    duracion_min: 0
+
+  - at_id: AT-03-07-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 03 fuera de alcance." }
+    justificacion: >-
+      Épica 03 no implementada; no hay órdenes MARKET ni inferencia de estado terminal.
+    duracion_min: 0
+
+  - at_id: AT-04-05-14
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 04 (órdenes) fuera de alcance: no hay POST /orders ni estados NEW." }
+    justificacion: >-
+      Épica 04 no implementada; no hay flujo de alta de órdenes ni estado NEW.
+    duracion_min: 0
+
+  - at_id: AT-05-01-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 05 (settlement y fees) fuera de alcance." }
+      - { tipo: comando, ref: "grep -Rni 'settle\\|TRADE_FILL' backend/src", detalle: "Sin módulo de settlement (TRADE_FILL no aparece salvo el catálogo de errores)." }
+    justificacion: >-
+      Épica 05 no implementada; no hay settlement atómico de fills.
+    duracion_min: 0
+
+  - at_id: AT-05-01-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 05 fuera de alcance." }
+    justificacion: >-
+      Épica 05 no implementada; no hay idempotencia de settlement por tradeId.
+    duracion_min: 0
+
+  - at_id: AT-05-01-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 05 fuera de alcance." }
+    justificacion: >-
+      Épica 05 no implementada; no hay precondiciones de bloqueado en settlement.
+    duracion_min: 0
+
+  - at_id: AT-05-03-05
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 05 fuera de alcance." }
+    justificacion: >-
+      Épica 05 no implementada; no hay registro de trades ni unicidad de tradeId.
+    duracion_min: 0
+
+  - at_id: AT-05-03-06
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 05 fuera de alcance." }
+    justificacion: >-
+      Épica 05 no implementada; no hay transacción que una trade y asientos.
+    duracion_min: 0
+
+  - at_id: AT-05-03-07
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 05 fuera de alcance." }
+    justificacion: >-
+      Épica 05 no implementada; no hay trades ni cuenta EX para reconciliar fees.
+    duracion_min: 0
+
+  - at_id: AT-06-01-01
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip39.ts:123-134,27-32,185-189", detalle: "generateMnemonic usa crypto.randomBytes(entropyBits/8) con default 256 bits (24 palabras); PBKDF2_ITERATIONS=2048, SEED_BYTES=64, salt 'mnemonic'+passphrase; mnemonicToSeed(passphrase='') " }
+      - { tipo: archivo, ref: "backend/src/wallet/seed-store.ts:25-26,39-44,88-89,137-141", detalle: "AES-256-GCM nonce 12 B (96 bits) CSPRNG, tag 16 B (128 bits), formato nonce||ciphertext||tag; passphrase default ''; generateMnemonic(256)" }
+      - { tipo: archivo, ref: "backend/src/config/index.ts:105-147,249-253", detalle: "Credencial WALLET_ENCRYPTION_KEY desde el entorno (hex/base64 32 B), no hardcodeada" }
+      - { tipo: archivo, ref: "backend/src/infra/db.ts:33-37", detalle: "Tabla wallet_seed: id, payload BLOB, created_at — la clave de cifrado no se persiste junto al blob" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §From mnemonic to seed", detalle: "PBKDF2 HMAC-SHA512, 2048 iter, dkLen 64, salt mnemonic+passphrase, passphrase default vacía" }
+      - { tipo: comando, ref: "sqlite3 wallet_seed de instancia i11", detalle: "payload_len=181, no contiene 'abandon' en claro; columnas id/payload/created_at" }
+    justificacion: >-
+      Entropía CSPRNG de 256 bits (24 palabras), PBKDF2-HMAC-SHA512/2048/64 con passphrase
+      vacía por defecto, y persistencia AES-256-GCM con credencial externa no guardada junto
+      al ciphertext. Ningún PRNG no criptográfico en el camino de generación.
+    duracion_min: 10
+
+  - at_id: AT-06-01-02
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip39.ts:185-189", detalle: "mnemonicToSeed: PBKDF2(sha512, NFKD(mnemonic), 'mnemonic'+NFKD(passphrase), c=2048, dkLen=64)" }
+      - { tipo: comando, ref: "tsx /tmp/eval-wb/sut/eval-drivers/kat-bip39.mts canonical", detalle: "seed=c55257c360c07c72029aebc1b53c05ed0362ada38ead3e3e9efa3708e53495531f09a6987599d18264c1e1c92f2cf141630c7a3c4ab7c81b2f001698e7463b04" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §From mnemonic to seed", detalle: "Algoritmo PBKDF2-HMAC-SHA512 / 2048 / 64 bytes" }
+      - { tipo: archivo, ref: "spec/06-wallet-hd-y-direcciones/HU-06-01-generacion-y-custodia-del-seed.md:116-131", detalle: "Vector canónico mnemonic+TREZOR y seed hex esperada" }
+    justificacion: >-
+      El driver invoca la función interna mnemonicToSeed con MNEMONIC_BIP39_CANONICO y
+      passphrase TREZOR; la seed hex coincide byte a byte con HU-06-01.
+    duracion_min: 6
+
+  - at_id: AT-06-01-03
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "tsx kat-bip39.mts seed24 \"$MNEMONIC_24_VALIDO\" \"\"  (proceso 1)", detalle: "408b285c123836004f4b8842c89324c1f01382450c0d439af345ba7fc49acf705489c6fc77dbd4e3dc1dd8cc6bc9f043db8ada1e243c4a0eafb290d399480840" }
+      - { tipo: comando, ref: "tsx kat-bip39.mts seed24 \"$MNEMONIC_24_VALIDO\" \"\"  (proceso 2)", detalle: "misma seed hex, igualdad exacta" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip39.ts:174-189", detalle: "mnemonicToSeed es función pura de (mnemonic NFKD, passphrase NFKD); sin RNG" }
+    justificacion: >-
+      Dos invocaciones en procesos separados del mismo (MNEMONIC_24_VALIDO, passphrase vacía)
+      producen la misma seed hex de 64 bytes.
+    duracion_min: 4
+
+  - at_id: AT-06-01-04
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "I1 PORT=3301 almacenamiento limpio, POST /auth/register + GET /deposit-address?asset=ETH", detalle: "address I1 índice 0 = 0x612206cA921A6C39058a28d6fAda0688829A511C" }
+      - { tipo: comando, ref: "destruir I1; I2 PORT=3302 almacenamiento limpio, mismo flujo", detalle: "address I2 índice 0 = 0x4020EC34B12eAe5C2ccb9166D00916de4759AE6C (distinta)" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip39.ts:127-134", detalle: "generateMnemonic toma randomBytes; no hay entropía fija en src/" }
+    justificacion: >-
+      Dos provisionings independientes (almacenamiento y proceso distintos, sin importar
+      mnemonic) asignan direcciones de índice 0 distintas; no hay seed hardcodeada.
+    duracion_min: 8
+
+  - at_id: AT-06-01-05
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "tsx verify-entropy-mnemonic.mts (entropía 0x00×32)", detalle: "MNEMONIC_24_VALIDO='abandon'×23+'art'; validate ok; abandon×24 reason=CHECKSUM; SHA-256 primer byte bits 01100110" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0039.mediawiki §Generating the mnemonic", detalle: "checksum = primeros ENT/32 bits de SHA-256(entropía); ENT=256 ⇒ 8 bits ⇒ 24 palabras" }
+      - { tipo: archivo, ref: "backend/src/config/index.ts:252", detalle: "mecanismo de import hallado: env WALLET_MNEMONIC (también backend/.env.example:35-36 y seed-store.ts:123-131)" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip39.ts:148-171", detalle: "validateMnemonic orden LENGTH → WORDLIST → CHECKSUM (primeros ENT/32 bits de SHA-256)" }
+      - { tipo: comando, ref: "WALLET_MNEMONIC='abandon'×24 node dist/main.js (COPIA_TMP, db limpia)", detalle: "exit=1; stderr '[FATAL] code=VALIDATION_ERROR ... motivo: CHECKSUM'; wallet_seed COUNT=0; stderr no incluye el mnemonic" }
+    justificacion: >-
+      Mecanismo de import: WALLET_MNEMONIC. El mnemonic de 24 palabras con checksum inválido
+      aborta con exit≠0 y VALIDATION_ERROR en stderr, sin persistir seed ni filtrar secretos.
+    duracion_min: 12
+
+  - at_id: AT-06-01-09
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/config/index.ts:252", detalle: "mecanismo de import: WALLET_MNEMONIC (hallazgo de AT-06-01-05)" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip39.ts:151-152", detalle: "validateMnemonic rechaza words.length !== 24 con reason LENGTH" }
+      - { tipo: comando, ref: "WALLET_MNEMONIC=MNEMONIC_BIP39_CANONICO (12 palabras) node dist/main.js", detalle: "exit=1; stderr '[FATAL] code=VALIDATION_ERROR ... motivo: LENGTH'; wallet_seed COUNT=0" }
+    justificacion: >-
+      El mnemonic canónico de 12 palabras (checksum válido para 128 bits) se rechaza por
+      longitud con VALIDATION_ERROR y no se adopta ni persiste seed.
+    duracion_min: 4
+
+  - at_id: AT-06-01-10
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "grep -cx xyzzy corpus/documentos/bip-0039-wordlist-english.txt", detalle: "0 — xyzzy no pertenece al wordlist inglés de 2048" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip39.ts:154-160", detalle: "pertenencia vía WORDLIST_INDEX; fallo reason=WORDLIST" }
+      - { tipo: comando, ref: "WALLET_MNEMONIC='abandon'×23+'xyzzy' node dist/main.js", detalle: "exit=1; stderr '[FATAL] code=VALIDATION_ERROR ... motivo: WORDLIST'; wallet_seed COUNT=0" }
+    justificacion: >-
+      Un mnemonic de 24 tokens con una palabra fuera del wordlist BIP-39 inglés aborta con
+      VALIDATION_ERROR y no persiste seed.
+    duracion_min: 5
+
+  - at_id: AT-06-01-11
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/seed-store.ts:46-64,94-107", detalle: "credencial null con seed existente → INTERNAL_ERROR sin regenerar; tag GCM inválido → INTERNAL_ERROR" }
+      - { tipo: comando, ref: "instancia i11 provisionada con KEY1; re-arranque sin WALLET_ENCRYPTION_KEY", detalle: "exit=1; stderr code=INTERNAL_ERROR credencial ausente; blob hex idéntico; wallet_seed count=1" }
+      - { tipo: comando, ref: "re-arranque de i11 con KEY2 (incorrecta)", detalle: "exit=1; stderr code=INTERNAL_ERROR tag GCM inválido o credencial incorrecta; blob intacto; stderr no contiene KEY1" }
+    justificacion: >-
+      Con seed ya persistido, credencial ausente o incorrecta aborta con INTERNAL_ERROR,
+      no regenera ni opera sin seed, y deja el blob cifrado intacto, sin filtrar secretos.
+    duracion_min: 8
+
+  - at_id: AT-06-01-12
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/seed-store.ts:141-171", detalle: "INSERT del payload dentro de db.transaction; el seed se considera provisionado sólo tras round-trip decryptSecret" }
+      - { tipo: archivo, ref: "backend/src/infra/db.ts:81-88", detalle: "SQLite journal_mode=WAL, synchronous=FULL: commit atómico durable" }
+      - { tipo: archivo, ref: "backend/src/wallet/seed-store.ts:46-48", detalle: "payload truncado (len < nonce+tag+1) lanza INTERNAL_ERROR; no se adopta como seed" }
+    justificacion: >-
+      La escritura del seed cifrado es una transacción SQLite (WAL+FULL); la carga sólo
+      acepta un blob que descifra (tag GCM / longitud). Un parcial no se interpreta como válido.
+    duracion_min: 6
+
+  - at_id: AT-06-01-13
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/seed-store.ts:174-197", detalle: "verifySeedIntegrity: índice más bajo del mapeo vs deriveAccountAt; mismatch → INTERNAL_ERROR sin regenerar" }
+      - { tipo: archivo, ref: "backend/src/runtime.ts:39-45", detalle: "verifySeedIntegrity corre en createRuntime, antes de aceptar HTTP" }
+      - { tipo: comando, ref: "i13b: register; UPDATE deposit_addresses SET address último nibble 0→1 (0x1eFa…Db60 → …Db61); re-arranque", detalle: "exit=1; stderr '[FATAL] code=INTERNAL_ERROR Verificación de integridad del seed fallida: el índice 0 persistido no coincide'; blob hex intacto; address sigue corrupta (no reasigna)" }
+    justificacion: >-
+      Con mapeo no vacío, un mismatch seed↔dirección persistida aborta antes de servir,
+      sin regenerar el seed ni reasignar direcciones.
+    duracion_min: 8
+
+  - at_id: AT-06-02-01
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/derivation.ts:81-91", detalle: "deriveAccountAt(seed, index) → path m/44'/60'/0'/0/{i} → dirección EIP-55" }
+      - { tipo: comando, ref: "tsx kat-bip44.mts 'test test test test test test test test test test test junk' 0", detalle: "{\"addressIndex\":0,\"address\":\"0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266\",\"derivationPath\":\"m/44'/60'/0'/0/0\"}" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0032.mediawiki §Private parent key → private child key", detalle: "CKDpriv / master key" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0044.mediawiki §Path levels", detalle: "m/purpose'/coin_type'/account'/change/address_index" }
+      - { tipo: corpus, ref: "corpus/documentos/erc-55.md §Specification", detalle: "checksum mixed-case EIP-55" }
+    justificacion: >-
+      La cadena mnemonic→seed→path BIP-44→dirección del SUT produce exactamente la
+      dirección Hardhat índice 0, incluido el checksum EIP-55.
+    duracion_min: 6
+
+  - at_id: AT-06-02-02
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "tsx kat-bip44.mts MNEMONIC_HARDHAT 1", detalle: "0x70997970C51812dc3A010C7d01b50e0d17dc79C8 path m/44'/60'/0'/0/1" }
+      - { tipo: comando, ref: "tsx kat-bip44.mts MNEMONIC_HARDHAT 2", detalle: "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC" }
+      - { tipo: comando, ref: "tsx kat-bip44.mts MNEMONIC_HARDHAT 3", detalle: "0x90F79bf6EB2c4f870365E785982E1f101E93b906; las cuatro (0..3) son distintas" }
+    justificacion: >-
+      Índices 1..3 coinciden carácter a carácter con la tabla de HU-06-02 y son distintos
+      entre sí y respecto del índice 0.
+    duracion_min: 4
+
+  - at_id: AT-06-02-04
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/derivation.ts:15-16,42-45", detalle: "ETHEREUM_BASE_PATH = m/44'/60'/0'/0; derivationPathFor = base/index" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip32.ts:14-15,183-201", detalle: "HARDENED_OFFSET=0x80000000; parsePath suma el offset a componentes con ' / h / H" }
+      - { tipo: archivo, ref: "backend/tests/wallet-crypto.test.ts:191-207", detalle: "parsePath(derivationPathFor(7)) === [2147483692, 2147483708, 2147483648, 0, 7]" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0044.mediawiki §Path levels", detalle: "Apostrophe = hardened; purpose/coin_type/account hardened, change y address_index no" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0032.mediawiki §The key tree", detalle: "notación i_H = i + 2^31" }
+    justificacion: >-
+      El path es exactamente m/44'/60'/0'/0/index con purpose/coin_type/account hardened
+      (2147483692/2147483708/2147483648) y change/address_index no hardened.
+    duracion_min: 5
+
+  - at_id: AT-06-02-05
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "tsx kat-bip44.mts MNEMONIC_HARDHAT 0 (proceso 1)", detalle: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266" }
+      - { tipo: comando, ref: "tsx kat-bip44.mts MNEMONIC_HARDHAT 0 (proceso 2)", detalle: "misma dirección; igualdad exacta" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip32.ts:204-223", detalle: "derivePath es pura de (seed, path); sin RNG, reloj ni estado mutable" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/derivation.ts:81-91", detalle: "deriveAccountAt no consulta reloj ni CSPRNG" }
+    justificacion: >-
+      Dos procesos distintos derivan la misma dirección para (MNEMONIC_HARDHAT, índice 0);
+      el camino de derivación no depende de estado mutable.
+    duracion_min: 4
+
+  - at_id: AT-06-02-08
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/bip32.ts:21-22,146-164", detalle: "ckdPriv: parse256(I_L) >= n o k_hijo==0 → InvalidChildKeyError (SECP256K1_ORDER = 0xFFF…BAAEDCE6…)" }
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/derivation.ts:102-137", detalle: "deriveNextValidAccount avanza index+1 de forma determinista si el fallo es en depth=5 (address_index)" }
+      - { tipo: archivo, ref: "backend/src/wallet/deposit-address-service.ts:96-108,110-118", detalle: "registra skipped_address_indexes y el addressIndex efectivamente usado" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0032.mediawiki §Private parent key → private child key", detalle: "In case parse256(IL) ≥ n or ki = 0 … proceed with the next value for i" }
+      - { tipo: comando, ref: "npx vitest run tests/wallet-crypto.test.ts -t AT-06-02-08", detalle: "3 tests PASA: stub I_L>=n y k_hijo==0 avanzan al índice siguiente de forma determinista" }
+    justificacion: >-
+      La condición BIP-32 se detecta en CKDpriv y el asignador avanza al siguiente índice
+      de forma determinista, registrando el índice usado y los saltados.
+    duracion_min: 8
+
+  - at_id: AT-06-02-09
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/crypto/derivation.ts:31-32,48-68,81-83", detalle: "MAX_ADDRESS_INDEX = HARDENED_OFFSET-1 = 2147483647; assertAddressIndexInRange antes de derivePath; >=2^31 → VALIDATION_ERROR details.issues field=address_index" }
+      - { tipo: archivo, ref: "backend/src/shared/errors.ts:94-100", detalle: "validationError construye VALIDATION_ERROR 422 con details.issues" }
+      - { tipo: comando, ref: "npx vitest run tests/wallet-crypto.test.ts -t AT-06-02-09", detalle: "2147483648 → VALIDATION_ERROR 422 issues.field=address_index; 2147483647 deriva OK" }
+    justificacion: >-
+      El borde es exacto: 2³¹ se rechaza con VALIDATION_ERROR e issues.address_index antes
+      de derivar; 2³¹−1 se acepta.
+    duracion_min: 5
+
+  - at_id: AT-06-03-03
+    veredicto: PASA
+    evidencia:
+      - { tipo: comando, ref: "instancia i303 limpia; POST /auth/register alice luego bob", detalle: "sqlite deposit_addresses: alice index=0 addr=0x57B47D9D5580b0F9864b07a273074DC22Ee883fb; bob index=1 addr=0x98FD3653B182b77d57A9569102B68b10b6dba0Af; paths m/44'/60'/0'/0/{0,1}; network=sepolia chainId=11155111" }
+      - { tipo: archivo, ref: "backend/src/wallet/deposit-address-service.ts:84-96", detalle: "nextIndex = max(asignados, saltados)+1 desde -1 ⇒ el primero es 0" }
+    justificacion: >-
+      En estado limpio las altas secuenciales reciben address_index 0 y 1, contiguos y con
+      direcciones EIP-55 distintas.
+    duracion_min: 6
+
+  - at_id: AT-06-03-07
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/config/index.ts:252", detalle: "mecanismo de import: WALLET_MNEMONIC (hallazgo de AT-06-01-05)" }
+      - { tipo: comando, ref: "I307 WALLET_MNEMONIC=MNEMONIC_24_VALIDO; 3× POST /auth/register; sqlite + GET /deposit-address", detalle: "i=0 0xF278cF59F82eDcf871d630F28EcC8056f25C1cdb; i=1 0xf785bD075874b8423D3583728a981399f31e95aA; i=2 0x60Af1c6A5D03F9f1B1b74931499bC99E72fF8DA9" }
+      - { tipo: comando, ref: "docker run --rm --entrypoint anvil ghcr.io/foundry-rs/foundry:latest --mnemonic MNEMONIC_24_VALIDO --accounts 10", detalle: "anvil imprime las mismas (0)(1)(2) y path m/44'/60'/0'/0/; mnemonic abandon…art" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0032.mediawiki §Private parent key → private child key", detalle: "CKDpriv" }
+      - { tipo: corpus, ref: "corpus/documentos/bip-0044.mediawiki §Path levels", detalle: "path Ethereum" }
+      - { tipo: corpus, ref: "corpus/documentos/erc-55.md §Specification", detalle: "checksum EIP-55" }
+    justificacion: >-
+      Importando MNEMONIC_24_VALIDO, las direcciones asignadas a los índices 0..2 coinciden
+      exactamente (EIP-55 incluido) con las que anvil deriva para m/44'/60'/0'/0/i.
+    duracion_min: 10
+
+  - at_id: AT-06-03-08
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/deposit-address-service.ts:68-79", detalle: "si checkAccountExists y la cuenta no está, throw AppError ACCOUNT_NOT_FOUND con details.accountId ANTES de reservar índice o derivar" }
+      - { tipo: archivo, ref: "backend/src/shared/errors.ts:49", detalle: "ACCOUNT_NOT_FOUND → HTTP 404" }
+      - { tipo: comando, ref: "npx vitest run tests/epica-06-wallet.test.ts -t AT-06-03-08", detalle: "assign(uuid inexistente) → ACCOUNT_NOT_FOUND 404 details.accountId; deposit_addresses y domain_events vacíos" }
+    justificacion: >-
+      El asignador interno rechaza cuenta inexistente con ACCOUNT_NOT_FOUND (404) y
+      details.accountId, sin mutar el mapeo ni derivar.
+    duracion_min: 5
+
+  - at_id: AT-06-03-09
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/accounts/accounts-service.ts:122-132", detalle: "assign eager dentro de la misma transacción del INSERT de accounts, no desde GET /deposit-address" }
+      - { tipo: comando, ref: "POST /auth/register alice@example.com SIN llamar GET /deposit-address; sqlite inmediato", detalle: "fila completa: accountId=70ab726e-…, addressIndex=0, address=0x57B47D9D5580b0F9864b07a273074DC22Ee883fb, derivation_path=m/44'/60'/0'/0/0, network=sepolia, chain_id=11155111" }
+    justificacion: >-
+      Tras el alta, sin consulta del usuario, el mapeo persistido ya tiene los seis campos
+      requeridos (accountId, addressIndex, address EIP-55, path, sepolia, 11155111).
+    duracion_min: 5
+
+  - at_id: AT-06-03-10
+    veredicto: PASA
+    evidencia:
+      - { tipo: archivo, ref: "backend/src/wallet/deposit-address-service.ts:136-165", detalle: "Tras persistir, INSERT domain_events type=DepositAddressAssigned con {accountId,addressIndex,address,chainId} y events.publish del mismo payload" }
+      - { tipo: archivo, ref: "backend/src/wallet/events.ts:1-24", detalle: "Bus de dominio DepositAddressAssigned con los cuatro campos; pensado para que la épica 07 lo consuma" }
+      - { tipo: archivo, ref: "backend/src/http/app.ts:597-620", detalle: "GET /internal/deposit-addresses (no pública; X-Internal-Api-Key) lista todas las asignadas" }
+      - { tipo: comando, ref: "sqlite domain_events tras register alice; GET /internal/deposit-addresses", detalle: "payload {accountId, addressIndex:0, address:0x57B47…, chainId:11155111}; GET interno 200 items=[alice,bob] sin haber consultado /deposit-address" }
+      - { tipo: comando, ref: "grep -Rni 'DepositMonitor\\|scanDeposits\\|confirmaciones' backend/src", detalle: "No hay monitor de la épica 07 (fuera de alcance); el feed (evento persistido + consulta interna) existe desde la asignación eager" }
+    justificacion: >-
+      Existen ambos mecanismos (evento DepositAddressAssigned con los cuatro campos, persistido
+      y publicado, y GET /internal/deposit-addresses). La asignación es eager al alta, así que
+      el conjunto expuesto no depende de la primera consulta del usuario: no hay ventana.
+    duracion_min: 6
+
+  - at_id: AT-07-03-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 07 (depósitos on-chain) fuera de alcance." }
+      - { tipo: archivo, ref: "backend/src/shared/errors.ts:42", detalle: "DEPOSIT_NOT_CONFIRMED sólo en el catálogo; no hay pipeline de acreditación." }
+    justificacion: >-
+      Épica 07 no implementada; no hay guarda de confirmaciones ni acreditación de depósitos.
+    duracion_min: 0
+
+  - at_id: AT-07-04-01
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 07 fuera de alcance." }
+    justificacion: >-
+      Épica 07 no implementada; no hay idempotencia de depósitos ni manejo de reorgs.
+    duracion_min: 0
+
+  - at_id: AT-07-04-02
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 07 fuera de alcance." }
+    justificacion: >-
+      Épica 07 no implementada; no hay pipeline de reorgs.
+    duracion_min: 0
+
+  - at_id: AT-07-04-03
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 07 fuera de alcance." }
+    justificacion: >-
+      Épica 07 no implementada; no hay seguimiento de depósitos tras reorg.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09a
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 08 (retiros on-chain) fuera de alcance: no hay firma ni broadcast." }
+      - { tipo: comando, ref: "grep -Rni 'eth_sendRawTransaction\\|eip-155\\|signTransaction' backend/src", detalle: "Sin firma EIP-155 ni broadcast de retiros." }
+    justificacion: >-
+      Épica 08 no implementada; no hay firma EIP-155 ni campo chainId en tx de retiro.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09b
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 08 fuera de alcance." }
+    justificacion: >-
+      Épica 08 no implementada; no hay nonce de retiro ni protección replay.
+    duracion_min: 0
+
+  - at_id: AT-08-03-09c
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "Épica 08 fuera de alcance." }
+    justificacion: >-
+      Épica 08 no implementada; no hay gas/fee de retiro.
+    duracion_min: 0
+
+  - at_id: AT-09-04-11
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:39-42", detalle: "HU-09-03 y HU-09-04 (WebSocket público y privado) fuera de alcance." }
+      - { tipo: comando, ref: "grep -Rni 'websocket\\|/api/v1/ws' backend/src", detalle: "Sin endpoint WS ni canales privados." }
+    justificacion: >-
+      Canales WebSocket no implementados; no hay WS privado ni filtro por cuenta.
+    duracion_min: 0
+
+  - at_id: AT-09-05-09
+    veredicto: NO_EVALUABLE
+    causa: FUNCION_NO_LOCALIZABLE
+    evidencia:
+      - { tipo: archivo, ref: "README.md:28-42", detalle: "AT fuera del subconjunto pre-piloto de esta corrida (no se evalúa HU-09-05 en white-box aquí)." }
+    justificacion: >-
+      AT fuera del subconjunto pre-piloto; no se aplicó el procedimiento de la rúbrica.
+    duracion_min: 0

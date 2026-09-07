@@ -68,4 +68,28 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
   dos ATs de rate limiting lo apagan mientras corren (`ClienteApi.throttle_auth = False`)
   y esperan una ventana entera antes de devolver el control. Costo: ~2 minutos más por
   corrida de la suite completa.
-- **Estado:** corregido; verificado con la segunda corrida sobre A (abajo).
+- **Verificación:** con el freno, la suite sobre A da **53 pasa / 3 falla / 0 skip** en
+  5 min 13 s; las 3 fallas son los 404 de endpoints fuera del alcance (`/balances`,
+  `/withdrawals`; H-18) y los dos ATs de rate limiting (AT-01-01-20, AT-01-02-09), que en
+  la pre-piloto 1 eran `skip`, ahora **pasan**: la regla `skip = 0` se cumple sin
+  excepciones (ADR-024).
+- **Estado:** corregido y verificado.
+
+## H2-06 — El barrido de alucinaciones contaba la spec congelada como afirmación del agente
+
+- **Componente:** instrumento de alucinaciones ejecutado por el runner (ADR-026)
+- **Observado:** sobre `pre-piloto-2a`, `candidatos.txt` trajo **1 604** bloques; **607**
+  (38 %) salían de `sut/spec/`, la copia de la spec que el repo satélite lleva por
+  construcción, y otros tantos son usos triviales de términos (`chainId`, `checksum`).
+  El agente los clasificó `CORRECTO` citando §2.6 («texto de la spec congelada»), o sea
+  que el instrumento absorbió el ruido, a costa de tiempo y de dilución: 2 filas
+  `ALUCINACION` (un solo hecho, `ALU-01`: «vectores canónicos BIP-44» atribuidos a
+  BIP-44 para la dirección del mnemonic de Hardhat, que fija la spec y no el BIP) entre
+  1 604.
+- **Corrección (runner, no del procedimiento):** `extraer_candidatos` excluye `spec/`
+  dentro del repo satélite, con el mismo criterio que ADR-022 para las métricas
+  estáticas. `.pipeline/` sigue entrando: lo escribió el agente. Las dos pasadas de A
+  corrieron con la lista de 1 604 (comparables entre sí); B y las oficiales corren con
+  la lista depurada.
+- **Estado:** corregido en el runner; la regla queda declarada para `alucinaciones.md`
+  v1.2 si se re-pre-registra.
