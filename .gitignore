@@ -21,3 +21,6 @@ __pycache__/
 # Credenciales de las suscripciones para los contenedores de los agentes (ADR-015).
 # La plantilla `.env.example` sí se versiona; los valores reales nunca.
 pipeline/contenedores/.env
+
+# Salida del navegador automatizado (Playwright MCP)
+.playwright-mcp/

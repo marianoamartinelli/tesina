@@ -42,7 +42,7 @@ Es la primera vez en el proyecto que los CLI de agente ejecutan etapas, que la s
 ATs corre contra un sistema real, que el agente evaluador white-box se ejecuta y que se
 miden las métricas estáticas.
 
-Resultado: **21 hallazgos** ([`runs/pre-piloto/hallazgos.md`](runs/pre-piloto/hallazgos.md))
+Resultado: **26 hallazgos** ([`runs/pre-piloto/hallazgos.md`](runs/pre-piloto/hallazgos.md))
 y **cinco ADRs** (018–022), con `protocolo.md` de v1.2 a **v1.5** y la paridad de 117 a
 **143 chequeos**. Los que habrían roto la piloto: el sandbox nativo de Codex dejaba al
 agente B **sin shell** dentro del contenedor sin cortar la corrida (ADR-019); el build de
@@ -57,6 +57,14 @@ corpus** en ninguna etapa (el factor RAG mediría disponibilidad y no uso); el u
 reducido consumió **USD 142** en A, lo que obliga a revisar el supuesto de consumo con el
 que ADR-016 quitó los topes; y las dos implementaciones dieron **idéntico black-box**
 (51 pasa / 3 falla / 2 skip) pero A escribió **2,3× más código** que B.
+
+**Cierre de la pre-piloto (2026-09-06):** dos corridas de control mostraron que B **sí
+puede delegar** y que el `--json` de Codex no registra a sus subagentes (H-23 corrige
+H-22; **ADR-023**, Propuesto, persiste los rollouts en los logs). Las rúbricas web y del
+rol revisor se ensayaron sobre B (10/11 y 35/36) y dejaron los huecos del instrumento
+(H-24, H-26); la mobile no tiene emulador donde correr (H-25). La matriz queda en
+**38 de 44**, la checklist H6 en **18 de 24**, la paridad en **145 chequeos**. Siguen
+abiertas las decisiones del tesista: H-12, consumo, H-19/`skip = 0`, ADR-023 y H-25.
 
 ## Mapa del repositorio
 
