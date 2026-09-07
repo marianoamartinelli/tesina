@@ -1,0 +1,95 @@
+at_id,resultado,detalle,fuera_de_catalogo
+AT-11-01-01,PASA,Login evaluador@test.loc/EvalPass99 navega a Depositar. Token vía SecureStore (sessionStore.ts); password no se persiste. Cold start AT-11-01-02. evidencia/AT-11-01-01-1.png evidencia/AT-11-01-01-1.xml evidencia/AT-11-01-01-form.png,false
+AT-11-01-02,PASA,am force-stop host.exp.exponent + CMD_RELANZAR_APP: entra a Depositar sin credenciales. App.restore() no llama /me (RN-10). Tests App.test.tsx. CMD_LOG_BACKEND no registra HTTP (Fastify logger:false). evidencia/AT-11-01-02-1.png evidencia/AT-11-01-02-1.xml,false
+AT-11-01-03,PASA,Tras Cerrar sesión muestra login vacío y no Depositar. Cold start idéntico (sin endpoints autenticados observables). Tests App.test.tsx AT-11-01-03. evidencia/AT-11-01-03-logout.png evidencia/AT-11-01-03-1.png evidencia/AT-11-01-03-1.xml,false
+AT-11-01-04,PASA,INVALID_CREDENTIALS: «Email o contraseña incorrectos.» (no enumera). Permanece en login; password limpiado. Cold start sigue en login (sin token). evidencia/AT-11-01-04-1.png evidencia/AT-11-01-04-1.xml evidencia/AT-11-01-04-cold.png,false
+AT-11-01-05,PASA,"Sesión activa; DELETE FROM sessions (revocación servidor); tap USDC-mock (GET deposit-address) → login «Tu sesión expiró, ingresá nuevamente.». Cold start no restaura. evidencia/AT-11-01-05-authed.png evidencia/AT-11-01-05-1.png evidencia/AT-11-01-05-1.xml evidencia/AT-11-01-05-cold.png",false
+AT-11-01-06,PASA,Cerrar sesión → login sin aviso de expiración. Cold start pide credenciales (no restaura). evidencia/AT-11-01-06-logout.png evidencia/AT-11-01-06-1.png evidencia/AT-11-01-06-1.xml,false
+AT-11-01-07,PASA,"Vacíos: «Ingresá tu email.» / «Ingresá tu contraseña.», Ingresar disabled. Email no-es-email: «Ingresá un email válido.», Ingresar disabled. evidencia/AT-11-01-07-empty.png evidencia/AT-11-01-07-empty.xml evidencia/AT-11-01-07-1.png evidencia/AT-11-01-07-1.xml",false
+AT-11-01-08,PASA,Instrumentación: sessionStore.test.ts AT-11-01-08 (SecureStore.setItemAsync). Código sessionStore.ts sólo SecureStore; grep sin AsyncStorage. Jest 36/36 desde /tmp/eval-mobile-jest-ok. evidencia/jest-instrumentation.log,false
+AT-11-01-09,PASA,Corte: cmd connectivity airplane-mode enable. Login válido → «No se pudo conectar. Revisá tu conexión e intentá nuevamente.» (≠ INVALID_CREDENTIALS). Formulario reintentable; avión disable + retry entra a Depositar. evidencia/AT-11-01-09-1.png evidencia/AT-11-01-09-1.xml evidencia/AT-11-01-09-retry-ok.png,false
+AT-11-01-10,PASA,"HOME; sleep 60 real (15:51:18–15:52:18); resume am start VIEW exp://10.0.2.2:8081. Sigue Depositar, canal En vivo, sin re-login. evidencia/AT-11-01-10-1.png evidencia/AT-11-01-10-2.png evidencia/AT-11-01-10-2.xml",false
+AT-11-01-11,PASA,logcat durante login+navegación: 0 hits de EvalPass99/Bearer (evidencia/AT-11-01-11-logcat.txt). src/ sin console.log. Test LoginScreen.test.tsx AT-11-01-11. evidencia/jest-instrumentation.log,false
+AT-11-01-12,PASA,"HOME + sleep 60 (15:52:43–15:53:43); DELETE sessions 1→0 en background; resume → una sola pantalla login «Tu sesión expiró, ingresá nuevamente.» (count Ingresá a tu cuenta=1). Tests privateSocket AT-11-01-12/14. evidencia/AT-11-01-12-1.png evidencia/AT-11-01-12-1.xml",false
+AT-11-01-13,PASA,"No provocable en emulador (Before First Unlock). Tests session.test.ts y App.test.tsx AT-11-01-13: lectura SecureStore rechazada → token null / login, sin internals. Código SessionManager.restore catch. evidencia/jest-instrumentation.log",false
+AT-11-01-14,PASA,clearSingleton en session.ts; tests session.test.ts y api.test.ts (dos 401 concurrentes → un clear). UI: un único login en AT-11-01-05 y AT-11-01-12. evidencia/jest-instrumentation.log evidencia/AT-11-01-05-1.png evidencia/AT-11-01-12-1.png,false
+AT-11-02-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-02-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-15,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-16,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-17,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-03-18,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-04-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-01,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-05-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-01,PASA,Address 0x5877Ee468E3784A453E8a80c231C5e5fBfD27f04; EIP-55 recomputado con cast --to-checksum-address (idéntico). QR visible; zbarimg: ethereum:0x5877Ee468E3784A453E8a80c231C5e5fBfD27f04@11155111. Copiar → Dirección copiada ✓. Sepolia / 11155111 / ETH. evidencia/AT-11-06-01-1.png evidencia/AT-11-06-01-1.xml evidencia/AT-11-06-01-copy.png evidencia/AT-11-06-01-qr.txt,false
+AT-11-06-02,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-03,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-04,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-05,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-06,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-07,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-08,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-09,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-10,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-11,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-12,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-13,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-14,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-15,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-16,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-17,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-18,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-19,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-20,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-21,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-22,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-23,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-24,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-25,NO_EVALUABLE,(b) fuera del alcance de la corrida,false
+AT-11-06-26,PASA,GET /deposit-address?asset=USDC tokenAddress=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512. zbarimg: ethereum:0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512@11155111/transfer?address=0x5877Ee468E3784A453E8a80c231C5e5fBfD27f04. EOA EIP-55 visible. evidencia/AT-11-06-26-1.png evidencia/AT-11-06-26-1.xml evidencia/AT-11-06-26-qr.txt,false

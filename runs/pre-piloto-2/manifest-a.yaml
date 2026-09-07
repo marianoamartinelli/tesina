@@ -89,4 +89,11 @@ evaluador:
   modelo: "grok-4.6"
   effort: "xhigh"
   auth: "suscripción (auth.json copiado en sólo lectura a un GROK_HOME aislado por invocación)"
-  instrumentos: "PENDIENTE-EVALUACION: white-box (2 pasadas + arbitraje), rúbricas web/mobile/rol revisor, alucinaciones; black-box y métricas estáticas automáticas"
+  instrumentos:   # por instrumento: dos pasadas independientes + arbitraje (ADR-026); min = pared entre `inicio` y `fin` del JSONL; tokens = último `usage` de la sesión; arbitraje trivial = 0 discrepancias, copia la pasada 1 sin sesión
+    no-automatizables: {pasada_1: {min: 12.2, tokens: {entrada: 176623, entrada_cacheada: 3025536, salida: 42845}}, pasada_2: {min: 13.4, tokens: {entrada: 184543, entrada_cacheada: 3792768, salida: 44329}}, arbitraje: {trivial: true, min: 0}}
+    rol-revisor: {pasada_1: {min: 15.4, tokens: {entrada: 202593, entrada_cacheada: 3489920, salida: 50840}}, pasada_2: {min: 21.7, tokens: {entrada: 399123, entrada_cacheada: 5074432, salida: 69250}}, arbitraje: {min: 7.5, tokens: {entrada: 136424, entrada_cacheada: 1574016, salida: 24950}}}
+    alucinaciones: {pasada_1: {min: 11.2, tokens: {entrada: 184446, entrada_cacheada: 2626688, salida: 33653}}, pasada_2: {min: 9.7, tokens: {entrada: 367150, entrada_cacheada: 2176512, salida: 29062}}, arbitraje: {min: 5.1, tokens: {entrada: 139441, entrada_cacheada: 747776, salida: 17927}}}
+    rubrica-web: {pasada_1: {min: 12.3, tokens: {entrada: 267793, entrada_cacheada: 5589376, salida: 32868}}, pasada_2: {min: 18.1, tokens: {entrada: 310470, entrada_cacheada: 9793536, salida: 48269}}, arbitraje: {trivial: true, min: 0}}
+    rubrica-mobile: {pasada_1: {min: 38.2, tokens: {entrada: 663358, entrada_cacheada: 14150144, salida: 56515}}, pasada_2: {min: 33.9, tokens: {entrada: 746768, entrada_cacheada: 9362944, salida: 55799}}, arbitraje: {trivial: true, min: 0}}
+    black-box: "suite pytest sobre los 56 nodeids del alcance, automática (resultados-at-a.csv)"
+    metricas-estaticas: "medir.sh por componente, automática (metricas-estaticas-a.csv)"

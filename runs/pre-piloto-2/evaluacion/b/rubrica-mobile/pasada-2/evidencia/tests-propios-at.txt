@@ -1,0 +1,29 @@
+    [32m✓[39m [2mAT-11-01-02 restaura optimistamente y omite /me (776 ms)[22m
+    [32m✓[39m [2mAT-11-01-03 sin token muestra login y no llama recursos protegidos (57 ms)[22m
+    [32m✓[39m [2mAT-11-01-13 reintenta SecureStore al siguiente foreground sin mostrar internals (57 ms)[22m
+    [32m✓[39m [2mAT-11-01-10 protege la vista al ir a background y la restaura al volver (75 ms)[22m
+    [32m✓[39m [2mAT-11-01-06 el logout voluntario vuelve al login sin aviso de expiración (107 ms)[22m
+    [32m✓[39m [2mAT-11-01-01 persiste únicamente el token y lo mantiene en memoria[22m
+    [32m✓[39m [2mAT-11-01-02 restaura optimistamente sin consultar la API[22m
+    [32m✓[39m [2mAT-11-01-03 restaura ausencia de token[22m
+    [32m✓[39m [2mAT-11-01-13 sanea un fallo de lectura sin propagar detalles[22m
+    [32m✓[39m [2mAT-11-01-05/06/14 serializa borrado y navegación concurrentes[22m
+    [32m✓[39m [2mAT-11-01-06 reintenta un borrado fallido sin restaurar ni navegar otra vez[22m
+    [32m✓[39m [2mAT-11-01-01 envía credenciales y entra sólo después de persistir (62 ms)[22m
+    [32m✓[39m [2mAT-11-01-04 usa un mensaje no enumerable para credenciales inválidas (55 ms)[22m
+    [32m✓[39m [2mAT-11-01-07 valida campos localmente sin llamar al backend (4 ms)[22m
+    [32m✓[39m [2mAT-11-01-09 diferencia red caída y permite reintentar (106 ms)[22m
+    [32m✓[39m [2mAT-11-01-11 no escribe token ni password en logs (7 ms)[22m
+    [32m✓[39m [2mAT-11-01-01 login usa el contrato HTTP exacto[22m
+    [32m✓[39m [2mAT-11-01-04 conserva el code estable del envelope (1 ms)[22m
+    [32m✓[39m [2mAT-11-01-05/14 varios 401 protegidos comparten una limpieza singleton[22m
+    [32m✓[39m [2mAT-11-01-06 solicita logout remoto con Bearer y tolera red caída[22m
+    [32m✓[39m [2mAT-11-01-09 distingue una falla sin respuesta[22m
+    [32m✓[39m [2mAT-11-01-12 autentica como primer mensaje, responde heartbeat y no pone token en URL (1 ms)[22m
+    [32m✓[39m [2mAT-11-01-12/14 comparte el callback de UNAUTHENTICATED una sola vez[22m
+    [32m✓[39m [2mAT-11-06-01 muestra dirección, QR, red, activo y copia la EOA (62 ms)[22m
+    [32m✓[39m [2mAT-11-06-26 toma tokenAddress del backend y conserva la EOA visible (58 ms)[22m
+    [32m✓[39m [2mAT-11-06-01 codifica ETH con EIP-681 y Sepolia[22m
+    [32m✓[39m [2mAT-11-06-26 usa el contrato devuelto para transferir USDC a la EOA[22m
+    [32m✓[39m [2mAT-11-01-08 escribe y borra el token sólo mediante Expo SecureStore[22m
+[1mTest Suites: [22m[1m[32m8 passed[39m[22m, 8 total

@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07d3d-a678-74d3-8291-3cd06713855d",
+    "cwd": "/private/tmp/eval-rubrica-mobile-pre-piloto-2b-p2-20260907-155946"
+  },
+  "session_summary": "Execute rubrica-mobile on evaluation cell",
+  "created_at": "2026-09-07T18:59:47.538140Z",
+  "updated_at": "2026-09-07T19:41:59.468935Z",
+  "num_messages": 525,
+  "num_chat_messages": 296,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "db932704-7aa0-418f-b4d9-2d358663ad65",
+  "grok_home": "/tmp/eval-rubrica-mobile-pre-piloto-2b-p2-20260907-155946/.grok-home",
+  "last_active_at": "2026-09-07T19:41:59.468935Z",
+  "generated_title": "Execute rubrica-mobile on evaluation cell",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

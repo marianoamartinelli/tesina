@@ -74,7 +74,7 @@ inicio: "2026-09-06T23:54:03-03:00"
 fin: "2026-09-07T13:19:08-03:00"
 repo_commit_final: "f4770bfe48930824dc681fc1f9a4c47acca3e990"   # árbol de trabajo limpio; congelado en sólo lectura
 etapas:
-  backend: {inicio: "2026-09-06T23:54:03-03:00", tokens: null, costo_usd: null, fin: "2026-09-07T11:18:03-03:00", tokens: {entrada: 16825707, entrada_cacheada: 16014208, salida: 39076, razonamiento: 18562, turnos: 3}   # sólo thread principal y sólo las 3 invocaciones que completaron; las 2 cortadas no emiten usage en el --json, costo_usd: null, intervenciones: 3, cortes_por_rate_limit: 2, estado: "completa", motivo_cierre: "criterio de avance cumplido (GET /health ok, INT-03) tras dos cortes por límite de uso (INT-01, INT-02)", consultas_rag: 15}
+  backend: {inicio: "2026-09-06T23:54:03-03:00", fin: "2026-09-07T11:18:03-03:00", tokens: {entrada: 16825707, entrada_cacheada: 16014208, salida: 39076, razonamiento: 18562, turnos: 3}, costo_usd: null, intervenciones: 3, cortes_por_rate_limit: 2, estado: "completa", motivo_cierre: "criterio de avance cumplido (GET /health ok, INT-03) tras dos cortes por límite de uso (INT-01, INT-02)", consultas_rag: 15}   # tokens: sólo thread principal y sólo las 3 invocaciones que completaron; las 2 cortadas no emiten usage en el --json
   web: {inicio: "2026-09-07T11:20:59-03:00", fin: "2026-09-07T12:17:03-03:00", tokens: {entrada: 12719123, entrada_cacheada: 12375296, salida: 51762, razonamiento: 15682, turnos: 3}, costo_usd: null, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (build de producción exit 0 en contenedor, INT-04)", consultas_rag: 0}
   mobile: {inicio: "2026-09-07T12:17:41-03:00", fin: "2026-09-07T13:19:08-03:00", tokens: {entrada: 21624036, entrada_cacheada: 21197824, salida: 71143, razonamiento: 24677, turnos: 3}, costo_usd: null, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (expo export --platform android exit 0 en contenedor, INT-05)", consultas_rag: 2}
 logs_jsonl: ["pre-piloto-2b-backend-20260906-235403.jsonl", "pre-piloto-2b-backend-20260907-053600.jsonl", "pre-piloto-2b-backend-20260907-110515.jsonl", "pre-piloto-2b-web-20260907-112058.jsonl", "pre-piloto-2b-mobile-20260907-121741.jsonl"]
@@ -91,4 +91,11 @@ evaluador:
   modelo: "grok-4.6"
   effort: "xhigh"
   auth: "suscripción (auth.json copiado en sólo lectura a un GROK_HOME aislado por invocación)"
-  instrumentos: "PENDIENTE-EVALUACION: white-box (2 pasadas + arbitraje), rúbricas web/mobile/rol revisor, alucinaciones; black-box y métricas estáticas automáticas"
+  instrumentos:   # por instrumento: dos pasadas independientes + arbitraje (ADR-026); min = pared entre `inicio` y `fin` del JSONL; tokens = último `usage` de la sesión; arbitraje trivial = 0 discrepancias, copia la pasada 1 sin sesión
+    no-automatizables: {pasada_1: {min: 15.4, tokens: {entrada: 221747, entrada_cacheada: 2572672, salida: 49167}}, pasada_2: {min: 15.8, tokens: {entrada: 182174, entrada_cacheada: 3920768, salida: 49996}}, arbitraje: {trivial: true, min: 0}}
+    rol-revisor: {pasada_1: {min: 10.0, tokens: {entrada: 198769, entrada_cacheada: 1989760, salida: 33632}}, pasada_2: {min: 11.8, tokens: {entrada: 180662, entrada_cacheada: 1725440, salida: 41340}}, arbitraje: {trivial: true, min: 0}}
+    alucinaciones: {pasada_1: {min: 10.2, tokens: {entrada: 219602, entrada_cacheada: 2422272, salida: 32368}}, pasada_2: {min: 10.3, tokens: {entrada: 151464, entrada_cacheada: 1456768, salida: 34385}}, arbitraje: {trivial: true, min: 0}}
+    rubrica-web: {pasada_1: {min: 17.2, tokens: {entrada: 630651, entrada_cacheada: 6415360, salida: 39914}}, pasada_2: {min: 24.9, tokens: {entrada: 811489, entrada_cacheada: 7211776, salida: 55068}}, arbitraje: {trivial: true, min: 0}}
+    rubrica-mobile: {pasada_1: {min: 39.7, tokens: {entrada: 1076856, entrada_cacheada: 8092288, salida: 61295}}, pasada_2: {min: 42.2, tokens: {entrada: 410999, entrada_cacheada: 11248000, salida: 65050}}, arbitraje: {trivial: true, min: 0}}
+    black-box: "suite pytest sobre los 56 nodeids del alcance, automática (resultados-at-b.csv)"
+    metricas-estaticas: "medir.sh por componente, automática (metricas-estaticas-b.csv)"

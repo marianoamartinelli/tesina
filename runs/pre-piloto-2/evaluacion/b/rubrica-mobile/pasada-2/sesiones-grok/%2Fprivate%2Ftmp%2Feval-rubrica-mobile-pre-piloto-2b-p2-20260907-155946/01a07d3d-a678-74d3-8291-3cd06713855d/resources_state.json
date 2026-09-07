@@ -1,0 +1,93 @@
+{
+  "params": {
+    "grok_build.ReadFile": {
+      "cursor_rules_on_read": false
+    },
+    "grok_build.SearchReplace": {
+      "skip_read_before_edit": false,
+      "empty_old_string_does_not_override": false,
+      "unicode_normalized_fallback": false,
+      "include_user_edit_hint": true
+    },
+    "grok_build.Bash": {
+      "timeout_secs": null,
+      "max_timeout_secs": 36000.0,
+      "output_byte_limit": null,
+      "cmd_prefix": null,
+      "enabled_background": true,
+      "auto_background_on_timeout": true,
+      "foreground_block_budget_ms": null,
+      "max_block_until_ms": null,
+      "allow_background_operator": true,
+      "surface_bg_completion_reminders": true
+    },
+    "grok_build.Grep": {
+      "max_output_bytes": null,
+      "max_chars_per_line": null
+    },
+    "grok_build.ListDir": {
+      "max_output_chars": null
+    },
+    "grok_build.UseTool": {
+      "native_tool_correction": true
+    }
+  },
+  "state": {
+    "grok_build.ReportedTaskCompletions": {
+      "reported": [
+        "call-103ae953-0655-43f4-a2ff-d916f71c94ac-95",
+        "call-4ca46c32-d5d7-41ec-a164-991cfca76f71-109",
+        "call-592c6ca8-815f-48b4-88ae-01d8ba02e1c2-82",
+        "call-87f8ad05-7b9c-40fa-8923-dc1d9bce585b-89",
+        "call-c437d38b-a497-4744-a0e4-bcb707122fff-66",
+        "call-f4ea3ae8-8d52-45d7-a0eb-a50795ad5c39-97",
+        "call-6c492d77-16cc-4b93-88e5-34e225957311-104",
+        "call-6960449a-97f3-4f87-a1fc-91fb4a789a92-107",
+        "call-64fb6ecf-932e-4b8d-8f26-5e0af9e2b5bd-54",
+        "call-ee9726c6-f638-408f-82d9-a77a612cca54-52",
+        "call-a4f3e0d7-cf06-4257-a480-f6b0d731ed26-60",
+        "call-5fc39484-e74a-4ccd-8f81-611eb010d7d8-62",
+        "call-43f4ef61-19a5-412f-b73c-bf243669161b-87",
+        "call-403c09a3-bd81-4cb3-b7a1-0d658ae5b2c9-92",
+        "call-69a6d4a7-0eb9-4e58-a12e-0fffe9ad2c2e-100",
+        "call-7fe71854-43d0-4878-8db1-f8a53a113604-75",
+        "call-80539d01-40f6-4447-b1e1-03ac688e0238-71",
+        "call-29be4ebf-3180-46e0-b1d6-4a90bca1be1c-111",
+        "call-0be6f4d3-ee47-4ad5-872b-ea45d5210329-58",
+        "call-97bbc139-c76f-48e0-acfd-5357d5cc8638-116",
+        "call-9cb4337c-e1c8-48e9-a3d5-17fc21e5ea3a-77",
+        "call-b464253a-0424-4b1a-8125-d5a2c1891836-80",
+        "call-c7b58dd3-cb58-4288-b6be-a1fc0fe932f6-85"
+      ]
+    },
+    "grok_build.Todo": {
+      "todos": {
+        "setup": {
+          "content": "Leer rúbrica, spec, entorno y estado de la app",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "testdata": {
+          "content": "Crear datos de prueba (precondición 3) y registrarlos",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-01": {
+          "content": "Evaluar AT-11-01-01 a AT-11-01-14",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-06": {
+          "content": "Evaluar AT-11-06-01 y AT-11-06-26",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "output": {
+          "content": "Escribir rubrica-completada.md, CSV y evidencia",
+          "priority": "medium",
+          "status": "completed"
+        }
+      }
+    }
+  }
+}

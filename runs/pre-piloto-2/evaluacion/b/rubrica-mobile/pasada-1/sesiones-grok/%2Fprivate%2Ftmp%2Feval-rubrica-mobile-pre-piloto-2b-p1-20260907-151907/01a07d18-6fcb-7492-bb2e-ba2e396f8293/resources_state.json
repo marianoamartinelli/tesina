@@ -1,0 +1,87 @@
+{
+  "state": {
+    "grok_build.ReportedTaskCompletions": {
+      "reported": [
+        "call-71198954-3d8b-4aa7-bb5a-3d569c1ba57d-81",
+        "call-b537dd68-f0de-464f-918b-3bb15fc4f7ac-89",
+        "call-30532798-ac6d-45a6-9811-81a73f4862ba-86",
+        "call-94eb52e4-e99c-49e8-b574-8cbe4352e23e-55",
+        "call-9cccdfa5-1406-44c1-a115-62d27269ffdd-93",
+        "call-37703f4c-22fe-4676-a7b4-687a4524ade3-98",
+        "call-31a9406f-b43b-4cc3-80ce-639d06bd2a40-58",
+        "call-ef421507-8c39-41be-a5d3-1f3b77c76621-74",
+        "call-5eaedcb1-95e1-4e6e-9e3f-a306cfe4b491-47",
+        "call-f4349c4e-a977-4bb4-9862-f7c4ea747b37-83",
+        "call-81b0379b-078e-4e99-ac4c-a7b208152a0a-91",
+        "call-f468aadb-7f42-4f72-ac9e-7fd35859fbb0-66",
+        "call-f4abf2cb-3305-4361-b899-7ff86cb69d42-62",
+        "call-84e4af36-e572-45ec-972b-8008bf556a75-69",
+        "call-72850662-347d-437f-9b9f-ddca2e58cdc2-71",
+        "call-29b594d1-dce8-4a5f-88c9-1abfd7cea924-100",
+        "call-dc900276-384f-421f-a15c-009129b8eea5-77",
+        "call-a99743ee-f38a-451c-bf98-a02c1cd7affa-96",
+        "call-7e0c8fe6-d45a-4e61-8c71-97d288580ee4-79",
+        "call-3b6fc8bf-e968-49c8-844e-5a6713f418a5-64",
+        "call-90991535-da2f-469b-a775-90023cd20bef-60",
+        "call-1a832853-a5af-49bc-8c1b-610ed21f875f-49"
+      ]
+    },
+    "grok_build.Todo": {
+      "todos": {
+        "setup": {
+          "content": "Leer rúbrica, spec, entorno, datos de prueba y estado de la app",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-01": {
+          "content": "Evaluar AT-11-01-01 a AT-11-01-14 (HU-11-01)",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-06": {
+          "content": "Evaluar AT-11-06-01 y AT-11-06-26",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "output": {
+          "content": "Escribir rubrica-completada.md, CSV y evidencias",
+          "priority": "medium",
+          "status": "completed"
+        }
+      }
+    }
+  },
+  "params": {
+    "grok_build.Grep": {
+      "max_output_bytes": null,
+      "max_chars_per_line": null
+    },
+    "grok_build.UseTool": {
+      "native_tool_correction": true
+    },
+    "grok_build.Bash": {
+      "timeout_secs": null,
+      "max_timeout_secs": 36000.0,
+      "output_byte_limit": null,
+      "cmd_prefix": null,
+      "enabled_background": true,
+      "auto_background_on_timeout": true,
+      "foreground_block_budget_ms": null,
+      "max_block_until_ms": null,
+      "allow_background_operator": true,
+      "surface_bg_completion_reminders": true
+    },
+    "grok_build.ReadFile": {
+      "cursor_rules_on_read": false
+    },
+    "grok_build.ListDir": {
+      "max_output_chars": null
+    },
+    "grok_build.SearchReplace": {
+      "skip_read_before_edit": false,
+      "empty_old_string_does_not_override": false,
+      "unicode_normalized_fallback": false,
+      "include_user_edit_hint": true
+    }
+  }
+}

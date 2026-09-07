@@ -1,0 +1,416 @@
+--------- beginning of kernel
+09-07 18:50:35.759 I/logd    (  167): logdr: UID=2000 GID=2000 PID=25424 b tail=0 logMask=99 pid=0 start=0ns deadline=0ns
+--------- beginning of main
+09-07 18:50:36.399 D/AndroidRuntime(25427): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-07 18:50:36.411 I/AndroidRuntime(25427): Using default boot image
+09-07 18:50:36.411 I/AndroidRuntime(25427): Leaving lock profiling enabled
+09-07 18:50:36.417 I/app_process(25427): Core platform API reporting enabled, enforcing=false
+09-07 18:50:36.418 I/app_process(25427): Using CollectorTypeCMC GC.
+09-07 18:50:36.426 D/WifiNl80211Manager(  574): Scan result ready event
+09-07 18:50:36.426 D/WifiNative(  574): Scan result ready event
+09-07 18:50:36.434 I/HalDevMgr(  574): bestIfaceCreationProposal is null, requestIface=STA, existingIface=[name=wlan0 type=STA]
+09-07 18:50:36.548 D/nativeloader(25427): InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+09-07 18:50:36.565 D/nativeloader(25427): Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+09-07 18:50:36.565 D/app_process(25427): u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+09-07 18:50:36.565 D/app_process(25427): I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
+09-07 18:50:36.567 D/nativeloader(25427): Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+09-07 18:50:36.569 D/nativeloader(25427): Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+09-07 18:50:36.575 W/app_process(25427): ClassLoaderContext shared library size mismatch. Expected=2, found=0 (PCL[]{PCL[/system/framework/android.test.base.jar*724373495]#PCL[/system/framework/android.test.mock.jar*1452759902]} | PCL[])
+09-07 18:50:36.577 W/app_process(25427): ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[]{PCL[/system/framework/android.test.runner.jar*2496447986]#PCL[/system/framework/android.test.base.jar*724373495]} | PCL[/system/framework/android.test.runner.jar*2496447986])
+09-07 18:50:36.611 D/nativeloader(25427): Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+09-07 18:50:36.612 D/AndroidRuntime(25427): Calling main entry com.android.commands.uiautomator.Launcher
+09-07 18:50:36.621 D/UiAutomationConnection(25427): Created on user UserHandle{0}
+09-07 18:50:36.621 I/UiAutomation(25427): Initialized for user 0 on display 0
+09-07 18:50:36.621 W/UiAutomation(25427): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+--------- beginning of system
+09-07 18:50:36.625 D/AccessibilityManagerService(  574): changeCurrentUserForTestAutomationIfNeededLocked(0): ignoring because device doesn't support visible background users
+09-07 18:50:36.626 I/UiAutomationManager(  574): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-07 18:50:36.627 W/MagnificationConnectionManager(  574): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-07 18:50:36.630 I/AiAiEcho( 1459): Settings changed for uri: content://settings/secure/accessibility_enabled
+09-07 18:50:36.631 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:36.631 V/UiAutomation(25427): Init UiAutomation@aec954b[id=504, displayId=0, flags=0]
+09-07 18:50:36.632 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.632 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.633 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:36.633 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:36.633 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.634 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.634 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:36.634 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:36.634 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:36.634 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:36.634 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.634 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.634 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.634 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:36.634 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:36.634 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:36.634 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:36.634 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.634 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.634 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.634 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.634 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:36.634 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+09-07 18:50:36.635 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+09-07 18:50:36.635 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+09-07 18:50:36.637 D/SsBaseTemplateCard( 1317): No text view can be set up
+09-07 18:50:36.637 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:36.637 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:36.637 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:36.637 I/SsBaseTemplateCard( 1317): Secondary card pane is null
+09-07 18:50:36.638 W/PageIndicator(  842): Total number of pages invalid: 0. Assuming 1 page.
+09-07 18:50:36.638 D/SsMediaDataProvider(  842): Forwarding Smartspace updates []
+09-07 18:50:36.640 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.640 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.641 D/BatterySaverPolicy(  574): accessibility changed to true, updating policy.
+09-07 18:50:36.745 W/Looper  (  574): Slow dispatch took 105ms main h=android.os.Handler c=android.view.accessibility.AccessibilityManager$$ExternalSyntheticLambda0@7c6d33 m=0
+09-07 18:50:36.766 W/MagnificationConnectionManager(  574): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-07 18:50:36.766 W/system_server(  574): Long monitor contention with owner android.anim (629) at void com.android.server.wm.WindowAnimator.lambda$new$1(long)(WindowAnimator.java:103) waiters=0 in int com.android.server.wm.WindowManagerService$LocalService.getDisplayIdForWindow(android.os.IBinder) for 124ms
+09-07 18:50:36.767 W/system_server(  574): Long monitor contention with owner android.anim (629) at void com.android.server.wm.WindowAnimator.lambda$new$1(long)(WindowAnimator.java:103) waiters=2 in int com.android.server.wm.WindowManagerService$LocalService.getDisplayIdForWindow(android.os.IBinder) for 124ms
+09-07 18:50:36.778 W/system_server(  574): Long monitor contention with owner android.anim (629) at void com.android.server.wm.WindowAnimator.lambda$new$1(long)(WindowAnimator.java:103) waiters=1 in int com.android.server.wm.WindowManagerService$LocalService.getDisplayIdForWindow(android.os.IBinder) for 132ms
+09-07 18:50:36.779 I/AiAiEcho( 1459): Settings changed for uri: content://settings/secure/accessibility_enabled
+09-07 18:50:36.782 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:36.784 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:36.787 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.787 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.787 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.787 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.787 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.788 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.788 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.788 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.788 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.788 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:36.794 W/Looper  (  842): Slow dispatch took 152ms wmshell.main h=android.view.ViewRootImpl$ViewRootHandler c=android.view.accessibility.AccessibilityManager$$ExternalSyntheticLambda0@430de10 m=0
+09-07 18:50:36.866 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:36.866 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:36.866 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:36.866 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.866 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.866 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:36.867 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:36.867 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:36.867 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:36.867 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.867 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.867 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:36.867 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:36.867 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:36.867 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:36.867 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.867 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:36.867 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:36.898 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+09-07 18:50:36.925 D/SsMediaDataProvider(  842): Forwarding Smartspace updates []
+09-07 18:50:36.928 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+09-07 18:50:36.929 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+09-07 18:50:36.948 W/PageIndicator(  842): Total number of pages invalid: 0. Assuming 1 page.
+09-07 18:50:36.957 D/SsBaseTemplateCard( 1317): No text view can be set up
+09-07 18:50:36.957 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:36.957 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:36.957 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:36.957 I/SsBaseTemplateCard( 1317): Secondary card pane is null
+09-07 18:50:37.219 I/A       (25069): (REDACTED) disposing SearchServiceClient after timeout %s
+09-07 18:50:37.865 W/AccessibilityNodeInfoDumper(25427): Fetch time: 4ms
+09-07 18:50:37.869 W/MagnificationConnectionManager(  574): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-07 18:50:37.869 D/AccessibilityManagerService(  574): restoreCurrentUserForTestAutomationIfNeededLocked(): ignoring because device doesn't support visible background users
+09-07 18:50:37.871 D/AndroidRuntime(25427): Shutting down VM
+09-07 18:50:37.873 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.873 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.874 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.874 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.874 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.875 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.875 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.875 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.875 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.875 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.875 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.876 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.876 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.876 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.876 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:37.878 D/BatterySaverPolicy(  574): accessibility changed to false, updating policy.
+09-07 18:50:37.881 I/AiAiEcho( 1459): Settings changed for uri: content://settings/secure/accessibility_enabled
+09-07 18:50:37.882 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:37.883 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:37.883 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:37.883 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:37.883 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:37.883 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:37.883 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:37.883 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:37.883 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:37.883 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:37.883 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:37.883 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:37.883 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:37.884 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:37.884 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:37.884 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:37.884 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:37.884 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:37.884 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+09-07 18:50:37.886 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+09-07 18:50:37.886 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+09-07 18:50:37.889 D/SsBaseTemplateCard( 1317): No text view can be set up
+09-07 18:50:37.889 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:37.889 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:37.889 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:37.889 I/SsBaseTemplateCard( 1317): Secondary card pane is null
+09-07 18:50:38.000 W/system_server(  574): Long monitor contention with owner binder:574_5 (674) at void com.android.server.accessibility.AccessibilityWindowManager.removeAccessibilityInteractionConnection(android.view.IWindow)(AccessibilityWindowManager.java:1479) waiters=0 in void com.android.server.accessibility.AccessibilityWindowManager.removeAccessibilityInteractionConnection(android.view.IWindow) for 117ms
+09-07 18:50:38.022 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:38.031 D/SsMediaDataProvider(  842): Forwarding Smartspace updates []
+09-07 18:50:38.031 W/PageIndicator(  842): Total number of pages invalid: 0. Assuming 1 page.
+09-07 18:50:38.068 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:39.037 W/BpBinder(25445): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-07 18:50:39.038 W/ProcessState(25445): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-07 18:50:39.113 I/hwservicemanager(  163): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+09-07 18:50:39.114 I/Gralloc4(25445): mapper 4.x is not supported
+09-07 18:50:39.114 I/servicemanager(  160): Caller(pid=25445,uid=2000,sid=u:r:shell:s0) Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest. No alternative instances declared in VINTF.
+09-07 18:50:39.549 I/StylusModule(24719): StylusModule.onUpdateToolType():770 Update tool type = 0
+09-07 18:50:39.557 D/audioserver(  420): logFgsApiBegin: FGS Logger Transaction failed, -129
+09-07 18:50:39.557 W/AS.PlaybackActivityMon(  574): No piid assigned for invalid/internal port id 16
+09-07 18:50:39.563 D/EGL_emulation(24381): app_time_stats: avg=16875.26ms min=253.35ms max=33497.18ms count=2
+09-07 18:50:39.574 D/AudioFlinger(  420): mixer(0xb400007b0ddc28e0) throttle end: throttle time(18)
+09-07 18:50:39.596 D/TrafficStats(24381): tagSocket(191) with statsTag=0xffffffff, statsUid=-1
+09-07 18:50:39.864 D/audioserver(  420): logFgsApiEnd: FGS Logger Transaction failed, -129
+09-07 18:50:40.530 D/AndroidRuntime(25453): >>>>>> START com.android.internal.os.RuntimeInit uid 2000 <<<<<<
+09-07 18:50:40.574 I/AndroidRuntime(25453): Using default boot image
+09-07 18:50:40.574 I/AndroidRuntime(25453): Leaving lock profiling enabled
+09-07 18:50:40.582 I/app_process(25453): Core platform API reporting enabled, enforcing=false
+09-07 18:50:40.584 I/app_process(25453): Using CollectorTypeCMC GC.
+09-07 18:50:40.724 D/TrafficStats(24381): tagSocket(172) with statsTag=0xffffffff, statsUid=-1
+09-07 18:50:40.731 D/nativeloader(25453): InitDefaultPublicLibraries for_preload=1: libandroid.so:libaaudio.so:libamidi.so:libbinder_ndk.so:libc.so:libcamera2ndk.so:libdl.so:libEGL.so:libGLESv1_CM.so:libGLESv2.so:libGLESv3.so:libicu.so:libicui18n.so:libicuuc.so:libjnigraphics.so:liblog.so:libmediandk.so:libm.so:libnativehelper.so:libnativewindow.so:libOpenMAXAL.so:libOpenSLES.so:libRS.so:libstdc++.so:libsync.so:libvulkan.so:libwebviewchromium_plat_support.so:libz.so
+09-07 18:50:40.754 I/ImeTracker(24381): host.exp.exponent:e01cf817: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT_CLOSE_CURRENT_SESSION fromUser false
+09-07 18:50:40.756 D/nativeloader(25453): Load libicu_jni.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+09-07 18:50:40.756 D/app_process(25453): u_setTimeZoneFilesDirectory("/apex/com.android.tzdata/etc/tz/versioned/8/icu") succeeded. 
+09-07 18:50:40.756 D/app_process(25453): I18n APEX ICU file found: /apex/com.android.i18n/etc/icu/icudt75l.dat
+09-07 18:50:40.758 D/nativeloader(25453): Load libjavacore.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+09-07 18:50:40.758 I/GoogleInputMethodService(24719): GoogleInputMethodService.onFinishInputView():2393 
+09-07 18:50:40.759 W/TooltipLifecycleManager(24719): TooltipLifecycleManager.dismissTooltips():152 Tooltip with id spell_check_add_to_dictionary not found in tooltipManager.
+09-07 18:50:40.760 D/nativeloader(25453): Load libopenjdk.so using APEX ns com_android_art for caller /apex/com.android.art/javalib/core-oj.jar: ok
+09-07 18:50:40.762 I/AndroidIME(24719): AbstractIme.onDeactivate():202 PasswordIme.onDeactivate()
+09-07 18:50:40.765 I/WindowMetricsNotification(24719): WindowMetricsNotification.notifyWithWindow():113 
+09-07 18:50:40.765 I/WindowMetricsNotification(24719): WindowMetricsNotification.notify():106 WindowMetricsNotification{bounds=Rect(0, 128 - 1080, 2400), insets=Rect(0, 0 - 0, 126), densityDpi=420, smallestScreenWidthDp=411, displayWidth=1080, displayHeight=2400, xdpi=420.0, ydpi=420.0}; DisplayMetrics{density=2.625, width=1080, height=2400, scaledDensity=2.625, xdpi=420.0, ydpi=420.0}
+09-07 18:50:40.769 W/app_process(25453): ClassLoaderContext shared library size mismatch. Expected=2, found=0 (PCL[]{PCL[/system/framework/android.test.base.jar*724373495]#PCL[/system/framework/android.test.mock.jar*1452759902]} | PCL[])
+09-07 18:50:40.773 W/app_process(25453): ClassLoaderContext classpath size mismatch. expected=0, found=1 (PCL[]{PCL[/system/framework/android.test.runner.jar*2496447986]#PCL[/system/framework/android.test.base.jar*724373495]} | PCL[/system/framework/android.test.runner.jar*2496447986])
+09-07 18:50:40.776 I/netd    (  378): tetherGetStats() -> {[]} <1.94ms>
+09-07 18:50:40.785 D/EGL_emulation( 1317): app_time_stats: avg=110752.65ms min=110752.65ms max=110752.65ms count=1
+09-07 18:50:41.014 D/EGL_emulation(24381): app_time_stats: avg=238.06ms min=77.37ms max=630.51ms count=4
+09-07 18:50:41.052 D/nativeloader(25453): Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+09-07 18:50:41.056 D/AndroidRuntime(25453): Calling main entry com.android.commands.uiautomator.Launcher
+09-07 18:50:41.064 D/InsetsController(24381): hide(ime(), fromIme=true)
+09-07 18:50:41.090 D/EGL_emulation(24719): app_time_stats: avg=42594.48ms min=42594.48ms max=42594.48ms count=1
+09-07 18:50:41.245 D/UiAutomationConnection(25453): Created on user UserHandle{0}
+09-07 18:50:41.245 I/UiAutomation(25453): Initialized for user 0 on display 0
+09-07 18:50:41.245 W/UiAutomation(25453): Created with deprecatead constructor, assumes DEFAULT_DISPLAY
+09-07 18:50:41.277 D/AccessibilityManagerService(  574): changeCurrentUserForTestAutomationIfNeededLocked(0): ignoring because device doesn't support visible background users
+09-07 18:50:41.278 I/UiAutomationManager(  574): Registering UiTestAutomationService (id=com.android.server.accessibility/UiAutomation, flags=0x0) when called by user 0
+09-07 18:50:41.280 W/MagnificationConnectionManager(  574): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-07 18:50:41.282 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.282 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.282 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.282 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.282 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.322 I/AiAiEcho( 1459): Settings changed for uri: content://settings/secure/accessibility_enabled
+09-07 18:50:41.323 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:41.326 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:41.326 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:41.326 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.327 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.328 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:41.330 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:41.339 V/UiAutomation(25453): Init UiAutomation@c1df16f[id=505, displayId=0, flags=0]
+09-07 18:50:41.349 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:41.349 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:41.349 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.349 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.350 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:41.350 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:41.350 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:41.350 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:41.350 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.350 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.350 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:41.350 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+09-07 18:50:41.350 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+09-07 18:50:41.350 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+09-07 18:50:41.362 W/PageIndicator(  842): Total number of pages invalid: 0. Assuming 1 page.
+09-07 18:50:41.363 D/SsMediaDataProvider(  842): Forwarding Smartspace updates []
+09-07 18:50:41.369 D/SsBaseTemplateCard( 1317): No text view can be set up
+09-07 18:50:41.369 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:41.369 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:41.369 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:41.369 I/SsBaseTemplateCard( 1317): Secondary card pane is null
+09-07 18:50:41.380 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.380 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.380 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.380 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.380 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.473 W/system_server(  574): Long monitor contention with owner SettingsProvider (697) at boolean android.os.MessageQueue.enqueueMessage(android.os.Message, long)(MessageQueue.java:695) waiters=0 in android.os.Message android.os.MessageQueue.next() for 125ms
+09-07 18:50:41.512 W/system_server(  574): Long monitor contention with owner android.anim (629) at void com.android.server.wm.WindowSurfacePlacer$Traverser.run()(WindowSurfacePlacer.java:58) waiters=0 in boolean com.android.server.wm.WindowManagerService.isDisplayRotationFrozen(int) for 190ms
+09-07 18:50:41.560 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:41.560 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:41.561 W/Looper  (  842): Slow delivery took 48ms wmshell.main h=android.os.Handler c=com.android.wm.shell.pip.PinnedStackListenerForwarder$PinnedTaskListenerImpl$$ExternalSyntheticLambda0@cd79d09 m=0
+09-07 18:50:41.589 W/Looper  (  574): Slow dispatch took 209ms main h=com.android.server.accessibility.AccessibilityManagerService$MainHandler c=<recycled PooledLambda@80012d1> m=0
+09-07 18:50:41.589 W/Looper  (  574): Slow delivery took 308ms main h=com.android.server.accessibility.AccessibilityManagerService$MainHandler c=<recycled PooledLambda@5706252> m=0
+09-07 18:50:41.589 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.589 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.590 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.590 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.590 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.590 D/BatterySaverPolicy(  574): accessibility changed to true, updating policy.
+09-07 18:50:41.593 W/Looper  (  574): Drained
+09-07 18:50:41.666 W/Looper  (  842): Slow dispatch took 105ms wmshell.main h=android.os.Handler c=com.android.wm.shell.pip.PinnedStackListenerForwarder$PinnedTaskListenerImpl$$ExternalSyntheticLambda2@79ccb0e m=0
+09-07 18:50:41.668 W/MagnificationConnectionManager(  574): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-07 18:50:41.742 W/Looper  (  842): Slow dispatch took 76ms wmshell.main h=android.view.ViewRootImpl$ViewRootHandler c=android.view.accessibility.AccessibilityManager$$ExternalSyntheticLambda0@e74e92f m=0
+09-07 18:50:41.749 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.749 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.749 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.749 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.749 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.750 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.750 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.750 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.750 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.750 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:41.759 D/WindowManagerShell(  842): onKeepClearAreasChanged: restricted={}, unrestricted={}
+09-07 18:50:41.794 I/AiAiEcho( 1459): Settings changed for uri: content://settings/secure/accessibility_enabled
+09-07 18:50:41.797 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:41.797 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:41.804 I/GoogleInputMethodService(24719): GoogleInputMethodService.onFinishInput():3157 
+09-07 18:50:41.808 I/GoogleInputMethodService(24719): GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 0, locked = false
+09-07 18:50:41.809 I/GoogleInputMethodService(24719): GoogleInputMethodService.onStartInput():1986 onStartInput(EditorInfo{EditorInfo{packageName=host.exp.exponent, inputType=0, inputTypeString=NULL, enableLearning=false, autoCorrection=false, autoComplete=false, imeOptions=0, privateImeOptions=null, actionName=UNSPECIFIED, actionLabel=null, initialSelStart=-1, initialSelEnd=-1, initialCapsMode=0, label=null, fieldId=0, fieldName=null, extras=null, hintText=null, hintLocales=[]}}, false)
+09-07 18:50:41.812 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:41.812 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:41.812 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:41.812 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.812 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.812 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:41.813 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:41.813 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:41.813 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:41.813 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.813 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.813 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:41.813 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:41.813 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:41.813 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:41.813 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.813 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:41.814 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:41.814 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+09-07 18:50:41.814 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+09-07 18:50:41.814 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+09-07 18:50:41.815 I/GoogleInputMethodService(24719): GoogleInputMethodService.updateDeviceLockedStatus():2248 repeatCheckTimes = 1, locked = false
+09-07 18:50:41.815 W/Looper  (  842): Slow dispatch took 56ms wmshell.main h=android.os.Handler c=com.android.wm.shell.common.DisplayInsetsController$PerDisplay$DisplayWindowInsetsControllerImpl$$ExternalSyntheticLambda3@2dcb3c m=0
+09-07 18:50:41.816 D/SsBaseTemplateCard( 1317): No text view can be set up
+09-07 18:50:41.816 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:41.816 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:41.816 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:41.816 I/SsBaseTemplateCard( 1317): Secondary card pane is null
+09-07 18:50:41.816 I/AndroidIME(24719): InputBundleManager.loadActiveInputBundleId():450 loadActiveInputBundleId: und-Latn-x-password, password
+09-07 18:50:41.817 W/PackageConfigPersister(  574): App-specific configuration not found for packageName: host.exp.exponent and userId: 0
+09-07 18:50:41.849 W/Looper  (  842): Drained
+09-07 18:50:41.898 I/ImeTracker(24381): host.exp.exponent:53635f37: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT_ON_ANIMATION_STATE_CHANGED fromUser false
+09-07 18:50:41.899 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:41.899 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:41.941 D/SsMediaDataProvider(  842): Forwarding Smartspace updates []
+09-07 18:50:41.942 W/PageIndicator(  842): Total number of pages invalid: 0. Assuming 1 page.
+09-07 18:50:41.942 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:41.954 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:41.994 I/HWUI    (24381): Davey! duration=1034ms; Flags=0, FrameTimelineVsyncId=6017746, IntendedVsync=16607334239897, Vsync=16607650906551, InputEventId=0, HandleInputStart=16607662369502, AnimationStart=16607662370335, PerformTraversalsStart=16607953674627, DrawStart=16607954664543, FrameDeadline=16608050906535, FrameInterval=16607658928043, FrameStartTime=16666666, SyncQueued=16607955114835, SyncStart=16607955159668, IssueDrawCommandsStart=16607955465252, SwapBuffers=16608145892377, FrameCompleted=16608369127377, DequeueBufferDuration=144815958, QueueBufferDuration=66146959, GpuCompleted=16608369127377, SwapBuffersCompleted=16608358335044, DisplayPresentTime=0, CommandSubmissionCompleted=16608145892377, 
+09-07 18:50:42.029 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:42.029 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:42.030 I/ImeTracker(  574): host.exp.exponent:53635f37: onCancelled at PHASE_SERVER_SHOULD_HIDE
+09-07 18:50:42.032 D/EGL_emulation( 1317): app_time_stats: avg=1247.12ms min=1247.12ms max=1247.12ms count=1
+09-07 18:50:42.060 I/ImeTracker(24381): host.exp.exponent:e01cf817: onHidden
+09-07 18:50:42.107 D/InteractionJankMonitor(24381): end failed due to timeout, CUJ=IME_INSETS_HIDE_ANIMATION
+09-07 18:50:42.131 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:42.131 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:42.158 D/ActivityManager(  574): freezing 1597 com.google.android.gms
+09-07 18:50:42.235 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:42.235 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:42.245 I/st.exp.exponent(24381): Background concurrent mark compact GC freed 5856KB AllocSpace bytes, 12(336KB) LOS objects, 49% free, 7317KB/14MB, paused 1.679ms,51.047ms total 1.315s
+09-07 18:50:42.302 I/HWUI    (24381): Davey! duration=701ms; Flags=0, FrameTimelineVsyncId=6017808, IntendedVsync=16607684239883, Vsync=16608017573203, InputEventId=0, HandleInputStart=16608024563627, AnimationStart=16608024616793, PerformTraversalsStart=16608024756127, DrawStart=16608025402710, FrameDeadline=16608400906521, FrameInterval=16608024481877, FrameStartTime=16666666, SyncQueued=16608025467418, SyncStart=16608358496210, IssueDrawCommandsStart=16608375375794, SwapBuffers=16608510827710, FrameCompleted=16608718816127, DequeueBufferDuration=29095250, QueueBufferDuration=1321500, GpuCompleted=16608718816127, SwapBuffersCompleted=16608543876585, DisplayPresentTime=0, CommandSubmissionCompleted=16608510827710, 
+09-07 18:50:42.334 D/EGL_emulation(24381): app_time_stats: avg=277.07ms min=156.16ms max=339.86ms count=4
+09-07 18:50:42.363 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:42.363 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:42.470 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:42.470 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:42.571 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:42.571 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:42.632 D/android.hardware.audio@7.1-impl.ranchu(  382): threadLoop: entering standby, frames: 17362304
+09-07 18:50:42.697 W/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:259 pcm_writei failed with 'cannot read/write stream data: I/O error' (-1)
+09-07 18:50:42.697 E/android.hardware.audio@7.1-impl.ranchu(  382): pcmWrite:260 failure: -1
+09-07 18:50:43.808 W/AccessibilityNodeInfoDumper(25453): Fetch time: 9ms
+09-07 18:50:43.815 W/MagnificationConnectionManager(  574): requestConnection duplicated request: connect=false, mConnectionState=DISCONNECTED
+09-07 18:50:43.815 D/AccessibilityManagerService(  574): restoreCurrentUserForTestAutomationIfNeededLocked(): ignoring because device doesn't support visible background users
+09-07 18:50:43.816 I/AiAiEcho( 1459): Settings changed for uri: content://settings/secure/accessibility_enabled
+09-07 18:50:43.816 D/AndroidRuntime(25453): Shutting down VM
+09-07 18:50:43.817 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.817 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.817 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:43.818 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:43.818 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:43.818 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:43.818 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:43.818 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:43.818 I/AiAiEcho( 1459): Predicting[0]:  [CONTEXT sampling_count=5 ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): EchoTargets: 
+09-07 18:50:43.818 I/AiAiEcho( 1459): Filtered by AiAi flag check: 
+09-07 18:50:43.818 I/AiAiEcho( 1459): [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): Ranked targets strategy: SORT, count: 0, ranking metadata:  [CONTEXT ratelimit_period="10 SECONDS" ]
+09-07 18:50:43.818 I/AiAiEcho( 1459): #remoteViewsTwiddler: feature disabled.
+09-07 18:50:43.819 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface media_data_manager with targets# 0 (types=[])
+09-07 18:50:43.821 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface home with targets# 0 (types=[])
+09-07 18:50:43.821 I/AiAiEcho( 1459): #postPredictionTargets: Sending updates to UISurface lockscreen with targets# 0 (types=[])
+09-07 18:50:43.821 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.821 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.821 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.822 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.822 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.822 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.823 W/PageIndicator(  842): Total number of pages invalid: 0. Assuming 1 page.
+09-07 18:50:43.823 D/SsMediaDataProvider(  842): Forwarding Smartspace updates []
+09-07 18:50:43.823 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.824 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.829 D/SsBaseTemplateCard( 1317): No text view can be set up
+09-07 18:50:43.829 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:43.829 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:43.829 D/SsBaseTemplateCard( 1317): Passed-in item info is null
+09-07 18:50:43.829 I/SsBaseTemplateCard( 1317): Secondary card pane is null
+09-07 18:50:43.834 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:43.834 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.835 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.835 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.835 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.835 W/IPCThreadState(  574): Sending oneway calls to frozen process.
+09-07 18:50:43.835 D/BatterySaverPolicy(  574): accessibility changed to false, updating policy.
+09-07 18:50:43.898 I/A       (25069): NGA enabled in interactor.
+09-07 18:50:44.953 W/BpBinder(25472): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-07 18:50:44.954 W/ProcessState(25472): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-07 18:50:45.012 I/servicemanager(  160): Caller(pid=25472,uid=2000,sid=u:r:shell:s0) Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest. No alternative instances declared in VINTF.
+09-07 18:50:45.013 I/hwservicemanager(  163): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+09-07 18:50:45.013 I/Gralloc4(25472): mapper 4.x is not supported
+09-07 18:50:45.553 W/BpBinder(25476): Linking to death on android.gui.ISurfaceComposer but there are no threads (yet?) listening to incoming transactions. See ProcessState::startThreadPool and ProcessState::setThreadPoolMaxThreadCount. Generally you should setup the binder threadpool before other initialization steps.
+09-07 18:50:45.554 W/ProcessState(25476): Extra binder thread started, but 0 threads requested. Do not use *startThreadPool when zero threads are requested.
+09-07 18:50:45.612 I/hwservicemanager(  163): getTransport: Cannot find entry android.hardware.graphics.mapper@4.0::IMapper/default in either framework or device VINTF manifest.
+09-07 18:50:45.612 I/Gralloc4(25476): mapper 4.x is not supported
+09-07 18:50:45.612 I/servicemanager(  160): Caller(pid=25476,uid=2000,sid=u:r:shell:s0) Could not find android.hardware.graphics.allocator.IAllocator/default in the VINTF manifest. No alternative instances declared in VINTF.

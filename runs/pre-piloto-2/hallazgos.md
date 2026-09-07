@@ -207,3 +207,60 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
   de URL del cliente mobile y la versión de Expo Go, y verificar un login desde el emulador
   antes de lanzar la rúbrica — en H8 con 4 celdas de 2 familias, este error se repite.
 - **Estado:** corregido en la corrida; procedimiento a fijar antes de H8.
+
+## Resultados de la evaluación (las dos celdas, cerradas el 2026-09-07)
+
+Producto de la evaluación gestionada por agentes (ADR-026) sobre el universo reducido.
+No entran en el dataset; sirven para verificar que cada instrumento emite un veredicto
+con evidencia y para medir cuánto concuerda el juez consigo mismo. Fuentes primarias:
+`resultados-at-{a,b}.csv`, `metricas-estaticas-{a,b}.csv` y `evaluacion/{a,b}/<instrumento>/`.
+
+| Instrumento | A (`pre-piloto-2a`) | B (`pre-piloto-2b`) |
+|---|---|---|
+| Black-box (56 ATs) | 53 pasa / 3 falla / 0 skip | 52 pasa / 4 falla / 0 skip |
+| White-box (22 ATs del alcance) | 22/22 PASA | 22/22 PASA |
+| Rol revisor (36 criterios + censo) | 29 PASA / 7 FALLA; censo 27 puntos | 36 PASA / 0 FALLA; censo 6 puntos |
+| Rúbrica web (11 filas del alcance) | 11 PASA | 11 PASA |
+| Rúbrica mobile (16 filas del alcance) | 15 PASA / 1 NO_EVALUABLE | 16 PASA |
+| Alucinaciones de dominio | 2 hechos, 5 ocurrencias en 1 027 candidatos | 1 hecho, 1 ocurrencia en 260 candidatos |
+| Métricas estáticas (loc efectivas) | backend 5 901 + web 1 533 + mobile 4 034 = 11 468 | backend 3 162 + web 1 010 + mobile 1 653 = 5 825 |
+| Consultas al corpus (backend + web + mobile) | 16 + 0 + 9 = 25 | 15 + 0 + 2 = 17 |
+
+Lecturas:
+
+- **Black-box.** Las tres fallas compartidas son las mismas de la primera pre-piloto:
+  `AT-01-01-01`, `AT-06-01-06` y `AT-06-02-07` piden `GET /balances` o `/withdrawals`,
+  endpoints fuera del universo reducido. Los dos ATs de rate limiting (`spec-v1.2`) pasan
+  en las dos celdas; ya no hay `skip`. La cuarta falla de B es propia: `AT-01-02-11`, el
+  P95 del login con email inexistente difiere en 1 003,7 ms del de password incorrecta
+  (umbral 50 ms), un canal lateral que permite enumerar emails.
+- **Rol revisor.** Las 7 FALLA de A son las tres RV-07 (inversiones de severidad en las
+  tres etapas), dos RV-05 (un punto sin ancla en web y otro en mobile), RV-02 en web (el
+  revisor creó `.claude/worktrees/` fuera del artefacto) y RV-08 en web (un punto con eje
+  `OTRO`). Confirma el hueco 1 de H-26: RV-07 mide un orden que el revisor no usó.
+- **Alucinaciones.** Las de A están en H2-09. La de B es C5: el README atribuye a BIP-39
+  una seed «de 256 bits» (el estándar deriva 512).
+- **Mobile A.** El único NO_EVALUABLE (`AT-11-01-12`, reconexión del WebSocket privado)
+  es por alcance: el backend reducido no expone HU-09-03/04.
+
+Concordancia entre pasadas, por instrumento (discrepancias sobre filas comparadas) y
+duración de cada sesión de Grok Build:
+
+| Celda | Instrumento | Discrepancias | Pasada 1 | Pasada 2 | Arbitraje |
+|---|---|---|---|---|---|
+| A | white-box | 0 de 56 | 12,2 min | 13,4 min | trivial |
+| A | rol revisor | 3 de 63 (las tres en el censo) | 15,4 min | 21,7 min | 7,5 min |
+| A | alucinaciones | 5 de 1 027 (H2-09) | 11,2 min | 9,7 min | 5,1 min |
+| A | rúbrica web | 0 de 79 | 12,3 min | 18,1 min | trivial |
+| A | rúbrica mobile | 0 de 94 | 38,2 min | 33,9 min | trivial |
+| B | white-box | 0 de 56 | 15,4 min | 15,8 min | trivial |
+| B | rol revisor | 0 de 42 | 10,0 min | 11,8 min | trivial |
+| B | alucinaciones | 0 de 260 | 10,2 min | 10,3 min | trivial |
+| B | rúbrica web | 0 de 79 | 17,2 min | 24,9 min | trivial |
+| B | rúbrica mobile | 0 de 94 | 39,7 min | 42,2 min | trivial |
+
+«Trivial» = 0 discrepancias: el runner copia la pasada 1 como veredicto final sin abrir
+sesión. Las discrepancias reales quedaron en tres sesiones de arbitraje, cada una con la
+evidencia y la regla del instrumento que decide (`evaluacion/a/*/arbitraje.md`). Lo que
+esta métrica no mide es el acuerdo con un evaluador humano; queda declarado en
+`analisis/amenazas-validez.md`.

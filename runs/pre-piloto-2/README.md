@@ -22,4 +22,19 @@ Qué verifica, y que la primera pre-piloto no pudo:
 | `intervenciones-a.md` / `intervenciones-b.md` | log de intervenciones, clasificado |
 | `logs/` | JSONL de las etapas, snapshots y sesiones del CLI, archivados al cerrar |
 | `evaluacion/` | salidas de los agentes evaluadores por instrumento y pasada |
-| `hallazgos.md` | defectos y decisiones que la corrida saca a la luz |
+| `hallazgos.md` | defectos y decisiones que la corrida saca a la luz, y la tabla de resultados por instrumento y celda |
+| `resultados-at-{a,b}.csv` / `metricas-estaticas-{a,b}.csv` | dato primario de black-box y métricas estáticas |
+
+## Estado: cerrada el 2026-09-07
+
+Las dos celdas generaron sus tres etapas (A sin cortes; B con dos cortes por límite de uso
+y continuación con `--desde-paso`, INT-01/02) y se evaluaron enteras por agentes: 5
+instrumentos × 2 pasadas + arbitraje por celda, todo por Grok Build. Resultados y
+concordancia entre pasadas en [`hallazgos.md`](hallazgos.md) §Resultados; 11 hallazgos
+(H2-01..11). Repos satélite congelados en `1570c97` (A) y `f4770bf` (B).
+
+Qué respondió de la tabla de arriba: los ATs de rate limiting pasan sin `skip` en las dos
+celdas; con RAG instruido las dos familias consultan el corpus (25 y 17 consultas contra 0
+en la primera); los rollouts muestran 3 subagentes por invocación de B (44 rollouts) y
+cierran el ítem 24 de la checklist; los 10 circuitos de evaluación produjeron veredicto con
+evidencia; la rúbrica mobile corrió sobre el emulador en las dos celdas.
