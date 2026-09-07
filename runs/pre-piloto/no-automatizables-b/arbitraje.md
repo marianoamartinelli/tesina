@@ -43,8 +43,8 @@ en las dos pasadas por instrucción del acotamiento, y no entran al arbitraje.
 - `[comando]` `lectura sólo lectura de domain_events en la instancia descartable EAGER tras dos altas (sin consultar deposit-address)` — DepositAddressAssigned {"accountId":"7947ffeb…","addressIndex":0,"address":"0x615DB4B7692fdaB5f98d5319b9AB10067b733FE1","chainId":"11155111"} y el análogo para addressIndex 1 — emitidos en el alta, sin ventana respecto de la primera consulta del usuario
 - `[comando]` `grep -rni 'eth_getLogs|indexador|confirmaciones|/deposits' $COPIA_EVAL/src ; grep -n '"/api/v1' src/app.ts ; README.md:16-19` — 0 hallazgos: el monitor de depósitos de la épica 07 no existe en la implementación, por lo que no hay punto de consumo que localizar ni ejercitar
 
-**Veredicto arbitrado:** _(a completar por el tesista)_
+**Veredicto arbitrado:** **PASA** (tesista, 2026-09-06)
 
-**Fundamento:** _(a completar)_
+**Fundamento:** todo lo verificable del contrato dentro del alcance reducido está presente y fue comprobado en ejecución por las dos pasadas (evento `DepositAddressAssigned` con los cuatro campos en la misma transacción; consulta interna no pública del conjunto asignado; sin ventana respecto de la consulta del usuario). La parte no confirmable —que el monitor de la épica 07 lo consuma— lo es por el alcance de la corrida (la épica 07 no se implementó), no por defecto de la implementación. En una corrida oficial el monitor existe y el criterio se aplica entero.
 
 ---

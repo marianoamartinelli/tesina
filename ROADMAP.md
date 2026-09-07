@@ -14,7 +14,10 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   693 AT-ids; ~50 correcciones de consistencia, ver journal. Re-freeze como
   **`spec-v1.1`** el mismo día, antes de toda corrida: ADR-006 cierra 17 decisiones
   (defectos hallados al construir la suite de H5 más 2 menores ya conocidos de H1)
-  con AT-ids intactos; las corridas pinnean v1.1.)*
+  con AT-ids intactos. **Segundo re-freeze como `spec-v1.2` el 2026-09-06** (ADR-024,
+  tras la pre-piloto): el rate limiting de `/auth/*` pasa de opcional a obligatorio y
+  determinista, 60 por origen en 60 s; AT-ids y catálogo intactos. Las corridas
+  pinnean v1.2.)*
 - [x] **H2 — Protocolo experimental pre-registrado.** Documento que fija, antes de
   cualquier corrida: criterios de intervención humana (cuándo intervenir, cómo se
   clasifica según las 8 causas raíz de la propuesta), orden de construcción
@@ -73,8 +76,11 @@ registra en `journal/` y, si implicó decisiones estructurales, en `decisiones/`
   **Corrida completa el 2026-08-24:** las 6 etapas con sus 6 smokes, sin intervenciones de
   las categorías 1–8, más la evaluación (black-box, white-box con dos pasadas por celda y
   métricas estáticas). Dejó **26 hallazgos** (22 el 2026-08-24, 4 más en el cierre del
-  2026-09-06: los subagentes de B no estaban en el registro, ADR-023) y **cinco ADRs
-  (018–022)**, `protocolo.md` en **v1.5** y la paridad en **145 chequeos**. Estado por componente y defectos en
+  2026-09-06: los subagentes de B no estaban en el registro, ADR-023) y **ocho ADRs
+  (018–025)**, `protocolo.md` en **v1.6**, `spec-v1.2` y la paridad en **146 chequeos**.
+  El 2026-09-06 el tesista tomó las decisiones que quedaban (H-12, consumo, H-19,
+  `skip = 0`, ADR-023, H-25, arbitraje) y se aprovisionó el emulador Android para la
+  rúbrica mobile. Estado por componente y defectos en
   [`runs/pre-piloto/`](runs/pre-piloto/). *(En curso — **16 de los 24 ítems** de la checklist cerrados al
   2026-08-23: pipeline reescrito, protocolo **v1.2**, partición 465/56, rúbrica del rol
   revisor, manifest de `piloto-01`, agentes contenedorizados y orden de las 4 celdas

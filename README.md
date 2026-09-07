@@ -11,7 +11,7 @@ centralizado y simplificado.
 ## Estado del proyecto
 
 Hitos **H0–H5 completos**: spec congelada en el tag `spec-v1.2` (57 HUs, 693 AT-ids),
-protocolo experimental pre-registrado (ADR-004), corpus RAG de 9 documentos con
+protocolo experimental pre-registrado (ADR-004, hoy v1.6), corpus RAG de 9 documentos con
 manifest + SHA-256, pipeline de agentes con paridad A/B verificable (ADR-009, que
 reemplaza a ADR-005) y harness de evaluación: suite black-box más agente evaluador
 white-box (ADR-007) para los ATs no automatizables (521 AT-ids backend + 78 web /
@@ -63,8 +63,12 @@ puede delegar** y que el `--json` de Codex no registra a sus subagentes (H-23 co
 H-22; **ADR-023**, Propuesto, persiste los rollouts en los logs). Las rúbricas web y del
 rol revisor se ensayaron sobre B (10/11 y 35/36) y dejaron los huecos del instrumento
 (H-24, H-26); la mobile no tiene emulador donde correr (H-25). La matriz queda en
-**38 de 44**, la checklist H6 en **18 de 24**, la paridad en **145 chequeos**. Siguen
-abiertas las decisiones del tesista: H-12, consumo, H-19/`skip = 0`, ADR-023 y H-25.
+**38 de 44**, la checklist H6 en **18 de 24**. El mismo día el tesista cerró las
+decisiones pendientes (**ADR-024**: `spec-v1.2` con el rate limiting de `/auth/*` fijado;
+**ADR-025**: protocolo **v1.6** con RAG disponible e instruido, `duracion_min` no-métrica,
+suscripción con continuación estándar y emulador Android para la rúbrica mobile) y
+ratificó ADR-023. Paridad en **146 chequeos**. Queda abierta la re-pre-registración de la
+rúbrica del rol revisor (H-26). Lo siguiente es `piloto-01`.
 
 ## Mapa del repositorio
 

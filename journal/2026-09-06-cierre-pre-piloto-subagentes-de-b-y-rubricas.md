@@ -86,3 +86,45 @@ limit en cada etapa.
 - Delegar el censo de la rúbrica del rol revisor a un subagente funcionó: 69 llamadas a
   herramientas y 5 minutos de escritura, con evidencia por celda; el costo fue que su
   lectura previa del material no quedó medida.
+
+## Segunda parte de la sesión: las decisiones del tesista, ejecutadas
+
+El tesista pidió que lo pusiera en tema y tomó las siete decisiones que quedaban, con
+el dato medido delante. Lo que se hizo con cada una:
+
+1. **H-12 → ADR-025 D1.** El prompt de sistema (`sistema.md`, regla 6) instruye usar la
+   herramienta de estándares *si está disponible*. Byte-idéntico en las 4 celdas, inerte
+   sin la herramienta, sin nombrar el RAG; `verificar_paridad.py` lo exige verbatim
+   (**146** chequeos). El factor pasa a ser «RAG disponible e instruido» (protocolo §1).
+2. **ADR-023 ratificado** (Aceptado).
+3. **Consumo → ADR-025 D3.** Suscripción para las 4 oficiales, sin topes; la continuación
+   por rate limit es el camino estándar (§5.8) y el manifest cuenta los cortes por etapa.
+4. **H-25 → ADR-025 D4.** Emulador Android aprovisionado en el host: `openjdk@17`,
+   `android-commandlinetools`, platform-tools, emulator, API 35 y la imagen
+   `google_apis;arm64-v8a`; AVD `tesina-eval` (pixel_6). Bootea sin ventana en 10 s
+   (Android 15).
+5. **H-19 → ADR-025 D2.** `duracion_min` no es métrica; el tope de 15 min es instrucción
+   de comportamiento; el esfuerzo se mide por pared, turnos y tokens (§10).
+6. **`skip = 0` y rate limit → ADR-024.** El tesista pidió que la spec lo fije de forma
+   exacta. Reapertura controlada bajo las reglas de ADR-006 y **re-freeze como
+   `spec-v1.2`** (`4927662`): 60 intentos fallidos de login / 60 solicitudes de registro
+   **por origen** en una ventana deslizante de 60 s, obligatorio, con `Retry-After`;
+   AT-01-02-09 y AT-01-01-20 reescritos en el lugar; HU-09-02 RN-12 alineada. AT-ids y
+   catálogo intactos (693, `audit-spec.py` con los mismos 38 avisos que antes). La suite
+   exige el 429 en vez de saltarse; el contrato del entorno y la rúbrica web (v1.1,
+   fila AT-10-01-06) quedan alineados; pins del tag actualizados. `skip = 0` se conserva
+   sin excepciones.
+7. **Arbitraje AT-06-03-10: PASA**, firmado en `arbitraje.md`.
+
+Más la rúbrica web **v1.1** (ADR-025 D5): Playwright entre las herramientas permitidas y
+el camino de AT-10-01-07 fijado. Protocolo **v1.6**. Matriz 39/44.
+
+**Queda abierto:** los nueve huecos de la rúbrica del rol revisor (H-26) — corregirlos es
+re-pre-registrarla y es una decisión aparte—, y el ítem 19 de la checklist (el CLI ante
+un rate limit real), que sólo `piloto-01` puede medir.
+
+**Método:** las decisiones se pidieron con `AskUserQuestion`, cada una con el dato, las
+alternativas y una recomendación; el tesista aceptó seis recomendaciones y en la séptima
+fue más lejos que la opción recomendada (fijar el rate limit en la spec en vez de en el
+entorno). El costo de esa decisión fue una reapertura de la spec con los agentes de la
+pre-piloto ya expuestos a la v1.1, declarada como amenaza a la validez.

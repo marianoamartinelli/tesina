@@ -4,9 +4,9 @@ Qué componente ejercita cada parte de la pre-piloto, con qué evidencia se lo d
 verificado y en qué estado está. Es el instrumento de la corrida: un componente sin
 evidencia registrada acá **no** está verificado, por más que la corrida haya terminado.
 
-**Estado al 2026-09-06: 38 de 44 componentes verificados.** De los 6 restantes, 1 es la
-rúbrica mobile, que no tiene emulador donde correr (H-25); 1 es el arbitraje del tesista;
-1 es una decisión suya abierta (el uso del corpus, H-12); 1 se **reabrió** (la delegación
+**Estado al 2026-09-06 (cierre del día): 39 de 44 componentes verificados.** De los 5
+restantes, 1 es la rúbrica mobile, que ya tiene emulador (ADR-025 D4) pero no se ensayó;
+1 es el uso del corpus, decidido por ADR-025 D1 y a medir en la piloto; 1 se **reabrió** (la delegación
 en B, que el `--json` no registra — H-23, ADR-023); 1 es un camino que no llegó a ocurrir
 (corte por exit ≠ 0) y 1 tiene residuo declarado (la tarifa de caché del ítem 20). Las
 rúbricas web y del rol revisor se **ensayaron** sobre B (H-24, H-26): el instrumento
@@ -55,7 +55,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 | # | Componente | Cómo se ejercita | Evidencia | Estado |
 |---|---|---|---|---|
 | 4.1 | Servidor MCP stdio adentro del contenedor | smoke en ambas familias | A: `mcp__corpus__consultar_corpus`. B: `mcp_tool_call server=corpus` | [x] 2026-08-23 |
-| 4.2 | Consultas reales al corpus | etapa backend completa | **cero consultas en las dos familias** pese a la épica 06 en el alcance (H-12); el mecanismo funciona: en el smoke, pedido explícitamente, respondió en ambas | [~] hallazgo abierto |
+| 4.2 | Consultas reales al corpus | etapa backend completa | **cero consultas en las dos familias** pese a la épica 06 en el alcance (H-12); el mecanismo funciona: en el smoke, pedido explícitamente, respondió en ambas. **Decidido (ADR-025 D1):** el prompt de sistema instruye usar la herramienta si está; el uso efectivo lo mide la piloto | [~] decidido; se mide en la piloto |
 | 4.3 | Resolución del corpus adentro | ídem | sin `FileNotFoundError` | [x] 2026-08-23 |
 | 4.4 | Índice BM25 determinista | dry-run | 175 chunks indexados | [x] verificado 2026-08-23 |
 
@@ -86,7 +86,7 @@ protocolo o metodología, salen por ADR nuevo — nunca editando ADRs aceptados 
 |---|---|---|---|---|
 | 7.1 | Briefing y rúbrica white-box | 2 pasadas × 2 celdas | las 4 con 56 items y evidencia citada; el tope de esfuerzo no es verificable (H-19) | [x] 2026-08-24 |
 | 7.2 | Validador mecánico | sobre las 4 pasadas | **OK** en las 4, sin una violación del contrato | [x] 2026-08-24 |
-| 7.3 | Arbitraje humano y veredicto final | 1 discrepancia (AT-06-03-10 en B) | material preparado en `no-automatizables-b/arbitraje.md`; **el veredicto lo firma el tesista** (ADR-004 §2.5) | [~] pendiente del tesista |
+| 7.3 | Arbitraje humano y veredicto final | 1 discrepancia (AT-06-03-10 en B) | `no-automatizables-b/arbitraje.md`: veredicto **PASA** firmado por el tesista el 2026-09-06 | [x] 2026-09-06 |
 | 7.4 | Tasa de discrepancia entre pasadas | 4 pasadas | **43/44 (97,7 %)** → del orden de 5 arbitrajes en las 4 celdas oficiales | [x] 2026-08-24 |
 
 ## 8. Rúbricas manuales y métricas estáticas
