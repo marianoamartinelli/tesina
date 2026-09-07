@@ -1,0 +1,97 @@
+{
+  "state": {
+    "grok_build.ReportedTaskCompletions": {
+      "reported": [
+        "call-5735b388-e3bc-493c-bb84-96ad335fb635-97",
+        "call-f93b15ab-ed9b-4533-a5cf-718f3ade0019-102",
+        "call-76cf80d6-5c13-4141-a6f7-8ff7bf511f5c-78",
+        "call-d0923db3-8bb6-4489-88e7-9698b785af1e-115",
+        "call-76f85eb0-dd6d-4e6f-87d6-2273dd601213-94",
+        "call-79f1c2d1-74d4-438c-8010-949e5f0650b8-51",
+        "call-b9ee75b4-c622-49f2-8524-2d2375bd736d-56",
+        "call-da0a281e-1f8e-4f84-af4b-c5e074da1bb2-67",
+        "call-4b22e207-162c-4b0f-8ee9-224bf2498fb7-71",
+        "call-a59581a3-98c8-4eb5-9a57-743b8a47ab84-99",
+        "call-46e17c62-5b0b-480b-b793-a7cd6c6f6029-106",
+        "call-26ad98b9-d351-4bba-9c9c-558078649a74-87",
+        "call-6b6268d6-401f-44d0-bfce-dc73b1660544-82",
+        "call-db4c9fcb-1f28-486a-9c28-63828dc56e11-44",
+        "call-81491462-0b60-4548-9756-7ca6519ae822-48",
+        "call-d57d8496-def7-4e0a-a9dc-8ddaf0f13e86-59",
+        "call-33929d0b-416d-4035-a249-137bc38d79be-61",
+        "call-d3f44510-7263-4c3c-b5c2-3352d1b83662-111",
+        "call-3679399d-9beb-4cca-97d3-c7814a3ef870-90",
+        "call-22c6d3ea-72b7-4372-b35e-dbdeda1bae69-80",
+        "call-51b6d673-bc16-4182-90d1-12e63957f541-36",
+        "call-bb54dff3-0328-4627-893d-f7ad9365a3dd-53",
+        "call-24a52a6d-8a53-40c3-8126-567ebf0bfbc3-104",
+        "call-e29516b9-35bd-44af-97f1-2abd8f552352-92",
+        "call-e36d1fb4-394c-47fb-ab54-817823870373-63",
+        "call-f98a0bbb-dc70-446a-bab7-e76499696e3c-109",
+        "call-270ddc02-8a01-4c98-b04e-6a990f2269be-113"
+      ]
+    },
+    "grok_build.Todo": {
+      "todos": {
+        "setup": {
+          "content": "Explorar workspace, rúbrica, spec, entorno y variables",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "testdata": {
+          "content": "Seed: evaluador/contraparte/virgen + fondeo 10 ETH/100000 USDC",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-01": {
+          "content": "Evaluar AT-11-01-01 a AT-11-01-14",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "eval-06": {
+          "content": "Evaluar AT-11-06-01 y AT-11-06-26",
+          "priority": "medium",
+          "status": "completed"
+        },
+        "output": {
+          "content": "Emitir rubrica-completada.md, CSV y evidencia",
+          "priority": "medium",
+          "status": "completed"
+        }
+      }
+    }
+  },
+  "params": {
+    "grok_build.Bash": {
+      "timeout_secs": null,
+      "max_timeout_secs": 36000.0,
+      "output_byte_limit": null,
+      "cmd_prefix": null,
+      "enabled_background": true,
+      "auto_background_on_timeout": true,
+      "foreground_block_budget_ms": null,
+      "max_block_until_ms": null,
+      "allow_background_operator": true,
+      "surface_bg_completion_reminders": true
+    },
+    "grok_build.ListDir": {
+      "max_output_chars": null
+    },
+    "grok_build.SearchReplace": {
+      "skip_read_before_edit": false,
+      "empty_old_string_does_not_override": false,
+      "unicode_normalized_fallback": false,
+      "include_user_edit_hint": true
+    },
+    "grok_build.Grep": {
+      "max_output_bytes": null,
+      "max_chars_per_line": null
+    },
+    "grok_build.ReadFile": {
+      "cursor_rules_on_read": false
+    },
+    "grok_build.UseTool": {
+      "native_tool_correction": true
+    }
+  }
+}

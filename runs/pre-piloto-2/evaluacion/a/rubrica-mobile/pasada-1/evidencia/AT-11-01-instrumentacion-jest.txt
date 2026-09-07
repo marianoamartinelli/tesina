@@ -1,0 +1,81 @@
+(node:76949) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:76961) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2mtests/session/[22m[1msession-provider.test.tsx[22m
+  AT-11-01-01 — login exitoso: el token se persiste cifrado y se pasa a autenticado
+    [32m✓[39m [2mAT-11-01-01: signIn guarda la sesión en SecureStore y habilita la vista autenticada (100 ms)[22m
+    [32m✓[39m [2mAT-11-01-01: el token queda fuera del estado renderizable (sólo viaja en el header) (54 ms)[22m
+  AT-11-01-02 — restauración optimista en cold start (RN-10)
+    [32m✓[39m [2mAT-11-01-02: con token persistido pasa a autenticado sin ninguna llamada al backend (53 ms)[22m
+    [32m✓[39m [2mAT-11-01-02: la primera petición autenticada usa el token restaurado (RN-5) (54 ms)[22m
+  AT-11-01-03 — apertura sin token persistido
+    [32m✓[39m [2mAT-11-01-03: el estado queda anónimo y no se llama a ningún endpoint (55 ms)[22m
+    [32m✓[39m [2mAT-11-01-03: sin token, authorizedFetch no llega a la red (55 ms)[22m
+  AT-11-01-05 — 401 UNAUTHENTICATED en una petición autenticada
+    [32m✓[39m [2mAT-11-01-05: borra el token persistido, limpia el estado y vuelve al login (55 ms)[22m
+    [32m✓[39m [2mAT-11-01-05: tras la limpieza el token ya no se usa en memoria (53 ms)[22m
+  AT-11-01-06 — logout explícito
+    [32m✓[39m [2mAT-11-01-06: borra el token del almacén y de memoria, y vuelve al login sin aviso de expiración (57 ms)[22m
+    [32m✓[39m [2mAT-11-01-06: revoca el token en el servidor antes de borrarlo del dispositivo (56 ms)[22m
+    [32m✓[39m [2mAT-11-01-06: si la revocación en el servidor falla, el cierre local se hace igual (57 ms)[22m
+    [32m✓[39m [2mAT-11-01-06: un 401 de la revocación (token ya inválido) no altera el cierre (54 ms)[22m
+    [32m✓[39m [2mAT-11-01-06: un borrado no confirmado del almacén se reporta como logout incompleto (57 ms)[22m
+    [32m✓[39m [2mAT-11-01-06: reabrir la app después del logout no restaura la sesión (110 ms)[22m
+    [32m✓[39m [2mAT-11-01-06: reabrir la app tampoco restaura la sesión si el almacén rechazó el borrado (111 ms)[22m
+  RN-12 (parcial) — punto de entrada compartido de cierre por UNAUTHENTICATED
+    [32m✓[39m [2mRN-12: handleUnauthenticated aplica la misma limpieza que el 401 REST (57 ms)[22m
+    [32m✓[39m [2mRN-12/RG-8: dos disparadores simultáneos del mismo flujo cierran la sesión una sola vez (55 ms)[22m
+    [32m✓[39m [2mRN-12/RG-8: un handleUnauthenticated tardío sobre una sesión ya cerrada es no-op (56 ms)[22m
+  AT-11-01-13 — la lectura del almacén seguro lanza al arrancar
+    [32m✓[39m [2mAT-11-01-13: se trata como "sin token" (login) sin loggear el detalle interno (55 ms)[22m
+  AT-11-01-14 — logout singleton ante múltiples 401 concurrentes (RG-8)
+    [32m✓[39m [2mAT-11-01-14: tres peticiones en vuelo con 401 producen un único borrado y una única navegación (56 ms)[22m
+    [32m✓[39m [2mAT-11-01-14: 401 posteriores a la limpieza siguen siendo no-ops (54 ms)[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2mtests/login/[22m[1mlogin-security.test.tsx[22m
+  AT-11-01-08 — el token sólo va al almacenamiento cifrado
+    [32m✓[39m [2mAT-11-01-08: SecureStore.setItemAsync recibe el token y ningún almacén en claro se invoca (167 ms)[22m
+    [32m✓[39m [2mAT-11-01-08: el único registro persistido es la sesión cifrada, sin la password (107 ms)[22m
+    [32m✓[39m [2mAT-11-01-08: ningún archivo de la app (raíz incluida) importa ni usa un almacén en claro (4 ms)[22m
+  AT-11-01-11 — ni el token ni la password se loggean
+    [32m✓[39m [2mAT-11-01-11: login exitoso y petición autenticada posterior no dejan secretos en los logs (110 ms)[22m
+    [32m✓[39m [2mAT-11-01-11: tampoco se loggean en los caminos de error (401, red caída) (233 ms)[22m
+    [32m✓[39m [2mAT-11-01-11: el token tampoco aparece en el árbol renderizado (112 ms)[22m
+  AT-11-01-13 — fallo de lectura del almacén seguro al arrancar
+    [32m✓[39m [2mAT-11-01-13: muestra el login sin exponer ni loggear el detalle interno (55 ms)[22m
+    [32m✓[39m [2mAT-11-01-13: tras el fallo de lectura el usuario puede loguearse normalmente (111 ms)[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2mtests/session/[22m[1mapp-lifecycle.test.tsx[22m
+  AT-11-01-10 — reanudación desde background
+    [32m✓[39m [2mAT-11-01-10: la sesión se mantiene al volver a foreground, sin re-autenticar (54 ms)[22m
+    [32m✓[39m [2mAT-11-01-10: la petición autenticada posterior al foreground sigue presentando el token (55 ms)[22m
+    [32m✓[39m [2mAT-11-01-10: si el token expiró en el ínterin, el primer 401 aplica el flujo del Escenario 5 (106 ms)[22m
+  AT-11-01-13 — reintento de acceso al almacén seguro en el próximo foreground
+    [32m✓[39m [2mAT-11-01-13: si el Keychain estaba inaccesible al arrancar, al volver a foreground se reintenta y se restaura (105 ms)[22m
+    [32m✓[39m [2mAT-11-01-13: si el almacén sí se pudo leer y no había token, el foreground no restaura nada (56 ms)[22m
+
+[0m[7m[1m[32m PASS [39m[22m[27m[0m [2mtests/session/[22m[1msecure-storage.test.ts[22m
+  AT-11-01-01 — el token se persiste en el almacenamiento cifrado
+    [32m✓[39m [2mAT-11-01-01: saveSession escribe token y expiresAt sólo vía SecureStore (1 ms)[22m
+    [32m✓[39m [2mAT-11-01-01: la password nunca llega al almacén[22m
+  AT-11-01-02 — la restauración lee el almacén, no el backend
+    [32m✓[39m [2mAT-11-01-02: loadSession devuelve la sesión persistida sin llamar a la API (1 ms)[22m
+  AT-11-01-03 — apertura sin token persistido
+    [32m✓[39m [2mAT-11-01-03: loadSession devuelve null con el almacén vacío y sin llamadas a la API[22m
+  AT-11-01-06 — logout borra el token del almacén
+    [32m✓[39m [2mAT-11-01-06: clearSession elimina la entrada y una lectura posterior da null[22m
+    [32m✓[39m [2mAT-11-01-06: si el almacén rechaza el borrado, clearSession no propaga el error[22m
+    [32m✓[39m [2mAT-11-01-06: si el borrado falla en silencio, la sesión igual deja de ser restaurable (1 ms)[22m
+    [32m✓[39m [2mAT-11-01-06: si el almacén no acepta borrados ni escrituras, clearSession reporta el fallo[22m
+    [32m✓[39m [2mAT-11-01-06: si el almacén tampoco se puede releer, el borrado no se da por confirmado[22m
+  AT-11-01-13 — la lectura del almacén seguro falla
+    [32m✓[39m [2mAT-11-01-13: un Keychain inaccesible se trata como "sin token" y no se loggea el detalle[22m
+    [32m✓[39m [2mAT-11-01-13: el fallo del almacén se distingue de "no hay token" (para reintentar en foreground)[22m
+    [32m✓[39m [2mAT-11-01-13: una entrada corrupta también equivale a "sin token"[22m
+
+[1mTest Suites: [22m[1m[32m4 passed[39m[22m, 4 total
+[1mTests:       [22m[1m[32m46 passed[39m[22m, 46 total
+[1mSnapshots:   [22m0 total
+[1mTime:[22m        3.05 s, estimated 5 s
+[2mRan all test suites[22m[2m matching [22m/tests\/login\/login-security.test.tsx|tests\/session\/session-provider.test.tsx|tests\/session\/secure-storage.test.ts|tests\/session\/app-lifecycle.test.tsx/i[2m.[22m
