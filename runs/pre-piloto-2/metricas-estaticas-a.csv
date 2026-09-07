@@ -1,0 +1,4 @@
+run_id,componente,fecha,lenguaje_principal,archivos,loc_efectivas,funciones,ccn_promedio,ccn_p90,duplicacion_pct,deps_directas_prod,deps_directas_dev,cobertura_tests_propios_pct,cloc_version,lizard_version,jscpd_version,notas
+pre-piloto-2a,backend,2026-09-07,TypeScript,40,5901,457,1.79,4,1.62,4,5,NA,2.10,1.23.0,5.0.11,""
+pre-piloto-2a,web,2026-09-07,TypeScript,23,1533,133,2.22,5,1.47,3,11,NA,2.10,1.23.0,5.0.11,""
+pre-piloto-2a,mobile,2026-09-07,TypeScript,47,4034,596,1.56,3,4.22,12,7,NA,2.10,1.23.0,5.0.11,""
