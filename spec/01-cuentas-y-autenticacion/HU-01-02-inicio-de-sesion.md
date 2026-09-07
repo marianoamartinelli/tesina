@@ -67,18 +67,24 @@ cuentas** (RNE-3).
 7. **RN-7 (esquema del payload).** El payload debe contener `email` (string) y `password`
    (string). Esquema inválido (campo faltante, tipo incorrecto) ⇒ `VALIDATION_ERROR` (422).
 8. **RN-8 (precedencia de validación).** Orden determinista: (0) rate limiting
-   (`RATE_LIMITED`, cuando está activo, RN-9): se evalúa **antes** de cualquier otra
-   validación, incluso la de esquema (mismo criterio que el "paso 0" de la épica 04, RE-4);
-   con el límite excedido, la solicitud `N+1` con payload inválido responde **429**, no 422
-   → (1) esquema/tipos (`VALIDATION_ERROR`) → (2) verificación de credenciales
-   (`INVALID_CREDENTIALS`). Un solo error por respuesta. (RNE-7)
-9. **RN-9 (rate limiting anti-fuerza-bruta, opcional por config).** El endpoint puede
-   limitar intentos por email/origen. Al superarse el umbral, `RATE_LIMITED` (429) con
-   `details.retryAfterSeconds`. Se evalúa como **paso 0** de la precedencia (RN-8): antes de
-   cualquier otra validación, incluso la de esquema. El rate limiting no debe revelar la
-   existencia del email (se aplica de forma uniforme). El límite por cuenta autenticada de
-   HU-09-02 RN-12 **no** aplica a este endpoint (es público, sin cuenta); si se implementa
-   rate limiting aquí, usa `RATE_LIMITED`.
+   (`RATE_LIMITED`, RN-9): se evalúa **antes** de cualquier otra validación, incluso la de
+   esquema (mismo criterio que el "paso 0" de la épica 04, RE-4); con el límite excedido,
+   una solicitud con payload inválido responde **429**, no 422 → (1) esquema/tipos
+   (`VALIDATION_ERROR`) → (2) verificación de credenciales (`INVALID_CREDENTIALS`). Un solo
+   error por respuesta. (RNE-7)
+9. **RN-9 (rate limiting anti-fuerza-bruta, obligatorio y determinista).** El endpoint
+   limita los **intentos fallidos** de login **por origen** (dirección IP del cliente).
+   Umbral y ventana son constantes de la spec, no configuración del entorno: al acumular
+   **60 intentos fallidos** desde el mismo origen dentro de una **ventana deslizante de
+   60 segundos**, toda solicitud adicional desde ese origen dentro de la ventana —con
+   cualquier email y cualquier payload— se rechaza con `RATE_LIMITED` (429),
+   `details.retryAfterSeconds` (entero ≥ 0: segundos que faltan para que el intento fallido
+   más antiguo salga de la ventana) y header `Retry-After`. Los intentos exitosos no cuentan
+   ni reinician la ventana. Se evalúa como **paso 0** de la precedencia (RN-8): antes de
+   cualquier otra validación, incluso la de esquema. El rate limiting no revela la
+   existencia del email: se aplica por origen, de forma uniforme para emails existentes e
+   inexistentes. El límite por cuenta autenticada de HU-09-02 RN-12 **no** aplica a este
+   endpoint (es público, sin cuenta).
 10. **RN-10 (estado de la cuenta).** En este alcance solo existe el estado `ACTIVE`; toda
     cuenta registrada puede autenticarse. (La gestión de estados como suspensión queda
     fuera de alcance de la épica.)
@@ -156,14 +162,14 @@ cuentas** (RNE-3).
 - Y el segundo login no invalida el token del primero
 
 ### Escenario 9 (error): Rate limiting tras múltiples fallos [AT-01-02-09]
-- Dado que el sistema tiene configurado rate-limiting de login con umbral `N` y ventana `W`
-  segundos (ambos **determinables desde la configuración del entorno de test** antes de
-  ejecutar el AT), y que se han realizado **exactamente `N` intentos fallidos** dentro de esa
-  ventana hacia el mismo email/origen
-- Cuando el usuario realiza un intento de login adicional (`N+1`) dentro de la ventana `W`
+- Dado un origen desde el que se realizaron **60 intentos fallidos** de login dentro de una
+  ventana de 60 segundos (RN-9), hacia el mismo email o hacia emails distintos
+- Cuando desde ese origen se realiza un intento de login adicional dentro de la ventana
 - Entonces la solicitud se rechaza con `RATE_LIMITED` y status HTTP 429
-- Y `details` incluye `retryAfterSeconds`
-- Y el comportamiento de rate limiting es uniforme y no revela si el email existe
+- Y `details` incluye `retryAfterSeconds` (entero ≥ 0) y la respuesta incluye el header
+  `Retry-After`
+- Y el comportamiento es uniforme y no revela si el email existe: un intento con un email
+  inexistente desde el mismo origen recibe el mismo `RATE_LIMITED`
 
 ### Escenario 10 (seguridad): Heurística de impredecibilidad del token [AT-01-02-10]
 - Dado una cuenta `ACTIVE` con credenciales válidas

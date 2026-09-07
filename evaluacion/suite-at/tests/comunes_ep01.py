@@ -54,13 +54,13 @@ CLAVES_DE_PASSWORD = (
     "secret",
 )
 
-# Rate limiting: la política determinista de HU-09-02 RN-12 (60 req/min por
-# cuenta y endpoint, ventana deslizante de 60 s) aplica SOLO a endpoints
-# autenticados. En los endpoints públicos /auth/* el rate limiting es OPCIONAL
-# y lo rige la épica 01 (HU-01-01 RN-10, HU-01-02 RN-9): si existe, responde
-# RATE_LIMITED. El entorno de evaluación deja el umbral en 60 req/min cuando la
-# implementación lo expone (entorno/README.md), así que los tests condicionales
-# de /auth/* sondean N+1 = 61 intentos y se saltan si no observan un 429.
+# Rate limiting: la política de HU-09-02 RN-12 (60 req/min por cuenta y
+# endpoint, ventana deslizante de 60 s) aplica SOLO a endpoints autenticados. En
+# los endpoints públicos /auth/* rige la política POR ORIGEN de la épica 01,
+# obligatoria y determinista desde spec-v1.2 (ADR-024): 60 intentos fallidos de
+# login (HU-01-02 RN-9) / 60 solicitudes de registro (HU-01-01 RN-10) en una
+# ventana deslizante de 60 s. Los tests de /auth/* hacen hasta 61 intentos y
+# exigen el 429; ya no se saltan (hasta spec-v1.1 el rate limiting era opcional).
 N_RATE_LIMIT = 60
 VENTANA_RATE_LIMIT_SEGUNDOS = 60
 
@@ -179,8 +179,8 @@ def esperar_rate_limit_liberado(intento_ok, mensaje: str):
 
     ``intento_ok()`` debe devolver truthy cuando el endpoint volvió a aceptar.
     Se sondea cada 5 s (12 req/min << 60 req/min) para que el propio sondeo no
-    mantenga saturada la ventana deslizante de 60 s del rate limiting opcional
-    de /auth/* (HU-01-01 RN-10 / HU-01-02 RN-9; valor del entorno: 60/min).
+    mantenga saturada la ventana deslizante de 60 s del rate limiting de
+    /auth/* (HU-01-01 RN-10 / HU-01-02 RN-9: 60 por origen en 60 s).
     """
     return esperar_hasta(
         intento_ok,

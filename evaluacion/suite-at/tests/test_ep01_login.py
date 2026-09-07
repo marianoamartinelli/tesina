@@ -8,10 +8,10 @@ no-automatizables.yaml: la propia HU lo marca como "no observable por caja
 negra en la respuesta de la API" (RNE-9).
 
 Los tests de carga (AT-01-02-09/10/11) están definidos al final del archivo
-para que su presión sobre el rate limiting opcional de /auth/* (HU-01-02 RN-9;
-60 req/min si el entorno lo activa, entorno/README.md) no afecte a los
-escenarios livianos; además cada uno espera la liberación de la ventana antes
-de terminar, así el orden de ejecución no importa.
+para que su presión sobre el rate limiting de /auth/* (HU-01-02 RN-9: 60
+intentos fallidos por origen en 60 s, obligatorio desde spec-v1.2) no afecte a
+los escenarios livianos; además cada uno espera la liberación de la ventana
+antes de terminar, así el orden de ejecución no importa.
 """
 
 import os
@@ -27,6 +27,7 @@ from helpers.espera import esperar_hasta
 from comunes_ep01 import (
     N_RATE_LIMIT,
     VAR_UMBRAL_TIMING,
+    VENTANA_RATE_LIMIT_SEGUNDOS,
     assert_sin_claves_de_password,
     esperar_rate_limit_liberado,
     parsear_iso8601_utc,
@@ -294,9 +295,9 @@ def test_indistinguibilidad_temporal_anti_timing_attack(api, usuario):
         return ms
 
     # Cuando: muestras intercaladas, a ritmo < 60 req/min para no disparar el
-    # rate limiting opcional de /auth/login (HU-01-02 RN-9; 60/min si el entorno
-    # lo activa). El sleep es control de tasa del propio test (carga controlada
-    # del AT), no una espera de estado del SUT.
+    # rate limiting de /auth/login (HU-01-02 RN-9: 60 fallos por origen en 60 s).
+    # El sleep es control de tasa del propio test (carga controlada del AT), no
+    # una espera de estado del SUT.
     paso = 1.05
     inicio = time.monotonic()
     lat_inexistente: list[float] = []
@@ -377,21 +378,20 @@ def test_heuristica_de_impredecibilidad_del_token(api, usuario):
 
 @pytest.mark.at("AT-01-02-09")
 def test_rate_limiting_de_login_tras_multiples_fallos(api, usuario):
-    """HU-01-02 Escenario 9 (error, condicional a config): rate limiting de login.
+    """HU-01-02 Escenario 9 (error): rate limiting de login.
 
-    - Dado rate limiting de login activo con umbral N y ventana W determinables
-      desde la configuración del entorno (60 req/min y 60 s si la implementación
-      lo expone, entorno/README.md) y N intentos fallidos dentro de la ventana
-      hacia el mismo email/origen
-    - Cuando realiza el intento N+1 dentro de la ventana
-    - Entonces RATE_LIMITED (429) con details.retryAfterSeconds
+    - Dado un origen desde el que se realizaron 60 intentos fallidos de login
+      dentro de una ventana de 60 s (RN-9)
+    - Cuando desde ese origen se realiza un intento adicional dentro de la ventana
+    - Entonces RATE_LIMITED (429) con details.retryAfterSeconds (entero >= 0) y
+      header Retry-After
     - Y el comportamiento es uniforme y no revela si el email existe
 
-    HU-01-02 RN-9 (ADR-006 D4): el rate limiting de /auth/login es OPCIONAL por
-    config y, si existe, usa RATE_LIMITED; la política determinista de HU-09-02
-    RN-12 (60/min por cuenta y endpoint) aplica solo a endpoints autenticados y
-    NO a este endpoint público. Si no se observa un 429, el Dado del AT no se
-    cumple y el test se salta.
+    HU-01-02 RN-9 (spec-v1.2, ADR-024): 60 intentos fallidos por origen en una
+    ventana deslizante de 60 s, obligatorio. La política de HU-09-02 RN-12 (por
+    cuenta y endpoint) no aplica a este endpoint público. La ventana por origen
+    es compartida con el resto de la suite, así que el 429 puede llegar antes del
+    intento 61; lo que se exige es que llegue.
     """
     respuesta_429 = None
     try:
@@ -406,17 +406,17 @@ def test_rate_limiting_de_login_tras_multiples_fallos(api, usuario):
             # dentro de la ventana, el fallo es el normal de credenciales
             assert_error(resp, "INVALID_CREDENTIALS")
 
-        if respuesta_429 is None:
-            pytest.skip(
-                "rate limiting de login inactivo o con umbral distinto de 60/min: "
-                "el Dado del AT no se cumple (HU-01-02 RN-9, opcional por config)"
-            )
+        assert respuesta_429 is not None, (
+            f"{N_RATE_LIMIT + 1} intentos fallidos desde el mismo origen en menos de "
+            f"{VENTANA_RATE_LIMIT_SEGUNDOS} s y ningún RATE_LIMITED (HU-01-02 RN-9)"
+        )
 
         # Entonces (catálogo 3.1: RATE_LIMITED = 429, details = { retryAfterSeconds })
         err = assert_error(respuesta_429, "RATE_LIMITED")
         retry = err["details"]["retryAfterSeconds"]
         # conteo ⇒ entero JSON ≥ 0 (HU-01-02 RN-9; convenciones §5)
         assert isinstance(retry, int) and not isinstance(retry, bool) and retry >= 0
+        assert "Retry-After" in respuesta_429.headers, "falta el header Retry-After (RN-9)"
 
         # Y: uniforme, sin revelar existencia del email — con la ventana
         # excedida, un email inexistente recibe el mismo 429 (RN-9, RNE-3)

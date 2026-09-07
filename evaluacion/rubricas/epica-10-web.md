@@ -1,10 +1,16 @@
-# Rúbrica manual — Épica 10: Cliente Web (React) — v1.0
+# Rúbrica manual — Épica 10: Cliente Web (React) — v1.1
 
 - **Cobertura:** 78 AT (HU-10-01: 11 · HU-10-02: 11 · HU-10-03: 19 · HU-10-04: 10 ·
   HU-10-05: 11 · HU-10-06: 16) + 1 escenario de integración (`AT-10-E2E-01`, del README de
   la épica, **fuera del conteo de 78** y reportado por separado).
 - **Estado:** pre-registrada en H5, antes de la primera corrida (protocolo §9: la suite/
-  rúbrica no se modifica después de vista ninguna implementación).
+  rúbrica no se modifica después de vista ninguna implementación). **v1.1 (2026-09-06,
+  ADR-024 y ADR-025):** re-pre-registrada dentro de la ventana H6 tras el ensayo sobre la
+  corrida pre-piloto (descartable), antes de cualquier corrida oficial. Tres cambios, sin
+  tocar ningún criterio de veredicto: AT-10-01-06 deja de tener la salida `NO_EVALUABLE`
+  (a) porque el rate limit de `/auth/*` es obligatorio desde `spec-v1.2`; AT-10-01-07 fija
+  qué request cuenta cuando el cliente no tiene otra pantalla con datos; y un navegador
+  automatizado entra a las herramientas permitidas.
 - **Rol:** las épicas 10 y 11 se evalúan con rúbrica manual (no black-box automatizado).
   Esta rúbrica es el instrumento único para la épica 10.
 
@@ -24,7 +30,10 @@
    - Cuenta virgen: `vacio-web@test.local`, sin fondos ni órdenes (para estados vacíos).
 4. **Herramientas permitidas** (y ninguna otra):
    - DevTools del navegador: pestañas Network (inspección de payloads, *request blocking*,
-     *throttling*, *offline*), Application (storage) y Console.
+     *throttling*, *offline*), Application (storage) y Console; o un **navegador
+     automatizado** (p. ej. Playwright) usado con esas mismas capacidades —inspeccionar
+     requests, demorarlas, abortarlas o adulterar su payload equivale a Network, throttling,
+     offline y proxy—. Se anota en la fila cuándo se usó automatización.
    - Detener/levantar el backend y el nodo RPC (si el entorno de la corrida lo usa) para
      provocar fallos de red y de broadcast.
    - Un proxy interceptor local (p. ej. mitmproxy) para **adulterar datos del servidor**
@@ -75,8 +84,8 @@
 | AT-10-01-03 | Dejar vacío `email` (y luego `password`). Verificar: botón "Ingresar" deshabilitado en ambos casos y **ninguna** llamada a la API (Network limpio). | | |
 | AT-10-01-04 | Con throttling de red lento (DevTools), presionar "Ingresar" y volver a presionar antes de la respuesta. Verificar: una sola request en Network; el botón muestra estado de carga hasta resolver. | | |
 | AT-10-01-05 | Provocar `VALIDATION_ERROR` (422) real: enviar un email con formato inválido que **pase** la validación local (si el cliente bloquea todo formato inválido, adulterar el payload con el proxy). Verificar: mensajes por campo derivados de `details.issues`; no navega fuera de login. Si no es provocable → NO_EVALUABLE (b). | | |
-| AT-10-01-06 | Repetir logins fallidos hasta que el backend responda `RATE_LIMITED` (429) con `details.retryAfterSeconds`. Verificar: botón deshabilitado, informa el tiempo de espera, y al transcurrir el lapso el botón se rehabilita. Si el backend no implementa rate limit → NO_EVALUABLE (a). | | |
-| AT-10-01-07 | Con sesión activa en otra pantalla, invalidar el token del lado servidor (reiniciar backend o revocar sesión) y disparar una llamada protegida (navegar/refrescar datos). Verificar: al 401 `UNAUTHENTICATED` limpia la sesión local (Application → storage) y redirige a login con aviso de sesión expirada. | | |
+| AT-10-01-06 | Repetir logins fallidos hasta que el backend responda `RATE_LIMITED` (429) con `details.retryAfterSeconds` (60 intentos fallidos desde el mismo origen en 60 s, HU-01-02 RN-9; el script auxiliar contra la API sirve para acumularlos). Verificar: botón deshabilitado, informa el tiempo de espera, y al transcurrir el lapso el botón se rehabilita. Si el backend no responde 429, la fila es FALLA del backend ya capturada por la suite (AT-01-02-09) → NO_EVALUABLE (a) sólo en ese caso. | | |
+| AT-10-01-07 | Con sesión activa en otra pantalla, invalidar el token del lado servidor (reiniciar backend o revocar sesión) y disparar una llamada protegida (navegar/refrescar datos; si el cliente no emite otro request protegido que el chequeo de sesión `GET /me`, ese es el camino que se evalúa). Verificar: al 401 `UNAUTHENTICATED` limpia la sesión local (Application → storage) y redirige a login con aviso de sesión expirada. | | |
 | AT-10-01-08 | Apagar el backend (o DevTools → Offline) y enviar credenciales válidas. Verificar: mensaje no técnico ("No se pudo conectar, reintentá" o equivalente), opción de reintentar conservando el email, sin stack traces ni detalles internos. | | |
 | AT-10-01-09 | Con token persistido vigente (login previo), navegar manualmente a la ruta de login. Verificar: se ejecuta `GET /me` con `Authorization: Bearer` (Network) y al 200 redirige automáticamente a trading sin pedir credenciales. | | |
 | AT-10-01-10 | Corromper el token persistido (Application → storage: reemplazar por un valor inválido no expirado) y recargar en la ruta de login. Verificar: `GET /me` responde 401, el cliente limpia todo estado de sesión (incluido el token persistido) y muestra el formulario de login. | | |

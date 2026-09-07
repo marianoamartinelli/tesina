@@ -34,7 +34,7 @@ fi
 
 ID="$1"
 DESTINO="$2"
-TAG="${3:-spec-v1.1}"
+TAG="${3:-spec-v1.2}"
 RAIZ_TESINA="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 REPO="$DESTINO/tesina-run-$ID"
 

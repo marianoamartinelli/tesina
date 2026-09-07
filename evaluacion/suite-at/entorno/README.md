@@ -73,8 +73,12 @@ por la spec** y no se tocan: `CONFIRMACIONES_REQUERIDAS = 12`,
 `GAS_PRICE_SOURCE = configured_fixed`, `GAS_PRICE_WEI = 20000000000`,
 `GAS_LIMIT_ETH = 21000`, `GAS_LIMIT_ERC20 = 100000`, `MAX_BROADCAST_RETRIES = 5`,
 `MAX_BLOCKS_PENDING = 50`, mínimos de retiro, TTL de token 3600 s, rate limit
-60 req/min (épicas 01/02/07/08, HU-09-02 RN-12). Si una implementación los
-expone como configuración, se dejan en esos valores.
+60 req/min por cuenta y endpoint en los autenticados (HU-09-02 RN-12) y **60 por
+origen en 60 s** en `/auth/*` —intentos fallidos de login (HU-01-02 RN-9), solicitudes
+de registro (HU-01-01 RN-10); obligatorio desde `spec-v1.2`, ADR-024—. Si una
+implementación los expone como configuración, se dejan en esos valores; si expone el de
+`/auth/*` como opcional, se activa con esos valores, y si no lo implementa, los ATs de
+rate limiting fallan (ya no se saltan).
 
 **Fondeo de la hot wallet (dirección emisora).** La spec asume que la emisora
 del SUT siempre tiene ETH on-chain para el gas y declara su recarga fuera de

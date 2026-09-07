@@ -63,10 +63,10 @@ proyecto: cada cuenta accede solo a lo suyo).
     con umbral de **60 requests por minuto** (ventana deslizante de 60 s) en el entorno de
     evaluación. Al superarlo ⇒ `RATE_LIMITED` (429) con `details.retryAfterSeconds`
     (entero) y header `Retry-After`. (Coherente con RG-API-10.) Los endpoints **públicos**
-    quedan **fuera** de esta política determinista: en `/auth/*` el rate limiting es
-    **opcional** y se rige por la épica 01 (HU-01-01 RN-10, HU-01-02 RN-9); si la
-    implementación lo aplica, responde `RATE_LIMITED` (429) con el mismo envelope y
-    `Retry-After`. Esta RN no fija umbral para los demás endpoints públicos (`/market/*`).
+    quedan **fuera** de esta política por cuenta: en `/auth/*` rige la política **por
+    origen** de la épica 01 (HU-01-01 RN-10, HU-01-02 RN-9: 60 por origen en una ventana
+    deslizante de 60 s), obligatoria y con el mismo envelope y `Retry-After`. Esta RN no
+    fija umbral para los demás endpoints públicos (`/market/*`).
 
 ## Criterios de aceptación (DoD)
 

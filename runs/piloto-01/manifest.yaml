@@ -15,7 +15,7 @@ oficial: false             # descartable: no cuenta para el 2×2
 
 # 2. Insumos pinneados (deben ser idénticos entre las 4 corridas oficiales)
 spec:
-  tag: "spec-v1.1"           # re-freeze de ADR-006; spec-v1.0 quedó como tag histórico
+  tag: "spec-v1.2"           # re-freeze de ADR-024; spec-v1.0 y v1.1 quedaron como tags históricos
   commit: "c00da9b8cfa79b663d67a03d8588429c6b7b6554"
 corpus:                    # sólo celdas con RAG; null en sin-RAG
   commit: "0509b9f930a71ac09b796f557092936b96a6b45d"   # "corpus: curaduría y congelamiento del corpus RAG v1.0 (H3)"
@@ -72,7 +72,7 @@ contenedores:              # ADR-015; digests efectivos, no tags (el tag es flot
 
 # 4. Repo de la implementación generada
 repo:
-  url: "PENDIENTE-ARRANQUE: crear el repo satélite `tesina-run-piloto-01` (ADR-001) con la spec pinneada a spec-v1.1 como único contenido, fuera del árbol de la tesina (protocolo §3 paso 1)."
+  url: "PENDIENTE-ARRANQUE: crear el repo satélite `tesina-run-piloto-01` (ADR-001) con la spec pinneada a spec-v1.2 como único contenido, fuera del árbol de la tesina (protocolo §3 paso 1)."
   commit_inicial: "PENDIENTE-ARRANQUE: hash del commit inicial del repo satélite, registrado al crearlo y antes de que el agente ejecute nada."
 
 # 5. Cierre de la corrida

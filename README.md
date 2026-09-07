@@ -10,7 +10,7 @@ centralizado y simplificado.
 
 ## Estado del proyecto
 
-Hitos **H0–H5 completos**: spec congelada en el tag `spec-v1.1` (57 HUs, 693 AT-ids),
+Hitos **H0–H5 completos**: spec congelada en el tag `spec-v1.2` (57 HUs, 693 AT-ids),
 protocolo experimental pre-registrado (ADR-004), corpus RAG de 9 documentos con
 manifest + SHA-256, pipeline de agentes con paridad A/B verificable (ADR-009, que
 reemplaza a ADR-005) y harness de evaluación: suite black-box más agente evaluador

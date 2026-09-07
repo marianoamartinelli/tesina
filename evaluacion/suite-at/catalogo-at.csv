@@ -22,7 +22,7 @@ AT-01-01-16,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usu
 AT-01-01-17,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 17 (precedencia): Tipo incorrecto prevalece sobre unicidad de email,backend
 AT-01-01-18,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 18 (error): Campo desconocido en el payload,backend
 AT-01-01-19,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 19 (borde): El `accountId` es opaco y no secuencial,backend
-AT-01-01-20,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,"Escenario 20 (seguridad, condicional a config): Anti-flood de registro",backend
+AT-01-01-20,01,HU-01-01,spec/01-cuentas-y-autenticacion/HU-01-01-registro-de-usuario.md,Escenario 20 (seguridad): Anti-flood de registro,backend
 AT-01-02-01,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 1: Login exitoso,backend
 AT-01-02-02,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 2 (borde): Email con distinta capitalización y espacios,backend
 AT-01-02-03,01,HU-01-02,spec/01-cuentas-y-autenticacion/HU-01-02-inicio-de-sesion.md,Escenario 3 (borde): El token autentica una llamada protegida,backend

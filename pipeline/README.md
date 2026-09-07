@@ -346,7 +346,7 @@ pre-piloto no entra a la paridad y no la altera (117 chequeos, exit 0).
 pipeline/crear-repo-satelite.sh <id-corrida> <destino> [tag-de-spec]
 ```
 
-Extrae `spec/` del tag (`spec-v1.1` por default) con `git archive` —ni el historial ni el
+Extrae `spec/` del tag (`spec-v1.2` por default) con `git archive` —ni el historial ni el
 resto del árbol de la tesina llegan al agente—, le hace `git init` y commitea el estado
 inicial. Imprime el commit del tag y el del satélite, los dos campos que el manifest
 necesita antes de que el agente ejecute nada (§2 `spec.commit`, §4 `repo.commit_inicial`).

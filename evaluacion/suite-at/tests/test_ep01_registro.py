@@ -7,12 +7,10 @@ Notas de interpretación (ver también tests/comunes_ep01.py):
 - La respuesta de registro expone `accountId`, `email`, `status`, `createdAt`
   (HU-01-01 RN-6); desde spec-v1.1 el ejemplo de HU-09-01 (AT-09-01-01) incluye
   `status` y ambas épicas coinciden (ADR-006 D12). Se asserta el set con `status`.
-- El rate limiting de registro es OPCIONAL por config (HU-01-01 RN-10) y, si
-  existe, usa RATE_LIMITED; la política determinista de HU-09-02 RN-12 aplica
-  solo a endpoints autenticados, no a /auth/* (ADR-006 D4). AT-01-01-20 sondea
-  N=60/T=60 s (el valor que el entorno fija si la implementación lo expone) y
-  se salta si no observa RATE_LIMITED (la propia AT dice "si el rate limiting
-  no está activo, este AT no aplica").
+- El rate limiting de registro es obligatorio y determinista desde spec-v1.2
+  (HU-01-01 RN-10, ADR-024): 60 solicitudes por origen en una ventana deslizante
+  de 60 s, con RATE_LIMITED; la política de HU-09-02 RN-12 aplica solo a
+  endpoints autenticados. AT-01-01-20 hace hasta 61 solicitudes y exige el 429.
 """
 
 import json
@@ -27,6 +25,7 @@ from helpers.errores import assert_error
 
 from comunes_ep01 import (
     N_RATE_LIMIT,
+    VENTANA_RATE_LIMIT_SEGUNDOS,
     assert_sin_claves_de_password,
     en_paralelo,
     esperar_rate_limit_liberado,
@@ -582,16 +581,16 @@ def test_account_id_opaco_y_no_secuencial(api):
 
 @pytest.mark.at("AT-01-01-20")
 def test_anti_flood_de_registro_responde_rate_limited(api):
-    """HU-01-01 Escenario 20 (seguridad, condicional a config): Anti-flood de registro.
+    """HU-01-01 Escenario 20 (seguridad): Anti-flood de registro.
 
-    - Dado rate limiting de registro activo con umbral N y ventana T declarados
-      en la configuración del entorno (60 req/min y 60 s si la implementación lo
-      expone, entorno/README.md; HU-01-01 RN-10 — ADR-006 D4: opcional en este
-      endpoint público, fuera de la política por cuenta de HU-09-02 RN-12)
-    - Cuando se hacen N+1 solicitudes desde el mismo origen dentro de la ventana
-    - Entonces la N+1 se rechaza con RATE_LIMITED (429) y
-      details.retryAfterSeconds ≥ 0
-    - (Si el rate limiting no está activo, el AT no aplica y el test se salta; RN-10)
+    - Dado un origen desde el que se realizaron 60 solicitudes de registro
+      dentro de una ventana de 60 s (RN-10, spec-v1.2: obligatorio, por origen)
+    - Cuando desde ese origen se realiza una solicitud adicional dentro de la ventana
+    - Entonces se rechaza con RATE_LIMITED (429), details.retryAfterSeconds ≥ 0 y
+      header Retry-After
+
+    La ventana por origen es compartida con el resto de la suite, así que el 429
+    puede llegar antes de la solicitud 61; lo que se exige es que llegue.
     """
     respuesta_429 = None
     try:
@@ -607,17 +606,17 @@ def test_anti_flood_de_registro_responde_rate_limited(api):
             # las solicitudes dentro de la ventana se procesan normalmente
             assert resp.status_code == 201, resp.text
 
-        if respuesta_429 is None:
-            pytest.skip(
-                "rate limiting de registro inactivo o con umbral distinto de "
-                "60/min: el AT no aplica (HU-01-01 RN-10)"
-            )
+        assert respuesta_429 is not None, (
+            f"{N_RATE_LIMIT + 1} solicitudes de registro desde el mismo origen en menos "
+            f"de {VENTANA_RATE_LIMIT_SEGUNDOS} s y ningún RATE_LIMITED (HU-01-01 RN-10)"
+        )
 
         # Entonces (RN-10; catálogo 3.1: RATE_LIMITED = 429)
         err = assert_error(respuesta_429, "RATE_LIMITED")
         retry = err["details"]["retryAfterSeconds"]
         # retryAfterSeconds es un conteo ⇒ entero JSON ≥ 0 (RN-10; convenciones §5)
         assert isinstance(retry, int) and not isinstance(retry, bool) and retry >= 0
+        assert "Retry-After" in respuesta_429.headers, "falta el header Retry-After (RN-10)"
     finally:
         # Higiene entre tests: dejar el endpoint utilizable (la ventana es de 60 s)
         if respuesta_429 is not None:

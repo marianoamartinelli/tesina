@@ -87,25 +87,27 @@ reinicios (`INV-8`), igual que el resto del estado del sistema.
    asignados (no quedan cuentas a medio crear que sean listables pero no consultables).
    (RNE-1, INV consistencia)
 9. **RN-9 (precedencia de validación).** Orden determinista de evaluación para el alta:
-   (0) rate limiting (`RATE_LIMITED`, cuando está activo, RN-10): se evalúa **antes** de
-   cualquier otra validación, incluso la de esquema (mismo criterio que el "paso 0" de la
-   épica 04, RE-4); con el límite excedido, una solicitud con payload inválido responde
-   **429**, no 422 → (1) esquema/tipos/campos requeridos (`VALIDATION_ERROR`) → (2) formato
+   (0) rate limiting (`RATE_LIMITED`, RN-10): se evalúa **antes** de cualquier otra
+   validación, incluso la de esquema (mismo criterio que el "paso 0" de la épica 04,
+   RE-4); con el límite excedido, una solicitud con payload inválido responde **429**,
+   no 422 → (1) esquema/tipos/campos requeridos (`VALIDATION_ERROR`) → (2) formato
    de email (`VALIDATION_ERROR`) → (3) política de contraseña (`VALIDATION_ERROR`) →
    (4) unicidad de email (`EMAIL_ALREADY_EXISTS`). Se reporta **un solo error** (el
    primero). (RNE-7)
-10. **RN-10 (rate limiting anti-flood de registro, configurable).** El endpoint de registro
-    puede limitar la tasa de altas por origen para prevenir la creación masiva de cuentas
-    (account farming), que en un exchange habilita wash trading entre cuentas propias y
-    evasión de límites por cuenta. Esta es una regla de **seguridad operativa**,
-    independiente del KYC/AML (fuera de alcance). Cuando el rate limiting está activo, sus
-    parámetros **umbral N** (solicitudes) y **ventana T** (segundos) son **obligatorios y
-    declarados** en la configuración del entorno; al superarse el umbral en la ventana, se
-    rechaza con `RATE_LIMITED` (429) y `details.retryAfterSeconds ≥ 0`. Se evalúa como
-    **paso 0** de la precedencia (RN-9): antes de cualquier otra validación, incluso la de
-    esquema. (Consistente con el rate limiting de login, HU-01-02 RN-9.) El límite por
-    cuenta autenticada de HU-09-02 RN-12 **no** aplica a este endpoint (es público, sin
-    cuenta); si se implementa rate limiting aquí, usa `RATE_LIMITED`.
+10. **RN-10 (rate limiting anti-flood de registro, obligatorio y determinista).** El
+    endpoint de registro limita la tasa de solicitudes **por origen** (dirección IP del
+    cliente) para prevenir la creación masiva de cuentas (account farming), que en un
+    exchange habilita wash trading entre cuentas propias y evasión de límites por cuenta.
+    Esta es una regla de **seguridad operativa**, independiente del KYC/AML (fuera de
+    alcance). Umbral y ventana son constantes de la spec, no configuración del entorno:
+    **60 solicitudes** por origen en una **ventana deslizante de 60 segundos**, contando
+    toda solicitud a `POST /auth/register` con independencia de su resultado; la solicitud
+    siguiente dentro de la ventana se rechaza con `RATE_LIMITED` (429),
+    `details.retryAfterSeconds` (entero ≥ 0: segundos que faltan para que la solicitud más
+    antigua salga de la ventana) y header `Retry-After`. Se evalúa como **paso 0** de la
+    precedencia (RN-9): antes de cualquier otra validación, incluso la de esquema.
+    (Consistente con el rate limiting de login, HU-01-02 RN-9.) El límite por cuenta
+    autenticada de HU-09-02 RN-12 **no** aplica a este endpoint (es público, sin cuenta).
 11. **RN-11 (persistencia).** La cuenta creada se persiste de forma durable y sobrevive a
     reinicios del sistema (`INV-8`).
 
@@ -272,12 +274,12 @@ reinicios (`INV-8`), igual que el resto del estado del sistema.
   ni derivables del timestamp); para la **misma** cuenta, consultas sucesivas devuelven el
   **mismo** `accountId` (RN-6, RNE-6)
 
-### Escenario 20 (seguridad, condicional a config): Anti-flood de registro [AT-01-01-20]
-- Dado que el sistema tiene rate limiting de registro activo con umbral `N` solicitudes por
-  origen en ventana `T` segundos (ambos leídos de la configuración del entorno de test)
-- Cuando se realizan `N+1` solicitudes de registro desde el mismo origen dentro de la ventana `T`
-- Entonces la solicitud `N+1` se rechaza con `RATE_LIMITED` (429) y `details.retryAfterSeconds ≥ 0`
-- (Si el rate limiting no está activo en el entorno, este AT no aplica; RN-10)
+### Escenario 20 (seguridad): Anti-flood de registro [AT-01-01-20]
+- Dado un origen desde el que se realizaron **60 solicitudes** de registro dentro de una
+  ventana de 60 segundos (RN-10)
+- Cuando desde ese origen se realiza una solicitud de registro adicional dentro de la ventana
+- Entonces se rechaza con `RATE_LIMITED` (429), `details.retryAfterSeconds ≥ 0` y header
+  `Retry-After`
 
 ## Definicion de Done (checklist transversal)
 - [ ] Todos los escenarios de aceptacion (AT-*) pasan

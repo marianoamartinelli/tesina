@@ -54,7 +54,7 @@ audita el 100 % de los veredictos contra su evidencia (ADR-004 §2.5).
     del evaluador: queda a ratificación del tesista.
 - **Sesión fresca por celda y por pasada**, sin memoria de las anteriores y sin `resume`;
   dos pasadas independientes por celda (ADR-007 §3 punto 3).
-- **Insumos permitidos y prohibidos:** los enumera el briefing §2 (spec `spec-v1.1`,
+- **Insumos permitidos y prohibidos:** los enumera el briefing §2 (spec `spec-v1.1`, que desde ADR-024 se lee `spec-v1.2`;
   corpus congelado de H3, copia de evaluación sin `.git`, entorno levantado; prohibidos
   los resultados de la suite black-box, otras celdas y la otra pasada).
 
