@@ -1,7 +1,7 @@
 # ADR-023 — El estado de sesión del CLI de B se persiste en los logs de la corrida
 
-- **Estado:** **Propuesto** — implementado y verificado en la sesión del 2026-09-06;
-  pendiente de ratificación del tesista antes de `piloto-01`.
+- **Estado:** **Aceptado** (ratificado por el tesista el 2026-09-06, en la misma sesión
+  en que se implementó y verificó)
 - **Fecha:** 2026-09-06
 - **Contexto:** ventana H6, cierre de la corrida pre-piloto
   ([ADR-018](ADR-018-corrida-pre-piloto.md)). Sale de investigar la causa del hallazgo

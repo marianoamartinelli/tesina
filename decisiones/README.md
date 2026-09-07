@@ -40,7 +40,9 @@ cambia, se escribe un ADR nuevo que la reemplaza y se actualiza el estado del vi
 | [ADR-020](ADR-020-nodo-onchain-y-smoke-ejecutable.md) | El agente alcanza el nodo on-chain; los criterios de avance de web y mobile son ejecutables | Aceptado |
 | [ADR-021](ADR-021-smoke-y-evaluacion-dentro-del-contenedor.md) | El artefacto se ejecuta donde se construyó: smoke y SUT de H8 en contenedor | Aceptado |
 | [ADR-022](ADR-022-alcance-de-las-metricas-estaticas.md) | Las métricas estáticas no cuentan la spec ni los lockfiles | Aceptado |
-| [ADR-023](ADR-023-estado-de-sesion-del-cli-b-en-los-logs.md) | El estado de sesión del CLI de B (rollouts, único registro de sus subagentes) se persiste en los logs de la corrida | Propuesto |
+| [ADR-023](ADR-023-estado-de-sesion-del-cli-b-en-los-logs.md) | El estado de sesión del CLI de B (rollouts, único registro de sus subagentes) se persiste en los logs de la corrida | Aceptado |
+| [ADR-024](ADR-024-reapertura-controlada-spec-v1.2-rate-limiting.md) | Reapertura controlada de la spec y re-freeze como `spec-v1.2`: rate limiting de `/auth/*` obligatorio y determinista (60 por origen en 60 s) | Aceptado |
+| [ADR-025](ADR-025-protocolo-v1-6-cierre-de-la-ventana-h6.md) | Protocolo v1.6: RAG disponible e instruido, `duracion_min` no-métrica, suscripción con continuación estándar, emulador Android, rúbrica web v1.1 | Aceptado |
 
 > **Nota (2026-07-07):** las referencias textuales a `spec-v1.0` como input de las
 > corridas en ADR-001, ADR-005 y `evaluacion/protocolo.md` §2.1 y §3 paso 1 quedan
