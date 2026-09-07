@@ -71,17 +71,17 @@ repo:
 
 # 5. Cierre de la corrida
 inicio: "2026-09-06T23:54:03-03:00"
-fin: "PENDIENTE-CORRIDA"
-repo_commit_final: "PENDIENTE-CORRIDA"
+fin: "2026-09-07T13:19:08-03:00"
+repo_commit_final: "f4770bfe48930824dc681fc1f9a4c47acca3e990"   # árbol de trabajo limpio; congelado en sólo lectura
 etapas:
   backend: {inicio: "2026-09-06T23:54:03-03:00", tokens: null, costo_usd: null, fin: "2026-09-07T11:18:03-03:00", tokens: "PENDIENTE-CIERRE (turn.completed de 3 invocaciones + 16 rollouts de subagente)", costo_usd: null, intervenciones: 3, cortes_por_rate_limit: 2, estado: "completa", motivo_cierre: "criterio de avance cumplido (GET /health ok, INT-03) tras dos cortes por límite de uso (INT-01, INT-02)", consultas_rag: 15}
   web: {inicio: "2026-09-07T11:20:59-03:00", fin: "2026-09-07T12:17:03-03:00", tokens: "PENDIENTE-CIERRE (turn.completed: 7 315 768 + 2 440 564 + 2 962 791 de entrada, más subagentes)", costo_usd: null, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (build de producción exit 0 en contenedor, INT-04)", consultas_rag: 0}
-  mobile: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
-logs_jsonl: []
+  mobile: {inicio: "2026-09-07T12:17:41-03:00", fin: "2026-09-07T13:19:08-03:00", tokens: "PENDIENTE-CIERRE", costo_usd: null, intervenciones: 1, cortes_por_rate_limit: 0, estado: "completa", motivo_cierre: "criterio de avance cumplido (expo export --platform android exit 0 en contenedor, INT-05)", consultas_rag: 2}
+logs_jsonl: ["pre-piloto-2b-backend-20260906-235403.jsonl", "pre-piloto-2b-backend-20260907-053600.jsonl", "pre-piloto-2b-backend-20260907-110515.jsonl", "pre-piloto-2b-web-20260907-112058.jsonl", "pre-piloto-2b-mobile-20260907-121741.jsonl"]
 costo_total_usd: null
 tokens_totales: null
-intervenciones_total: null
-sesiones_codex: "PENDIENTE-CORRIDA: <logs>/sesiones-codex/ (ADR-023) — cantidad de rollouts y de threads de subagente"
+intervenciones_total: 5   # 2 cortes por límite de uso (INT-01/02) + 3 smokes de avance
+sesiones_codex: "44 rollouts en <logs>/sesiones-codex/ (ADR-023): 5 threads principales + 39 de subagente, 3 subagentes por invocación"
 
 # 6. Evaluación (ADR-026): la ejecuta el agente tercero
 evaluador:

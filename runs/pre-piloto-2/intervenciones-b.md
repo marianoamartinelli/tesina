@@ -79,3 +79,16 @@ Categorías de causa raíz (del marco metodológico de la propuesta):
 - **Resultado:** `tsc -b && vite build` → `✓ built in 382ms`, exit 0. **Criterio de avance
   cumplido.** Sin residuos.
 - **Referencias:** protocolo §4.1; ADR-020; ADR-021.
+
+## INT-05 — Smoke check de avance de la etapa mobile
+
+- **Timestamp:** 2026-09-07 13:22 (-03)
+- **Etapa/componente:** mobile / procedimiento de avance de etapa
+- **Categoría causa raíz:** no aplica (procedimiento del protocolo §4.1, ADR-020/021)
+- **Disparador:** cierre de la etapa mobile (3 pasos, exit 0, sin cortes; 61 min; 2
+  consultas al corpus). Total de la celda: 17 consultas, 44 rollouts, 3 etapas completas.
+- **Intervención:** `npx expo export --platform android` en `mobile/` dentro del contenedor
+  `tesina/agente-b:piloto-01`.
+- **Resultado:** `Exported: dist`, exit 0. **Criterio de avance cumplido.** Sin residuos: B
+  commiteó todo su trabajo (a diferencia de A, que dejó 20 archivos sin commitear).
+- **Referencias:** protocolo §4.1; ADR-020; ADR-021.
