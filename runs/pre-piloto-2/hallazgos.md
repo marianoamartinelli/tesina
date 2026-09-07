@@ -171,3 +171,20 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
   según la suerte. La tasa de concordancia por candidato (1 022/1 027 = 99,5 %) es alta
   porque casi todos son triviales; sobre los no triviales es baja.
 - **Estado:** medido; a reportar como estabilidad del instrumento. Sin corrección.
+
+## H2-10 — El runner del rol revisor sólo miraba el último JSONL de la etapa: una etapa continuada perdía sus pasos
+
+- **Componente:** `agente-instrumentos/correr.py` (rol revisor), sobre `pre-piloto-2b`
+- **Observado:** la etapa backend de B quedó en **tres** JSONL con sus tres directorios de
+  snapshots (corte en el paso 1; continuación con pasos 1–2 y corte en el 3; continuación
+  del paso 3). El runner copiaba sólo el último —que empieza en `desde_paso=3`— y el
+  agente, correctamente, dio `NO_EVALUABLE (b)` a RV-02/03/04/11 de backend («faltan
+  snapshots paso1 y paso2; el JSONL no contiene el paso 2») y `NO_VERIFICABLE` a sus 3
+  puntos del censo. La evidencia existía en el segundo JSONL.
+- **Corrección (runner):** concatena en orden cronológico todos los JSONL de la etapa en
+  `logs/<etapa>.jsonl` y toma, para cada paso, el snapshot de la corrida más reciente que
+  lo ejecutó. Las dos pasadas de B se relanzaron con la corrección; la pasada defectuosa
+  queda en `evaluacion/b/rol-revisor/runner-defecto-H2-10/`.
+- **Por qué importa para H7:** con ADR-025 D3 las continuaciones son el camino estándar,
+  así que toda celda oficial de B va a tener etapas en varios JSONL.
+- **Estado:** corregido.

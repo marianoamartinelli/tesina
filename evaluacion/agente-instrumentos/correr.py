@@ -107,22 +107,38 @@ def copiar_sut(sut: Path, destino: Path) -> None:
                     ignore=shutil.ignore_patterns(*EXCLUIDOS_SUT))
 
 
-def copiar_snapshots_y_logs(logs: Path, destino: Path) -> dict[str, str]:
+def copiar_snapshots_y_logs(logs: Path, destino: Path) -> dict[str, list[str]]:
     """`snapshots/<etapa>/paso*` y `logs/<etapa>.jsonl` desde el directorio de logs de la
-    corrida (`<repo-satélite>/../logs/`). Devuelve qué archivo se usó por etapa."""
-    usados = {}
+    corrida (`<repo-satélite>/../logs/`).
+
+    Una etapa interrumpida y continuada (protocolo §5.8) tiene **varios** JSONL y varios
+    directorios de snapshots: se concatenan los JSONL en orden cronológico y, para cada
+    paso, se toma el snapshot de la corrida más reciente que lo ejecutó. Medido en la
+    pre-piloto-2b (H2-10): tomar sólo el último JSONL dejaba sin paso 2 al rol revisor.
+    Devuelve los archivos usados por etapa."""
+    usados: dict[str, list[str]] = {}
     for etapa in ETAPAS:
         jsonls = sorted(p for p in logs.glob(f"*-{etapa}-*.jsonl")
                         if not p.name.endswith("-rag.jsonl"))
         if not jsonls:
             continue
-        jsonl = jsonls[-1]
         (destino / "logs").mkdir(exist_ok=True)
-        shutil.copy2(jsonl, destino / "logs" / f"{etapa}.jsonl")
-        snaps = logs / f"{jsonl.stem}-snapshots"
-        if snaps.is_dir():
-            shutil.copytree(snaps, destino / "snapshots" / etapa, symlinks=False)
-        usados[etapa] = jsonl.name
+        with (destino / "logs" / f"{etapa}.jsonl").open("w", encoding="utf-8") as salida:
+            for jsonl in jsonls:
+                salida.write(jsonl.read_text(encoding="utf-8"))
+                if not salida.tell() or True:
+                    pass
+        for jsonl in jsonls:                      # cronológico: el más nuevo pisa
+            snaps = logs / f"{jsonl.stem}-snapshots"
+            if not snaps.is_dir():
+                continue
+            for paso in sorted(snaps.iterdir()):
+                if paso.is_dir():
+                    dest = destino / "snapshots" / etapa / paso.name
+                    if dest.exists():
+                        shutil.rmtree(dest)
+                    shutil.copytree(paso, dest, symlinks=False)
+        usados[etapa] = [j.name for j in jsonls]
     return usados
 
 

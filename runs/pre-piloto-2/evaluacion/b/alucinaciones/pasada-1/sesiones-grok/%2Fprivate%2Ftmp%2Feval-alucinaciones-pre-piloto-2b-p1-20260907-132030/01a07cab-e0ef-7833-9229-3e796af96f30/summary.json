@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07cab-e0ef-7833-9229-3e796af96f30",
+    "cwd": "/private/tmp/eval-alucinaciones-pre-piloto-2b-p1-20260907-132030"
+  },
+  "session_summary": "Alucinaciones instrument on evaluation cell",
+  "created_at": "2026-09-07T16:20:34.248727Z",
+  "updated_at": "2026-09-07T16:30:47.588955Z",
+  "num_messages": 261,
+  "num_chat_messages": 128,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "5845104a-0146-4cdc-b3c3-f69022418c17",
+  "grok_home": "/tmp/eval-alucinaciones-pre-piloto-2b-p1-20260907-132030/.grok-home",
+  "last_active_at": "2026-09-07T16:30:47.588955Z",
+  "generated_title": "Alucinaciones instrument on evaluation cell",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

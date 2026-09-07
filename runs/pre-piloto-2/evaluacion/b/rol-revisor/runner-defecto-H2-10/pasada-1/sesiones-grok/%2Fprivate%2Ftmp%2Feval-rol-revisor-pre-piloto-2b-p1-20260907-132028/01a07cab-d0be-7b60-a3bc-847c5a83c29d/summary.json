@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07cab-d0be-7b60-a3bc-847c5a83c29d",
+    "cwd": "/private/tmp/eval-rol-revisor-pre-piloto-2b-p1-20260907-132028"
+  },
+  "session_summary": "Run rol-revisor rubric on sut evaluation",
+  "created_at": "2026-09-07T16:20:30.090573Z",
+  "updated_at": "2026-09-07T16:30:24.139622Z",
+  "num_messages": 192,
+  "num_chat_messages": 98,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "e91156eb-adc7-4069-aa02-1b3096c1cec8",
+  "grok_home": "/tmp/eval-rol-revisor-pre-piloto-2b-p1-20260907-132028/.grok-home",
+  "last_active_at": "2026-09-07T16:30:24.139622Z",
+  "generated_title": "Run rol-revisor rubric on sut evaluation",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

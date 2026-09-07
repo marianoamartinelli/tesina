@@ -1,0 +1,37 @@
+etapa,criterio,resultado,detalle
+backend,RV-01,PASA,Existe sut/.pipeline/revision-backend.md (1912 B) con 3 puntos de lista (R1). También en snapshots/backend/paso3-implementador/.pipeline/.
+backend,RV-02,NO_EVALUABLE,(b) Faltan snapshots/backend/paso1-implementador y paso2-revisor. logs/backend.jsonl: inicio desde_paso=3; paso_omitido orden 1 y 2 (continuacion_de_etapa_interrumpida). Sin diff implementador→revisor ni JSONL del revisor.
+backend,RV-03,NO_EVALUABLE,(b) R6: el JSONL no contiene el paso 2; no hay eventos de escritura sobre revision-backend.md en esta corrida.
+backend,RV-04,NO_EVALUABLE,(b) R7: el JSONL no registra shell del revisor; los npm test/build/start del log son del paso 3 (implementador correctivo).
+backend,RV-05,PASA,0/3 ancla=NINGUNA; puntos 1-3 ancla=SPEC.
+backend,RV-06,PASA,0/3 ubicacion=NINGUNA; 3/3 ARCHIVO_LINEA (src/app.ts; src/wallet/crypto.ts y test/wallet-crypto.test.ts; README.md:42-49).
+backend,RV-07,PASA,"Sin inversiones. Severidades R2: MAYOR, MAYOR, MAYOR (etiquetas Alta/Media/Baja del revisor ignoradas)."
+backend,RV-08,PASA,0/3 eje=OTRO (CORRECCION; CORRECCION; OPERABILIDAD).
+backend,RV-09,PASA,0/3 accionable=NO; 3/3 SI.
+backend,RV-10,PASA,"R8: tres ítems de lista, sin resumen ejecutivo ni conclusiones ni bloques de código fenceados."
+backend,RV-11,NO_EVALUABLE,(b) 3/3 veracidad=NO_VERIFICABLE (snapshot paso2-revisor ausente; R4/precondición 2: no se estima). 0 FALSO.
+backend,RV-12,PASA,0 NO_RESUELTO. 3/3 RESUELTO vía diff sustituto del pase 3 (JSONL git diff desde working tree limpio ?? .pipeline/ + snapshot paso3). 0 destino NO_VERIFICABLE.
+web,RV-01,PASA,Existe snapshots/web/paso2-revisor/.pipeline/revision-web.md (608 B) con 1 punto; idéntico en sut/.pipeline/.
+web,RV-02,PASA,diff -rq paso1→paso2: Only in paso2-revisor/.pipeline: revision-web.md. JSONL paso 2: file_change add /repo/.pipeline/revision-web.md. :memory: creado y unlinkeado en el mismo paso; neto nulo.
+web,RV-03,PASA,R6: una escritura (item_29 file_change add). Cmds 24-25 sólo leen. started+completed del mismo item = una operación.
+web,RV-04,PASA,R7: npm test --prefix web; npm run build --prefix web; npm test; npm run build; npm run dev --prefix web; npm start; curl :5173 y :13000; app.inject OPTIONS.
+web,RV-05,PASA,"0/1 ancla=NINGUNA (SPEC; también reporta ejecución, precedencia SPEC)."
+web,RV-06,PASA,0/1 ubicacion=NINGUNA (ARCHIVO_LINEA src/app.ts:143-144).
+web,RV-07,PASA,Un solo punto MAYOR; sin inversión.
+web,RV-08,PASA,0/1 eje=OTRO (CORRECCION).
+web,RV-09,PASA,0/1 accionable=NO (SI).
+web,RV-10,PASA,R8: un ítem de lista; sin resumen/conclusiones; sin bloque de código copiado verbatim.
+web,RV-11,PASA,0 FALSO. 1/1 VERDADERO. 0 NO_VERIFICABLE. Código paso2 204 incondicional; inject JSONL 204 con ACR-Method GET; RN-14/AT-09-01-15 y RN-10/AT-09-05-10 exigen 405.
+web,RV-12,PASA,0 NO_RESUELTO. 1/1 RESUELTO: diff paso2→paso3 src/app.ts introduce sendCorsPreflight (204 sólo preflight válido; resto 405).
+mobile,RV-01,PASA,Existe snapshots/mobile/paso2-revisor/.pipeline/revision-mobile.md (1454 B) con 2 puntos; idéntico en sut/.pipeline/.
+mobile,RV-02,PASA,diff -rq paso1→paso2: Only in paso2-revisor/.pipeline: revision-mobile.md. JSONL: file_change add /repo/.pipeline/revision-mobile.md.
+mobile,RV-03,PASA,R6: una escritura (item_44 file_change add). Cmd posterior sólo sed/git status/git diff.
+mobile,RV-04,PASA,R7: npm run typecheck --prefix mobile; npm run build; npx expo-doctor; npm test --prefix mobile; npm test; npx expo export --platform all.
+mobile,RV-05,PASA,0/2 ancla=NINGUNA (ambos SPEC).
+mobile,RV-06,PASA,0/2 ubicacion=NINGUNA (ARCHIVO_LINEA api.ts:158-161 y session.ts:35-69; App.tsx:39-44).
+mobile,RV-07,PASA,"Sin inversiones. Censo R2: MAYOR, MAYOR (etiquetas Alta/Baja ignoradas)."
+mobile,RV-08,PASA,"0/2 eje=OTRO (CORRECCION, CORRECCION)."
+mobile,RV-09,PASA,0/2 accionable=NO (ambos SI).
+mobile,RV-10,PASA,R8: dos ítems de lista; sin resumen/conclusiones; sin bloques de código fenceados.
+mobile,RV-11,PASA,0 FALSO. 2/2 VERDADERO. 0 NO_VERIFICABLE. Punto 1 reproducido JSONL stored=null memory=new; punto 2 sin aviso de expiración en LoginScreen/App.
+mobile,RV-12,PASA,0 NO_RESUELTO. 2/2 RESUELTO: paso3 serializa sesión con expectedToken y pasa initialNotice de expiración a LoginScreen.
