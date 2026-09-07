@@ -1,0 +1,92 @@
+# Manifest de la corrida PRE-PILOTO-2a (ADR-018) — descartable.
+#
+# Segunda pre-piloto, del 2026-09-06: verifica de punta a punta los cambios de ese día
+# —spec-v1.2 (ADR-024), RAG disponible e instruido y protocolo v1.6 (ADR-025), rollouts
+# de B persistidos (ADR-023) y evaluación gestionada por agentes (ADR-026)— sobre el
+# mismo universo reducido que la primera (runs/pre-piloto/).
+#
+# No cuenta para el factorial 2×2 ni para la ventana H6: su objeto es verificar que
+# todos los componentes del pipeline y de la evaluación corren de punta a punta sobre
+# un universo reducido de la spec (ver matriz-componentes.md y
+# evaluacion/pre-piloto/alcance.yaml). Los campos que sólo se pueden medir al arrancar
+# o al cerrar quedan marcados PENDIENTE con el comando que los completa.
+
+# 1. Identidad de la corrida
+run_id: "pre-piloto-2a"
+celda:
+  modelo: "A (Claude)"
+  rag: true                # las dos celdas con RAG: el alcance incluye la épica 06,
+                           # que es la que fuerza el uso del corpus (BIP-32/39/44)
+oficial: false
+
+# 2. Insumos pinneados
+spec:
+  tag: "spec-v1.2"
+  commit: "4927662f07449216ef1dac7816896cb98a2ef64d"   # spec-v1.2^{commit} (ADR-024)
+  alcance: "SUBCONJUNTO — no es la spec completa. HU-01-01, HU-01-02, épica 06 completa
+    y la parte de la épica 09 que esas HU exponen (backend); HU-10-01 (web); HU-11-01 y
+    la pantalla de depósito de HU-11-06 (mobile). Lo fijan los prompts de
+    pipeline/comun/prompts/prepiloto/ y evaluacion/pre-piloto/alcance.yaml."
+corpus:
+  commit: "0509b9f930a71ac09b796f557092936b96a6b45d"
+protocolo:
+  adr: "ADR-025 (protocolo v1.6) + ADR-018 (corrida descartable) + ADR-023 (rollouts de B) + ADR-026 (evaluación por agentes)"
+
+# 3. Configuración del pipeline
+pipeline_commit: "5fa6ac8a03f6994081a1c5d37d19ecd9a11967bf"
+paridad_verificada: "2026-09-06 — verificar_paridad.py exit 0, 146 chequeos (ADR-023 y la instrucción de RAG de ADR-025 incluidos), sobre 5fa6ac8a03f6994081a1c5d37d19ecd9a11967bf"
+modelo:
+  proveedor: "anthropic"
+  model_id: "claude-opus-5"
+  parametros:
+    effort: "high"          # la pre-piloto corre en `high`; las 4 oficiales siguen en `xhigh` (ADR-009 D3)
+    model_context_window: 1000000
+harness:
+  cli: "claude-code"
+  version: "2.1.241 (Claude Code)"
+  auth: "suscripción (CLAUDE_CODE_OAUTH_TOKEN por --env-file, ADR-017)"
+entorno_host:
+  os: "macOS 26.6.2"
+  node: "v23.11.0"
+  npm: "10.9.2"
+  python: "Python 3.12.10 (.venv del repo)"
+  docker: "Docker version 28.5.2"
+  foundry: "anvil 1.5.1-stable (commit b0a9dd9ceda36f63e2326ce530c10e6916f4b8a2)"
+entorno_onchain:
+  url_rpc: "http://127.0.0.1:8545"
+  direccion_usdc_mock: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512 (bloque de despliegue 2)"
+  version_anvil: "ghcr.io/foundry-rs/foundry@sha256:043752653d5be351c71709091b3db97c4421c907eb40ea294195e7f532aadf46"
+
+contenedores:
+  tag: "piloto-01"         # se reutilizan las imágenes ya construidas; no se reconstruyen
+  base: "sha256:72a1a49f631ba34cce602a8de55134e4d9b39e2047b0074b5eca5e8d06af11d5"
+  agente_a: "sha256:af7f27b10893c31c6d856031d3a4226789f7703fc7abee8b809ffaf99be9e0e0"
+  agente_b: "sha256:d15e87122831d273d5869a7bd00cdc2088ba2180e906c42578b6b55335005f07"   # reconstruida por el hallazgo H-03 (CODEX_HOME escribible)
+  red: "abierta (ADR-015 D4). PENDIENTE-CORRIDA: registrar los hosts tocados"
+
+# 4. Repo de la implementación generada
+repo:
+  url: "local — ~/Desktop/projects/tesina-runs/pre-piloto-2a/tesina-run-pre-piloto-2a (descartable, ADR-018)"
+  commit_inicial: "1a3237e07dcb23c720a426b07425efede55b7d2c"
+
+# 5. Cierre de la corrida
+inicio: "PENDIENTE-CORRIDA"
+fin: "PENDIENTE-CORRIDA"
+repo_commit_final: "PENDIENTE-CORRIDA"
+etapas:
+  backend: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
+  web: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
+  mobile: {inicio: "", fin: "", tokens: null, costo_usd: null, intervenciones: null, cortes_por_rate_limit: 0, estado: "", motivo_cierre: ""}
+logs_jsonl: []
+costo_total_usd: null
+tokens_totales: null
+intervenciones_total: null
+
+# 6. Evaluación (ADR-026): la ejecuta el agente tercero
+evaluador:
+  cli: "grok (Grok Build)"
+  version: "1.0.4"
+  modelo: "grok-4.6"
+  effort: "xhigh"
+  auth: "suscripción (auth.json copiado en sólo lectura a un GROK_HOME aislado por invocación)"
+  instrumentos: "PENDIENTE-EVALUACION: white-box (2 pasadas + arbitraje), rúbricas web/mobile/rol revisor, alucinaciones; black-box y métricas estáticas automáticas"
