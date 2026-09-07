@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07c68-3110-73e0-80ef-2e2fb551b656",
+    "cwd": "/private/tmp/eval-alucinaciones-pre-piloto-2a-arb-20260907-120635"
+  },
+  "session_summary": "Arbitrate alucinaciones instrument discrepancies",
+  "created_at": "2026-09-07T15:06:38.312912Z",
+  "updated_at": "2026-09-07T15:11:43.713398Z",
+  "num_messages": 181,
+  "num_chat_messages": 83,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "3bd22218-05b8-4403-a419-156a6ee63efe",
+  "grok_home": "/tmp/eval-alucinaciones-pre-piloto-2a-arb-20260907-120635/.grok-home",
+  "last_active_at": "2026-09-07T15:11:43.713398Z",
+  "generated_title": "Arbitrate alucinaciones instrument discrepancies",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

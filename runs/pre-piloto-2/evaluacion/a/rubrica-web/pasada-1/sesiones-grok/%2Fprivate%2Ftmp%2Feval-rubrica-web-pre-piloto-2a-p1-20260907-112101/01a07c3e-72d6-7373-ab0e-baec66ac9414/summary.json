@@ -1,0 +1,21 @@
+{
+  "info": {
+    "id": "01a07c3e-72d6-7373-ab0e-baec66ac9414",
+    "cwd": "/private/tmp/eval-rubrica-web-pre-piloto-2a-p1-20260907-112101"
+  },
+  "session_summary": "Rubrica-web AT-10-01 subset evaluation",
+  "created_at": "2026-09-07T14:21:02.634318Z",
+  "updated_at": "2026-09-07T14:33:21.524666Z",
+  "num_messages": 415,
+  "num_chat_messages": 242,
+  "current_model_id": "grok-4.6",
+  "next_trace_turn": 1,
+  "chat_format_version": 1,
+  "request_id": "499918d4-1059-4850-872f-e322b26ccfe0",
+  "grok_home": "/tmp/eval-rubrica-web-pre-piloto-2a-p1-20260907-112101/.grok-home",
+  "last_active_at": "2026-09-07T14:33:21.524666Z",
+  "generated_title": "Rubrica-web AT-10-01 subset evaluation",
+  "agent_name": "grok-build-plan",
+  "sandbox_profile": "off",
+  "reasoning_effort": "xhigh"
+}

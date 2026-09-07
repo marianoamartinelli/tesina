@@ -154,3 +154,20 @@ la corrida saca a la luz; lo que toca protocolo o metodología sale por ADR.
   continuar desde el paso interrumpido sin repetir los completos (`paso_omitido` en el
   JSONL), que es lo que §5.8 describe y el núcleo no tenía.
 - **Estado:** medido; decisión del tesista sobre B.
+
+## H2-09 — Alucinaciones: dos pasadas sobre la misma lista, 0 y 5 hallazgos; el arbitraje decide
+
+- **Componente:** instrumento de alucinaciones por agente (ADR-026), sobre `pre-piloto-2a`
+- **Observado:** con la lista depurada de 1 027 candidatos (H2-06), la pasada 1 marcó
+  **0** `ALUCINACION` (10 min) y la pasada 2 **5** (2 hechos, C6: un JSDoc sobre EIP-55 que
+  afirma que las direcciones todo-minúscula o todo-mayúscula «no superan» el checksum, y
+  «vectores canónicos BIP-44» atribuidos al BIP para la dirección del mnemonic de Hardhat,
+  que fija la spec). Con la lista de 1 604, otra pasada 1 había encontrado sólo el segundo.
+  El árbitro re-verificó los 5 contra el corpus y dio la razón a la pasada 2 en los 5:
+  veredicto final **2 hechos, 5 ocurrencias**.
+- **Lectura:** la sensibilidad del agente varía entre pasadas sobre candidatos idénticos;
+  la doble pasada más arbitraje es lo que lo absorbe (es exactamente para lo que
+  `alucinaciones.md` §5 preveía la segunda pasada). Un solo pase habría reportado 0 o 2
+  según la suerte. La tasa de concordancia por candidato (1 022/1 027 = 99,5 %) es alta
+  porque casi todos son triviales; sobre los no triviales es baja.
+- **Estado:** medido; a reportar como estabilidad del instrumento. Sin corrección.
